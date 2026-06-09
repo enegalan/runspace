@@ -85,10 +85,39 @@ impl WorkspaceManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
     use std::fs;
+
+    struct HomeGuard {
+        original: Option<String>,
+    }
+
+    impl HomeGuard {
+        fn set(path: &std::path::Path) -> Self {
+            let original = env::var("HOME").ok();
+            env::set_var("HOME", path);
+            Self { original }
+        }
+    }
+
+    impl Drop for HomeGuard {
+        fn drop(&mut self) {
+            if let Some(ref home) = self.original {
+                env::set_var("HOME", home);
+            }
+        }
+    }
 
     #[test]
     fn write_file_writes_inside_workspace() {
+        let _home_lock = crate::test_home_lock::home_test_lock();
+        let temp_home = env::temp_dir().join(format!(
+            "runspace-ws-test-{}",
+            uuid::Uuid::new_v4()
+        ));
+        fs::create_dir_all(&temp_home).expect("temp home");
+        let _guard = HomeGuard::set(&temp_home);
+
         let manager = WorkspaceManager::new().expect("manager");
         let workspace = manager.create_workspace().expect("workspace");
         let path = manager

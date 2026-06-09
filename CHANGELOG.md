@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Phase 3: Environment Manager
+
+- Installable environments: only added runtimes appear in the selector and settings
+- Auto-detection of binary paths on startup for installed environments missing configuration
+- Environment catalog with Node.js only (more runtimes added in later phases)
+- Per-environment configuration: binary paths and env vars
+- `EnvironmentManager` with load/save to `~/.runspace/environments.json`
+- On-demand path validation and version probe via Test action
+- `execute_code` refactored to accept `environment_id` with resolved paths and env vars (Node.js end-to-end)
+- Settings panel (gear icon) with expandable environment cards, Browse, Save, Test, and env vars editor
+- Toolbar environment selector grouped by category with configured/not configured badges
+- Run blocked with tooltip when selected environment is not configured
+
 ### Phase 2: Monaco Editor and output panel
 
 - Monaco Editor with lazy loading, `vs-dark` theme, and keyboard shortcuts (`Cmd+Enter`, `Cmd+S`)

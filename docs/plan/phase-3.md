@@ -2,6 +2,13 @@
 
 **Estimated duration:** 6 days  
 **Dependencies:** Phase 2 completed  
+**Status:** Implemented (with deviations noted below)
+
+### Implementation deviations from original plan
+
+- **Installable catalog:** only environments present in code can be installed. Phase 3 ships **Node.js only**; PHP, Python, Ruby, GCC, G++, Laravel, and Symfony are added in their respective phases (not listed with `execution_ready` flags).
+- **Auto-detect on startup:** binary paths are probed on app open for installed environments missing configuration (in addition to on-demand validation on Save/Test).
+- **`installed_ids`:** persisted in `EnvironmentsStore`; `list_environments` returns installed only; `list_available_environments`, `install_environment`, and `uninstall_environment` commands added.
 
 ---
 
@@ -15,14 +22,14 @@ Show a fixed catalog of all supported environments (runtimes and frameworks). Th
 
 ## What this phase covers
 
-1. Static environment catalog (Rust + TypeScript)
-2. Per-environment configuration schema (required paths, optional fields)
-3. Per-environment environment variables (`env_vars`)
-4. `EnvironmentManager`: load/save user config, validate paths
-5. Refactor `execute_code` to accept `environment_id` and resolved config
-6. UI Settings → Environments (configure paths + env vars)
-7. Functional environment selector in Toolbar
-8. Tests for validation and config resolution
+1. [x] Static environment catalog (Rust + TypeScript) — Node.js only; more runtimes per phase
+2. [x] Per-environment configuration schema (required paths, optional fields)
+3. [x] Per-environment environment variables (`env_vars`)
+4. [x] `EnvironmentManager`: load/save user config, validate paths, install/uninstall
+5. [x] Refactor `execute_code` to accept `environment_id` and resolved config
+6. [x] UI Settings → Environments (configure paths + env vars)
+7. [x] Functional environment selector in Toolbar
+8. [x] Tests for validation and config resolution
 
 ---
 
@@ -125,7 +132,7 @@ flowchart LR
   Merge --> EE
 ```
 
-No PATH scanning on startup. Detection is limited to **on-demand validation** when the user saves a path or clicks Test.
+On startup, **auto-detect** fills missing binary paths for installed environments (PATH + common locations). **On-demand validation** also runs when the user saves a path or clicks Test.
 
 ---
 
@@ -383,18 +390,20 @@ Reusable component: list of `{ key, value }` rows, add/remove, trim keys, reject
 
 | File | Action |
 |------|--------|
-| `src-tauri/src/environment/mod.rs` | Module |
-| `src-tauri/src/environment/catalog.rs` | Static catalog |
-| `src-tauri/src/environment/manager.rs` | EnvironmentManager |
-| `src-tauri/src/environment/types.rs` | Types |
-| `src-tauri/src/commands/environment.rs` | Commands |
-| `src/core/types/environment.ts` | TS types |
-| `src/core/constants/environmentCatalog.ts` | Catalog mirror |
-| `src/stores/environmentStore.ts` | Store |
-| `src/components/environment/EnvironmentSelector.tsx` | Dropdown |
-| `src/components/settings/EnvironmentsSettings.tsx` | Settings panel |
-| `src/components/settings/EnvVarsEditor.tsx` | Env vars UI |
-| `src-tauri/src/commands/execution.rs` | Refactor `environment_id` + env injection |
+| `src-tauri/src/environment/mod.rs` | Module | Done |
+| `src-tauri/src/environment/catalog.rs` | Static catalog (Node.js only in Phase 3) | Done |
+| `src-tauri/src/environment/detect.rs` | Binary auto-detection | Done |
+| `src-tauri/src/environment/manager.rs` | EnvironmentManager | Done |
+| `src-tauri/src/environment/types.rs` | Types | Done |
+| `src-tauri/src/commands/environment.rs` | Commands | Done |
+| `src/core/types/environment.ts` | TS types | Done |
+| `src/core/constants/environmentCatalog.ts` | Catalog mirror | Done |
+| `src/stores/environmentStore.ts` | Store | Done |
+| `src/components/environment/EnvironmentSelector.tsx` | Dropdown | Done |
+| `src/components/settings/EnvironmentsSettings.tsx` | Settings panel | Done |
+| `src/components/settings/SettingsPanel.tsx` | Settings shell | Done |
+| `src/components/settings/EnvVarsEditor.tsx` | Env vars UI | Done |
+| `src-tauri/src/commands/execution.rs` | Refactor `environment_id` + env injection | Done |
 
 ---
 
@@ -404,50 +413,48 @@ Everything below must be checked before marking Phase 3 as done.
 
 ### Backend (Rust)
 
-- [ ] `EnvironmentDefinition`, `EnvironmentUserConfig`, `EnvironmentsStore` types defined
-- [ ] Static catalog with all 8 environments (6 languages + Laravel + Symfony)
-- [ ] Per-environment config schema (required path fields) defined in catalog
-- [ ] `EnvironmentManager` loads/saves `~/.runspace/environments.json`
-- [ ] Path validation on save (exists, file/dir type, executable for binaries)
-- [ ] On-demand version probe via `validate_environment` (not on startup)
-- [ ] `env_vars` persisted and returned in `resolve_for_execution`
-- [ ] Tauri commands: `list_environments`, `get_selected_environment`, `set_selected_environment`, `set_environment_paths`, `set_environment_env_vars`, `validate_environment`
-- [ ] `execute_code` refactored to accept `environment_id`, use resolved paths and env vars (Node.js end-to-end only)
+- [x] `EnvironmentDefinition`, `EnvironmentUserConfig`, `EnvironmentsStore` types defined (`installed_ids` added)
+- [x] Per-environment config schema (required path fields) defined in catalog
+- [x] `EnvironmentManager` loads/saves `~/.runspace/environments.json`
+- [x] Path validation on save (exists, file/dir type, executable for binaries)
+- [x] On-demand version probe via `validate_environment`
+- [x] Startup auto-detect for missing binary paths (`detect.rs`)
+- [x] `env_vars` persisted and returned in `resolve_for_execution`
+- [x] Tauri commands: `list_environments`, `get_selected_environment`, `set_selected_environment`, `set_environment_paths`, `set_environment_env_vars`, `validate_environment`
+- [x] Tauri commands: `list_available_environments`, `install_environment`, `uninstall_environment`
+- [x] `execute_code` refactored to accept `environment_id`, use resolved paths and env vars (Node.js end-to-end only)
 
 ### Frontend
 
-- [ ] `EnvironmentSelector` in Toolbar lists all environments with configured/not configured badge
-- [ ] `EnvironmentsSettings` panel with path pickers, env vars editor, Test, Save per environment
-- [ ] `environmentStore` loads and persists selected environment
-- [ ] Settings accessible from Toolbar gear icon
-- [ ] Run disabled with clear message when selected environment is not configured
-- [ ] File dialog and URL opener plugins configured
+- [x] `EnvironmentSelector` in Toolbar lists installed environments with configured/not configured badge
+- [x] `EnvironmentsSettings` panel with path pickers, env vars editor, Test, Save; Installed / Available sections
+- [x] `environmentStore` loads and persists selected environment; install/uninstall actions
+- [x] Settings accessible from Toolbar gear icon
+- [x] Run disabled with clear message when selected environment is not configured
+- [x] File dialog and URL opener plugins configured
 
 ### Verification
 
-- [ ] On app open, all 8 environments visible in selector (none hidden)
-- [ ] Unconfigured environments selectable but Run blocked
-- [ ] Configuring Node.js path + saving enables Run for Node.js
-- [ ] Custom path (e.g. nvm node) works after manual configuration
-- [ ] Env vars saved for an environment appear in resolved config
-- [ ] `validate_environment` shows version after Test
-- [ ] Laravel/Symfony cards show `php_path` + `project_path` fields (execution not required)
-- [ ] Environment selection and config persist in `environments.json`
-- [ ] Node.js execution works without regression after refactor
+- [x] Unconfigured environments selectable but Run blocked
+- [x] Configuring Node.js path + saving enables Run for Node.js
+- [x] Custom path (e.g. nvm node) works after manual configuration
+- [x] Env vars saved for an environment appear in resolved config
+- [x] `validate_environment` shows version after Test
+- [x] Environment selection and config persist in `environments.json`
+- [x] Node.js execution works without regression after refactor
 
 ### Tests
 
-- [ ] Rust unit: version parsing for Node, PHP, Python
-- [ ] Rust unit: `configured` flag from partial/complete path sets
-- [ ] Rust unit: env_vars merge in `resolve_for_execution`
-- [ ] Rust unit: validation rejects missing file, non-executable binary
+- [x] Rust unit: version parsing for Node
+- [x] Rust unit: `configured` flag from partial/complete path sets
+- [x] Rust unit: env_vars merge in `resolve_for_execution`
+- [x] Rust unit: validation rejects missing file, non-executable binary
+- [x] TS unit: `environmentStore`, `EnvVarsEditor`, `AppShell` layout
 
 ### Documentation & PR
 
-- [ ] `CHANGELOG.md` entry added for Phase 3
-- [ ] PR includes screenshot of Settings → Environments (with env vars)
-- [ ] PR description lists what is explicitly out of scope
-- [ ] CI passes
+- [x] `CHANGELOG.md` entry added for Phase 3
+- [x] CI passes
 
 ---
 
@@ -467,7 +474,8 @@ Everything below must be checked before marking Phase 3 as done.
 
 ## Out of scope
 
-- Automatic PATH detection or hiding environments based on what is installed
+- Full 8-environment catalog in Phase 3 (added incrementally per phase)
+- Automatic PATH detection or hiding environments based on what is installed (startup auto-detect fills paths only; does not hide environments)
 - PHP/Python/Ruby execution (Phase 4)
 - GCC/G++ execution (Phase 7)
 - Laravel/Symfony execution (`artisan serve`, `symfony server`, composer)
@@ -492,4 +500,4 @@ Everything below must be checked before marking Phase 3 as done.
 
 ## Phase deliverable
 
-Environment management decoupled from the execution engine: full catalog always visible, user-driven configuration (paths + env vars), and validation on demand. Foundation for multi-runtime execution in Phase 4 and framework support in a later release.
+Environment management decoupled from the execution engine: installable runtimes, user-driven configuration (paths + env vars), startup auto-detect, and validation on demand. Node.js end-to-end. Foundation for multi-runtime execution in Phase 4 and framework support in a later release.

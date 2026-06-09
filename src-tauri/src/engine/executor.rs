@@ -46,6 +46,7 @@ pub struct ExecutionRequest {
     pub script_path: PathBuf,
     pub cwd: PathBuf,
     pub timeout_secs: u64,
+    pub env_vars: Vec<(String, String)>,
 }
 
 pub struct ExecutionResult {
@@ -93,6 +94,10 @@ impl ExecutionEngine {
             .current_dir(&request.cwd)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+
+        for (key, value) in &request.env_vars {
+            cmd.env(key, value);
+        }
 
         let mut child = cmd
             .spawn()
@@ -268,6 +273,7 @@ mod tests {
             script_path,
             cwd: temp_dir.clone(),
             timeout_secs: 10,
+            env_vars: vec![],
         };
 
         // Integration test without Tauri app handle — run command directly

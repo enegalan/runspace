@@ -5,4 +5,13 @@ export type {
     ExecutionStatus,
     ExecutionStream,
 } from "./execution";
-export type { RuntimeDefinition, RuntimeId } from "./runtime";
+export type {
+  ConfigField,
+  ConfigFieldType,
+  Environment,
+  EnvironmentCategory,
+  EnvironmentDefinition,
+  EnvironmentId,
+  EnvironmentUserConfig,
+  ValidationResult,
+} from "./environment";

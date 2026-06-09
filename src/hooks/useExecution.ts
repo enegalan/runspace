@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect } from "react";
-import { DEFAULT_RUNTIME_ID } from "../core/runtimes";
+import { DEFAULT_ENVIRONMENT_ID } from "../core/constants/environmentCatalog";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
@@ -78,11 +78,11 @@ export function useExecution() {
   const run = useCallback(async (code: string, options?: ExecutionOptions) => {
     setRunning();
 
-    const runtime = options?.runtime ?? DEFAULT_RUNTIME_ID;
+    const environmentId = options?.environmentId ?? DEFAULT_ENVIRONMENT_ID;
     const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
 
     try {
-      await invoke("execute_code", { code, timeoutSecs, runtime });
+      await invoke("execute_code", { code, timeoutSecs, environmentId });
       void useEditorStore.getState().saveToDisk();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
