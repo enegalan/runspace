@@ -234,36 +234,36 @@ Everything below must be checked before marking Phase 0 as done.
 
 ### Project setup
 
-- [ ] Tauri 2 + React + TypeScript + Vite scaffold initialized in the repo
-- [ ] `tauri.conf.json` configured (Runspace name, identifier, 1200×800 window, min 800×600)
-- [ ] Folder structure created (`src/components/layout/`, `src/core/`, `src-tauri/src/commands/`, `tests/`, etc.)
-- [ ] ESLint, Prettier, and Vitest configured and working
+- [x] Tauri 2 + React + TypeScript + Vite scaffold initialized in the repo
+- [x] `tauri.conf.json` configured (Runspace name, identifier, 1200×800 window, min 800×600)
+- [x] Folder structure created (`src/components/layout/`, `src/core/`, `src-tauri/src/commands/`, `tests/`, etc.)
+- [x] ESLint, Prettier, and Vitest configured and working
 
 ### UI shell
 
-- [ ] `AppShell` renders 5 zones: Toolbar, Sidebar, EditorArea, OutputPanel, StatusBar
-- [ ] Dark theme applied (`globals.css`)
-- [ ] Placeholders visible in Sidebar, EditorArea, and OutputPanel
-- [ ] Layout survives window resize without breaking
+- [x] `AppShell` renders 5 zones: Toolbar, Sidebar, EditorArea, OutputPanel, StatusBar
+- [x] Dark theme applied (`globals.css`)
+- [x] Placeholders visible in Sidebar, EditorArea, and OutputPanel
+- [x] Layout survives window resize without breaking
 
 ### Security & tooling
 
-- [ ] Tauri capabilities limited to `core:default` (no shell/filesystem yet)
-- [ ] `npm run lint` passes
-- [ ] `npm test` passes (`AppShell` smoke test)
+- [x] Tauri capabilities limited to `core:default` (no shell/filesystem yet)
+- [x] `npm run lint` passes
+- [x] `npm test` passes (`AppShell` smoke test)
 
 ### Build & CI
 
-- [ ] `npm run tauri dev` opens native window on macOS
-- [ ] `npm run tauri build` produces `.app` / binary without errors
-- [ ] React hot reload works when editing components
-- [ ] `.github/workflows/ci.yml` runs lint, test, and build on PR
-- [ ] GitHub CI passes on PR to `main`
+- [x] `npm run tauri dev` opens native window on macOS
+- [x] `npm run tauri build` produces `.app` / binary without errors
+- [x] React hot reload works when editing components
+- [x] `.github/workflows/ci.yml` runs lint, test, and build on PR
+- [x] GitHub CI passes on PR to `main`
 
 ### Documentation & PR
 
-- [ ] `README.md` updated with dev requirements and startup commands
-- [ ] `CHANGELOG.md` entry added for Phase 0
+- [x] `README.md` updated with dev requirements and startup commands
+- [x] `CHANGELOG.md` entry added for Phase 0
 - [ ] PR includes screenshot of the empty shell layout
 - [ ] PR description lists what is explicitly out of scope
 
