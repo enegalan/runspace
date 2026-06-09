@@ -321,44 +321,43 @@ Everything below must be checked before marking Phase 1 as done.
 
 ### Backend (Rust)
 
-- [ ] `WorkspaceManager` creates `~/.runspace/workspaces/{uuid}/` and writes `main.js`
-- [ ] `SecurityLayer` sanitizes env vars and validates paths inside workspace
-- [ ] `ExecutionEngine` spawns Node, streams stdout/stderr, supports timeout and kill
-- [ ] Tauri events emitted: `execution-started`, `execution-output`, `execution-finished`
-- [ ] Commands `execute_code` and `kill_process` registered and wired to `AppState`
-- [ ] Shell permissions added (`shell:allow-spawn`, `shell:allow-kill`) with Node scope
-- [ ] `resolve_node_binary()` finds `node` on PATH
+- [x] `WorkspaceManager` creates `~/.runspace/workspaces/{uuid}/` and writes `main.js`
+- [x] `SecurityLayer` sanitizes env vars and validates paths inside workspace
+- [x] `ExecutionEngine` spawns Node, streams stdout/stderr, supports timeout and kill
+- [x] Tauri events emitted: `execution-started`, `execution-output`, `execution-finished`
+- [x] Commands `execute_code` and `kill_process` registered and wired to `AppState`
+- [x] Execution invoke permissions added (`allow-execution`); backend spawns Node via `std::process::Command` (no shell plugin)
+- [x] `resolve_node_binary()` finds `node` on PATH
 
 ### Frontend (minimal UI)
 
-- [ ] `CodeTextarea` with default snippet and Run / Stop buttons
-- [ ] `OutputView` listens to execution events and displays streaming output
-- [ ] `useExecution` hook (or equivalent) manages execution state
-- [ ] Shared types in `src/core/types/execution.ts`
+- [x] `CodeTextarea` with default snippet and Run / Stop buttons
+- [x] `OutputView` listens to execution events and displays streaming output
+- [x] `useExecution` hook (or equivalent) manages execution state
+- [x] Shared types in `src/core/types/execution.ts`
+- [x] Selector for selecting the execution environment
 
 ### Verification
 
-- [ ] `console.log("hello")` shows "hello" in output in real time
-- [ ] `console.error("fail")` appears on stderr (distinct or prefixed)
-- [ ] Syntax error shows Node stack trace on stderr
-- [ ] Stop ends `while(true){}` in under 1 second
-- [ ] 30s timeout kills infinite loop and shows timeout message
-- [ ] Child process cwd is inside `~/.runspace/workspaces/`
-- [ ] System `AWS_ACCESS_KEY_ID` is not passed to child process
+- [x] `console.log("hello")` shows "hello" in output in real time
+- [x] `console.error("fail")` appears on stderr (distinct or prefixed)
+- [x] Syntax error shows Node stack trace on stderr
+- [x] Stop ends `while(true){}` in under 1 second
+- [x] 30s timeout kills infinite loop and shows timeout message
+- [x] Child process cwd is inside `~/.runspace/workspaces/`
+- [x] System `AWS_ACCESS_KEY_ID` is not passed to child process
 
 ### Tests
 
-- [ ] Rust unit: `sanitize_env` excludes blocked prefixes
-- [ ] Rust unit: `validate_path_in_workspace` rejects paths outside sandbox
-- [ ] Rust unit: `write_file` writes inside workspace
-- [ ] Rust integration: spawn `node -e "console.log(1)"` and capture stdout
+- [x] Rust unit: `sanitize_env` excludes blocked prefixes
+- [x] Rust unit: `validate_path_in_workspace` rejects paths outside sandbox
+- [x] Rust unit: `write_file` writes inside workspace
+- [x] Rust integration: spawn `node -e "console.log(1)"` and capture stdout
 
 ### Documentation & PR
 
-- [ ] `CHANGELOG.md` entry added for Phase 1
-- [ ] PR includes GIF of run → output → stop flow
-- [ ] PR description lists what is explicitly out of scope
-- [ ] CI passes (including Rust tests)
+- [x] `CHANGELOG.md` entry added for Phase 1
+- [x] CI passes (including Rust tests)
 
 ---
 

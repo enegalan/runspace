@@ -11,5 +11,6 @@ describe("AppShell", () => {
     expect(screen.getByTestId("editor-area")).toBeInTheDocument();
     expect(screen.getByTestId("output-panel")).toBeInTheDocument();
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("runtime-select")).toBeInTheDocument();
   });
 });

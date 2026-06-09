@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-execution"
+description = "Allows code execution commands"
+commands.allow = ["execute_code", "kill_process"]

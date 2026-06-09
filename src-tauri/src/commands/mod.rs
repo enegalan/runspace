@@ -1,1 +1,3 @@
-// Tauri commands will be added in later phases.
+pub mod execution;
+
+pub use execution::{execute_code, kill_process};
