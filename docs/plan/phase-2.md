@@ -291,7 +291,7 @@ Everything below must be checked before marking Phase 2 as done.
 
 - [x] Unit: `executionStore` state transitions
 - [x] Unit: `editorStore` save/load (mock invoke)
-- [ ] E2E: type code → Run → verify output and exit code 0 (skeleton only; optional in Phase 2 CI)
+- [x] E2E: type code → Run → verify output and exit code 0 (skeleton only; optional in Phase 2 CI)
 
 ### Documentation & PR
 
