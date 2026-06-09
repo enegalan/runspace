@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Phase 2: Monaco Editor and output panel
+
+- Monaco Editor with lazy loading, `vs-dark` theme, and keyboard shortcuts (`Cmd+Enter`, `Cmd+S`)
+- Zustand stores for editor and execution state
+- Output panel with Output/Errors tabs, status badges, auto-scroll, and Clear action
+- Toolbar with Run, Stop, and Clear controls
+- Snippet persistence to `~/.runspace/last-snippet.json` via Tauri commands
+- Enriched StatusBar with runtime and last-run duration
+
 ### Phase 1: Node.js execution
 
 - WorkspaceManager sandbox at `~/.runspace/workspaces/{uuid}/`

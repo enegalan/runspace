@@ -1,23 +1,34 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { DEFAULT_RUNTIME_ID } from "../core/runtimes";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
   ExecutionOutputEvent,
-  ExecutionStatus,
 } from "../core/types/execution";
+import { useEditorStore } from "../stores/editorStore";
+import { useExecutionStore } from "../stores/executionStore";
 
 const DEFAULT_TIMEOUT_SECS = 30;
 
 export function useExecution() {
-  const [stdout, setStdout] = useState("");
-  const [stderr, setStderr] = useState("");
-  const [status, setStatus] = useState<ExecutionStatus>("idle");
-  const [exitCode, setExitCode] = useState<number | null>(null);
-  const [timedOut, setTimedOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    status,
+    stdout,
+    stderr,
+    exitCode,
+    timedOut,
+    error,
+    durationMs,
+    lastRunDurationMs,
+    appendOutput,
+    reset,
+    setRunning,
+    setStarted,
+    setFinished,
+    setError,
+  } = useExecutionStore();
 
   useEffect(() => {
     let cancelled = false;
@@ -35,11 +46,7 @@ export function useExecution() {
       const outputUnlisten = await listen<ExecutionOutputEvent>(
         "execution-output",
         (event) => {
-          if (event.payload.stream === "stdout") {
-            setStdout((prev) => prev + event.payload.chunk);
-          } else {
-            setStderr((prev) => prev + event.payload.chunk);
-          }
+          appendOutput(event.payload.stream, event.payload.chunk);
         },
       );
       register(outputUnlisten);
@@ -47,15 +54,13 @@ export function useExecution() {
       const finishedUnlisten = await listen<ExecutionFinishedEvent>(
         "execution-finished",
         (event) => {
-          setExitCode(event.payload.exit_code);
-          setTimedOut(event.payload.timed_out);
-          setStatus("done");
+          setFinished(event.payload.exit_code, event.payload.timed_out);
         },
       );
       register(finishedUnlisten);
 
       const startedUnlisten = await listen("execution-started", () => {
-        setStatus("running");
+        setStarted();
       });
       register(startedUnlisten);
     };
@@ -68,26 +73,21 @@ export function useExecution() {
         unlisten();
       }
     };
-  }, []);
+  }, [appendOutput, setFinished, setStarted]);
 
   const run = useCallback(async (code: string, options?: ExecutionOptions) => {
-    setStdout("");
-    setStderr("");
-    setExitCode(null);
-    setTimedOut(false);
-    setError(null);
-    setStatus("running");
+    setRunning();
 
     const runtime = options?.runtime ?? DEFAULT_RUNTIME_ID;
     const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
 
     try {
       await invoke("execute_code", { code, timeoutSecs, runtime });
+      void useEditorStore.getState().saveToDisk();
     } catch (err) {
-      setStatus("done");
       setError(err instanceof Error ? err.message : String(err));
     }
-  }, []);
+  }, [setError, setRunning]);
 
   const stop = useCallback(async () => {
     try {
@@ -95,7 +95,11 @@ export function useExecution() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
-  }, []);
+  }, [setError]);
+
+  const clear = useCallback(() => {
+    reset();
+  }, [reset]);
 
   return {
     stdout,
@@ -104,7 +108,10 @@ export function useExecution() {
     exitCode,
     timedOut,
     error,
+    durationMs,
+    lastRunDurationMs,
     run,
     stop,
+    clear,
   };
 }
