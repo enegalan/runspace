@@ -2,7 +2,6 @@
 
 **Estimated duration:** 5 days  
 **Dependencies:** Phase 1 completed (ExecutionEngine + Tauri events)  
-**Suggested PR:** `feat/phase-2-monaco-output`
 
 ---
 

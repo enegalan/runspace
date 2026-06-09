@@ -2,7 +2,6 @@
 
 **Estimated duration:** 4 days  
 **Dependencies:** Phase 6 completed (security applied)  
-**Suggested PR:** `feat/phase-7-cpp-support`
 
 ---
 

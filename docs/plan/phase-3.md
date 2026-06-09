@@ -1,40 +1,90 @@
-# Phase 3 — Runtime Manager
+# Phase 3 — Environment Manager
 
-**Estimated duration:** 5 days  
+**Estimated duration:** 6 days  
 **Dependencies:** Phase 2 completed  
-**Suggested PR:** `feat/phase-3-runtime-manager`
 
 ---
 
 ## Goal
 
-Automatically detect runtimes installed on the user's system, allow selecting which one to use for execution, configure custom paths, and show installation guides for missing ones. Generalize `ExecutionEngine` so it no longer depends on a hardcoded binary.
+Show a fixed catalog of all supported environments (runtimes and frameworks). The user chooses which one to use and configures it explicitly — binary paths, project paths where needed, and per-environment variables. Generalize `ExecutionEngine` so it no longer depends on a hardcoded binary or implicit PATH detection.
+
+**Design principle:** Runspace does not decide what is installed. It lists every supported environment; the user configures what they need and selects what they want to run.
 
 ---
 
 ## What this phase covers
 
-1. `Runtime` data model (Rust + TypeScript)
-2. `RuntimeManager`: PATH detection, versions, persistence
-3. Refactor `execute_code` to accept `runtime_id`
-4. UI Settings → Runtimes
-5. Functional runtime selector in Toolbar
-6. Tests with controlled PATH
+1. Static environment catalog (Rust + TypeScript)
+2. Per-environment configuration schema (required paths, optional fields)
+3. Per-environment environment variables (`env_vars`)
+4. `EnvironmentManager`: load/save user config, validate paths
+5. Refactor `execute_code` to accept `environment_id` and resolved config
+6. UI Settings → Environments (configure paths + env vars)
+7. Functional environment selector in Toolbar
+8. Tests for validation and config resolution
 
 ---
 
-## Runtimes to detect (MVP)
+## Environment catalog (always visible)
 
-| ID | Name | Binary | Version command | Install guide |
-|----|------|--------|-----------------|---------------|
-| `nodejs` | Node.js | `node` | `node --version` | https://nodejs.org |
-| `php` | PHP | `php` | `php --version` | https://php.net/downloads |
-| `python` | Python | `python3` | `python3 --version` | https://python.org |
-| `ruby` | Ruby | `ruby` | `ruby --version` | https://ruby-lang.org |
-| `gcc` | GCC (C) | `gcc` | `gcc --version` | https://gcc.gnu.org |
-| `gpp` | G++ (C++) | `g++` | `g++ --version` | https://gcc.gnu.org |
+The catalog is **built into the app** and always shown in the selector and settings. Nothing is hidden because it was not found on PATH.
 
-In this phase only **Node.js** must be end-to-end executable; the rest is detected and shown in UI but full execution comes in Phase 4 (interpreted) and Phase 7 (compiled).
+| ID | Name | Category | Entry file | Required configuration |
+|----|------|----------|------------|------------------------|
+| `nodejs` | Node.js | language | `main.js` | `node_path` — path to `node` binary |
+| `php` | PHP | language | `main.php` | `php_path` — path to `php` binary |
+| `python` | Python | language | `main.py` | `python_path` — path to `python3` (or `python`) binary |
+| `ruby` | Ruby | language | `main.rb` | `ruby_path` — path to `ruby` binary |
+| `gcc` | GCC (C) | language | `main.c` | `gcc_path` — path to `gcc` binary |
+| `gpp` | G++ (C++) | language | `main.cpp` | `gpp_path` — path to `g++` binary |
+| `laravel` | Laravel | framework | — | `php_path`, `project_path` — PHP binary and Laravel project root |
+| `symfony` | Symfony | framework | — | `php_path`, `project_path` — PHP binary and Symfony project root |
+
+In this phase only **Node.js** must be end-to-end executable. The rest appears in the catalog with its configuration form; full execution for interpreted languages comes in Phase 4, compiled in Phase 7, and Laravel/Symfony in a later release.
+
+Each catalog entry also includes metadata used by later phases: `monaco_language`, `file_extension`, `install_guide_url`.
+
+---
+
+## Configuration model
+
+### Path fields (per environment)
+
+| Environment | Field key | Label | Type | Required |
+|-------------|-----------|-------|------|----------|
+| `nodejs` | `node_path` | Node.js binary | file | yes |
+| `php` | `php_path` | PHP binary | file | yes |
+| `python` | `python_path` | Python binary | file | yes |
+| `ruby` | `ruby_path` | Ruby binary | file | yes |
+| `gcc` | `gcc_path` | GCC binary | file | yes |
+| `gpp` | `gpp_path` | G++ binary | file | yes |
+| `laravel` | `php_path` | PHP binary | file | yes |
+| `laravel` | `project_path` | Laravel project root | directory | yes |
+| `symfony` | `php_path` | PHP binary | file | yes |
+| `symfony` | `project_path` | Symfony project root | directory | yes |
+
+### Environment variables (per environment)
+
+Each environment has its own `env_vars` map (`key → value`). These are injected when executing code in that environment (merged on top of the sanitized base env from Phase 6; in Phase 3, passed through directly).
+
+Examples:
+
+| Environment | Typical `env_vars` |
+|-------------|-------------------|
+| `nodejs` | `NODE_ENV=development` |
+| `php` / `laravel` / `symfony` | `APP_ENV=local`, `APP_DEBUG=true` |
+| `python` | `PYTHONUNBUFFERED=1` |
+
+The UI exposes a key/value editor (add, edit, remove rows). Empty keys are rejected on save.
+
+### Configuration status
+
+An environment is **configured** when all required path fields are set and pass validation. It is **not configured** otherwise.
+
+- Any environment can be **selected** in the toolbar regardless of status.
+- **Run** is blocked when the selected environment is not configured, with a message pointing to Settings.
+- Optional **Test** action in Settings runs the version probe on configured binaries and shows the result inline (does not auto-run on app start).
 
 ---
 
@@ -42,32 +92,40 @@ In this phase only **Node.js** must be end-to-end executable; the rest is detect
 
 ```mermaid
 flowchart LR
-  subgraph detect [Detection]
-    PATH[System PATH]
-    Which[which / command -v]
-    Version[version --flag]
+  subgraph catalog [Static catalog]
+    Registry[Built-in environment definitions]
+    Schema[Per-env config schema]
   end
 
-  subgraph rm [RuntimeManager]
-    Registry[Known registry]
-    Merge[Merge detected + config]
-    Persist[runtimes.json]
+  subgraph em [EnvironmentManager]
+    Merge[Merge catalog + user config]
+    Validate[Validate paths]
+    Persist[environments.json]
   end
 
   subgraph ui [UI]
     Selector[Toolbar dropdown]
     Settings[Settings panel]
+    EnvEditor[Env vars editor]
   end
 
-  PATH --> Which
-  Which --> Version
-  Version --> Merge
+  subgraph exec [Execution]
+    EE[ExecutionEngine]
+  end
+
   Registry --> Merge
+  Schema --> Merge
   Persist --> Merge
   Merge --> Selector
   Merge --> Settings
-  Merge --> Persist
+  Settings --> EnvEditor
+  Merge --> Validate
+  Validate --> Persist
+  Selector --> EE
+  Merge --> EE
 ```
+
+No PATH scanning on startup. Detection is limited to **on-demand validation** when the user saves a path or clicks Test.
 
 ---
 
@@ -75,109 +133,155 @@ flowchart LR
 
 ### 1. Data model
 
-**Rust:** `src-tauri/src/runtime/types.rs`
+**Rust:** `src-tauri/src/environment/types.rs`
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Runtime {
+pub enum EnvironmentCategory {
+    Language,
+    Framework,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ConfigFieldType {
+    FilePath,
+    DirectoryPath,
+    Text,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConfigField {
+    pub key: String,
+    pub label: String,
+    pub field_type: ConfigFieldType,
+    pub required: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnvironmentDefinition {
     pub id: String,
     pub name: String,
-    pub binary_name: String,
-    pub binary_path: Option<String>,
-    pub version: Option<String>,
-    pub detected: bool,
-    pub install_guide_url: String,
+    pub category: EnvironmentCategory,
     pub file_extension: String,
-    pub enabled: bool,
+    pub monaco_language: String,
+    pub install_guide_url: String,
+    pub config_fields: Vec<ConfigField>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnvironmentUserConfig {
+    pub paths: HashMap<String, String>,
+    pub env_vars: HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Environment {
+    pub definition: EnvironmentDefinition,
+    pub user_config: EnvironmentUserConfig,
+    pub configured: bool,
+    pub version: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RuntimesConfig {
-    pub selected_runtime_id: String,
-    pub runtimes: Vec<Runtime>,
-    pub custom_paths: HashMap<String, String>, // runtime_id -> absolute path
+pub struct EnvironmentsStore {
+    pub selected_environment_id: String,
+    pub configs: HashMap<String, EnvironmentUserConfig>,
 }
 ```
 
-**TypeScript:** `src/core/types/runtime.ts` (mirror of Rust model)
+**TypeScript:** `src/core/types/environment.ts` (mirror of Rust model)
 
-### 2. RuntimeManager
+**Static catalog:** `src-tauri/src/environment/catalog.rs` and `src/core/constants/environmentCatalog.ts` (same IDs and schema; Rust is source of truth for execution).
 
-**Location:** `src-tauri/src/runtime/manager.rs`
+### 2. EnvironmentManager
+
+**Location:** `src-tauri/src/environment/manager.rs`
 
 **API:**
 
 ```rust
-impl RuntimeManager {
-    pub fn new(config_path: PathBuf) -> Result<Self, RuntimeError>;
-    pub fn detect_all(&mut self) -> Vec<Runtime>;
-    pub fn get_runtime(&self, id: &str) -> Option<&Runtime>;
-    pub fn get_selected(&self) -> Option<&Runtime>;
-    pub fn set_selected(&mut self, id: &str) -> Result<(), RuntimeError>;
-    pub fn set_custom_path(&mut self, id: &str, path: PathBuf) -> Result<(), RuntimeError>;
-    pub fn save(&self) -> Result<(), RuntimeError>;
-    pub fn load(&mut self) -> Result<(), RuntimeError>;
+impl EnvironmentManager {
+    pub fn new(config_path: PathBuf) -> Result<Self, EnvironmentError>;
+    pub fn list_all(&self) -> Vec<Environment>;
+    pub fn get_environment(&self, id: &str) -> Option<Environment>;
+    pub fn get_selected(&self) -> Option<Environment>;
+    pub fn set_selected(&mut self, id: &str) -> Result<(), EnvironmentError>;
+    pub fn set_paths(&mut self, id: &str, paths: HashMap<String, String>) -> Result<(), EnvironmentError>;
+    pub fn set_env_vars(&mut self, id: &str, env_vars: HashMap<String, String>) -> Result<(), EnvironmentError>;
+    pub fn validate_environment(&mut self, id: &str) -> Result<ValidationResult, EnvironmentError>;
+    pub fn resolve_for_execution(&self, id: &str) -> Result<ResolvedEnvironment, EnvironmentError>;
+    pub fn save(&self) -> Result<(), EnvironmentError>;
+    pub fn load(&mut self) -> Result<(), EnvironmentError>;
 }
 ```
 
-**Binary detection:**
+**Startup flow:** `load()` → merge persisted `configs` with static catalog → compute `configured` flag per environment → done. No PATH probe unless the user triggers Test.
 
-```rust
-fn detect_binary(name: &str) -> Option<PathBuf> {
-    which::which(name).ok()
-    // Alternative: Command::new("which").arg(name)
-}
-```
+**Path validation** (on save or Test):
 
-**Multiple version detection:**
+1. File paths: exists, is a file, executable (Unix permissions)
+2. Directory paths: exists, is a directory
+3. For binary fields: run `--version` (or environment-specific probe) and parse first line into `version`
 
-```bash
-which -a node   # macOS/Linux
-```
-
-For MVP: use the first found; show full path in UI. Multiple version selector = post-MVP.
-
-**Get version:**
-
-```rust
-fn get_version(binary: &Path, version_flag: &str) -> Option<String> {
-    let output = Command::new(binary).arg(version_flag).output().ok()?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    // Parse first line: "v20.11.0" or "PHP 8.3.0 ..."
-}
-```
-
-**Persistence:** `~/.runspace/runtimes.json`
+**Persistence:** `~/.runspace/environments.json`
 
 ```json
 {
-  "selected_runtime_id": "nodejs",
-  "custom_paths": {},
-  "runtimes": []
+  "selected_environment_id": "nodejs",
+  "configs": {
+    "nodejs": {
+      "paths": {
+        "node_path": "/Users/me/.nvm/versions/node/v20.11.0/bin/node"
+      },
+      "env_vars": {
+        "NODE_ENV": "development"
+      }
+    },
+    "laravel": {
+      "paths": {
+        "php_path": "/opt/homebrew/bin/php",
+        "project_path": "/Users/me/projects/my-app"
+      },
+      "env_vars": {
+        "APP_ENV": "local"
+      }
+    }
+  }
 }
 ```
 
-On app start: `load()` → `detect_all()` → merge (detected update `binary_path` and `version`; custom_paths override) → `save()`.
+Only user-provided data is persisted. The catalog never changes at runtime.
 
 ### 3. Tauri commands
 
-**Location:** `src-tauri/src/commands/runtime.rs`
+**Location:** `src-tauri/src/commands/environment.rs`
 
 ```rust
 #[tauri::command]
-fn list_runtimes(state: State<AppState>) -> Result<Vec<Runtime>, String>;
+fn list_environments(state: State<AppState>) -> Result<Vec<Environment>, String>;
 
 #[tauri::command]
-fn get_selected_runtime(state: State<AppState>) -> Result<Runtime, String>;
+fn get_selected_environment(state: State<AppState>) -> Result<Environment, String>;
 
 #[tauri::command]
-fn set_selected_runtime(state: State<AppState>, runtime_id: String) -> Result<(), String>;
+fn set_selected_environment(state: State<AppState>, environment_id: String) -> Result<(), String>;
 
 #[tauri::command]
-fn set_runtime_path(state: State<AppState>, runtime_id: String, path: String) -> Result<(), String>;
+fn set_environment_paths(
+    state: State<AppState>,
+    environment_id: String,
+    paths: HashMap<String, String>,
+) -> Result<(), String>;
 
 #[tauri::command]
-fn refresh_runtimes(state: State<AppState>) -> Result<Vec<Runtime>, String>;
+fn set_environment_env_vars(
+    state: State<AppState>,
+    environment_id: String,
+    env_vars: HashMap<String, String>,
+) -> Result<(), String>;
+
+#[tauri::command]
+fn validate_environment(state: State<AppState>, environment_id: String) -> Result<ValidationResult, String>;
 ```
 
 ### 4. ExecutionEngine refactor
@@ -189,84 +293,89 @@ pub async fn execute_code(
     app: AppHandle,
     state: State<AppState>,
     code: String,
-    runtime_id: Option<String>,  // default: selected
+    environment_id: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String>
 ```
 
 **Flow:**
 
-1. Resolve `runtime_id` → `Runtime` from `RuntimeManager`
-2. If `!runtime.detected` → error: "Runtime not installed"
-3. Get `binary_path` (custom or detected)
-4. Determine file extension (`main.js`, `main.php`, etc.)
-5. Write code and execute with corresponding adapter (only Node functional in this phase)
+1. Resolve `environment_id` → `ResolvedEnvironment` from `EnvironmentManager`
+2. If not `configured` → error: "Environment not configured. Open Settings → Environments."
+3. Read primary binary from resolved paths (e.g. `node_path` for `nodejs`)
+4. Build execution env: base env + `user_config.env_vars` for that environment
+5. Determine entry file (`main.js`, `main.php`, etc.)
+6. Write code and execute with corresponding adapter (only Node.js functional in this phase)
 
-**Entry file by runtime:**
-
-| runtime_id | Entry file |
-|------------|------------|
-| nodejs | `main.js` |
-| php | `main.php` |
-| python | `main.py` |
-| ruby | `main.rb` |
-| gcc | `main.c` |
-| gpp | `main.cpp` |
+`ResolvedEnvironment` carries: `id`, `binary_path`, `env_vars`, `extra_paths` (e.g. `project_path` for frameworks), `file_extension`.
 
 ### 5. UI — Toolbar selector
 
-**Location:** `src/components/runtime/RuntimeSelector.tsx`
+**Location:** `src/components/environment/EnvironmentSelector.tsx`
 
 **Behavior:**
 
-- Dropdown with detected runtimes (enabled) and undetected (disabled + warning icon)
-- On selecting detected runtime: `set_selected_runtime` + update store
-- On selecting undetected: modal with `install_guide_url` link and "Set custom path" option
+- Dropdown lists **all** catalog environments, grouped by category (Languages / Frameworks)
+- Each item shows name + status badge: `Configured` / `Not configured`
+- Selecting any environment calls `set_selected_environment` and updates the store
+- If not configured: Run button disabled with tooltip "Configure in Settings"
+- No item is hidden or disabled in the list itself
 
-**Store:** `src/stores/runtimeStore.ts`
+**Store:** `src/stores/environmentStore.ts`
 
 ```typescript
-interface RuntimeStore {
-  runtimes: Runtime[];
+interface EnvironmentStore {
+  environments: Environment[];
   selectedId: string;
   load: () => Promise<void>;
   select: (id: string) => Promise<void>;
-  refresh: () => Promise<void>;
 }
 ```
 
-### 6. UI — Settings → Runtimes
+### 6. UI — Settings → Environments
 
-**Location:** `src/components/settings/RuntimesSettings.tsx`
+**Location:** `src/components/settings/EnvironmentsSettings.tsx`
 
-**View:**
+**View (expandable cards per environment):**
 
 ```
-Runtimes
-─────────────────────────────────────────
-[✓] Node.js     v20.11.0    /usr/local/bin/node    [Change path]
-[✗] PHP         Not found   [Install guide]        [Set path]
-[✓] Python      3.12.0      /usr/bin/python3       [Change path]
-...
-                                              [Refresh all]
+Environments
+─────────────────────────────────────────────────────────────
+▼ Node.js                                    [Configured ✓]
+    Node.js binary    [/usr/local/bin/node        ] [Browse]
+    Version           v20.11.0 (last tested)
+    Environment variables
+    ┌──────────────┬─────────────────┬───┐
+    │ NODE_ENV     │ development     │ × │
+    └──────────────┴─────────────────┴───┘
+    [+ Add variable]                    [Test] [Save]
+
+▶ PHP                                        [Not configured]
+▶ Python                                     [Not configured]
+▶ Ruby                                       [Not configured]
+▶ GCC (C)                                    [Not configured]
+▶ G++ (C++)                                  [Not configured]
+▶ Laravel                                    [Not configured]
+    (requires PHP binary + project root)
+▶ Symfony                                    [Not configured]
+    (requires PHP binary + project root)
 ```
 
-**Actions:**
+**Actions per environment:**
 
-- **Install guide:** open URL in browser (`tauri-plugin-opener` or `shell:allow-open`)
-- **Set path / Change path:** native file dialog (`tauri-plugin-dialog`)
-- **Refresh all:** re-run detection
+- **Browse:** native file/directory dialog (`tauri-plugin-dialog`) per field type
+- **Save:** validate paths server-side, persist config
+- **Test:** run `validate_environment`, show version or error inline
+- **Install guide:** link to `install_guide_url` for environments that need external installs
+- **Env vars:** inline key/value table with add/remove; saved with the rest of the config
 
 **Settings navigation:** gear icon in Toolbar → modal panel or side view.
 
-### 7. Custom path validation
+### 7. Env vars editor
 
-When saving a manual path:
+**Location:** `src/components/settings/EnvVarsEditor.tsx`
 
-1. Verify file exists
-2. Verify it is executable (`fs::metadata` + Unix permissions)
-3. Run `--version` and parse
-4. Save in `custom_paths`
+Reusable component: list of `{ key, value }` rows, add/remove, trim keys, reject duplicates and empty keys on save. Used inside each environment card in `EnvironmentsSettings`.
 
 ---
 
@@ -274,15 +383,18 @@ When saving a manual path:
 
 | File | Action |
 |------|--------|
-| `src-tauri/src/runtime/mod.rs` | Module |
-| `src-tauri/src/runtime/manager.rs` | RuntimeManager |
-| `src-tauri/src/runtime/types.rs` | Types |
-| `src-tauri/src/commands/runtime.rs` | Commands |
-| `src/core/types/runtime.ts` | TS types |
-| `src/stores/runtimeStore.ts` | Store |
-| `src/components/runtime/RuntimeSelector.tsx` | Dropdown |
-| `src/components/settings/RuntimesSettings.tsx` | Settings panel |
-| `src-tauri/src/commands/execution.rs` | Refactor runtime_id |
+| `src-tauri/src/environment/mod.rs` | Module |
+| `src-tauri/src/environment/catalog.rs` | Static catalog |
+| `src-tauri/src/environment/manager.rs` | EnvironmentManager |
+| `src-tauri/src/environment/types.rs` | Types |
+| `src-tauri/src/commands/environment.rs` | Commands |
+| `src/core/types/environment.ts` | TS types |
+| `src/core/constants/environmentCatalog.ts` | Catalog mirror |
+| `src/stores/environmentStore.ts` | Store |
+| `src/components/environment/EnvironmentSelector.tsx` | Dropdown |
+| `src/components/settings/EnvironmentsSettings.tsx` | Settings panel |
+| `src/components/settings/EnvVarsEditor.tsx` | Env vars UI |
+| `src-tauri/src/commands/execution.rs` | Refactor `environment_id` + env injection |
 
 ---
 
@@ -292,43 +404,48 @@ Everything below must be checked before marking Phase 3 as done.
 
 ### Backend (Rust)
 
-- [ ] `Runtime` and `RuntimesConfig` types defined
-- [ ] `RuntimeManager` detects binaries on PATH and reads versions
-- [ ] All 6 MVP runtimes registered (nodejs, php, python, ruby, gcc, gpp)
-- [ ] Config persisted to `~/.runspace/runtimes.json` (load → detect → merge → save)
-- [ ] Custom path override with validation (exists, executable, `--version`)
-- [ ] Tauri commands: `list_runtimes`, `get_selected_runtime`, `set_selected_runtime`, `set_runtime_path`, `refresh_runtimes`
-- [ ] `execute_code` refactored to accept `runtime_id` (Node.js end-to-end only)
+- [ ] `EnvironmentDefinition`, `EnvironmentUserConfig`, `EnvironmentsStore` types defined
+- [ ] Static catalog with all 8 environments (6 languages + Laravel + Symfony)
+- [ ] Per-environment config schema (required path fields) defined in catalog
+- [ ] `EnvironmentManager` loads/saves `~/.runspace/environments.json`
+- [ ] Path validation on save (exists, file/dir type, executable for binaries)
+- [ ] On-demand version probe via `validate_environment` (not on startup)
+- [ ] `env_vars` persisted and returned in `resolve_for_execution`
+- [ ] Tauri commands: `list_environments`, `get_selected_environment`, `set_selected_environment`, `set_environment_paths`, `set_environment_env_vars`, `validate_environment`
+- [ ] `execute_code` refactored to accept `environment_id`, use resolved paths and env vars (Node.js end-to-end only)
 
 ### Frontend
 
-- [ ] `RuntimeSelector` dropdown in Toolbar (enabled/disabled + warning states)
-- [ ] `RuntimesSettings` panel with install guide links, path picker, refresh
-- [ ] `runtimeStore` loads and persists selected runtime
+- [ ] `EnvironmentSelector` in Toolbar lists all environments with configured/not configured badge
+- [ ] `EnvironmentsSettings` panel with path pickers, env vars editor, Test, Save per environment
+- [ ] `environmentStore` loads and persists selected environment
 - [ ] Settings accessible from Toolbar gear icon
+- [ ] Run disabled with clear message when selected environment is not configured
 - [ ] File dialog and URL opener plugins configured
 
 ### Verification
 
-- [ ] On app open, Node.js detected on PATH with version shown
-- [ ] Missing runtimes show "Not installed" badge
-- [ ] "Install guide" opens URL in browser
-- [ ] Custom path to valid binary works (e.g. nvm node)
-- [ ] Runtime selection persists in `runtimes.json`
+- [ ] On app open, all 8 environments visible in selector (none hidden)
+- [ ] Unconfigured environments selectable but Run blocked
+- [ ] Configuring Node.js path + saving enables Run for Node.js
+- [ ] Custom path (e.g. nvm node) works after manual configuration
+- [ ] Env vars saved for an environment appear in resolved config
+- [ ] `validate_environment` shows version after Test
+- [ ] Laravel/Symfony cards show `php_path` + `project_path` fields (execution not required)
+- [ ] Environment selection and config persist in `environments.json`
 - [ ] Node.js execution works without regression after refactor
-- [ ] Run blocked/disabled with clear error when runtime not installed
-- [ ] `refresh_runtimes` updates list without restart
 
 ### Tests
 
 - [ ] Rust unit: version parsing for Node, PHP, Python
-- [ ] Rust unit: merge detected runtimes + custom_paths
-- [ ] Rust integration: detection with temporary PATH
+- [ ] Rust unit: `configured` flag from partial/complete path sets
+- [ ] Rust unit: env_vars merge in `resolve_for_execution`
+- [ ] Rust unit: validation rejects missing file, non-executable binary
 
 ### Documentation & PR
 
 - [ ] `CHANGELOG.md` entry added for Phase 3
-- [ ] PR includes screenshot of Settings → Runtimes
+- [ ] PR includes screenshot of Settings → Environments (with env vars)
 - [ ] PR description lists what is explicitly out of scope
 - [ ] CI passes
 
@@ -339,20 +456,25 @@ Everything below must be checked before marking Phase 3 as done.
 | Type | What to test |
 |------|--------------|
 | Rust unit | Node, PHP, Python version parsing |
-| Rust unit | Merge detected + custom_paths |
-| Rust integration | Temporary PATH with fake binary |
-| Manual | Simulate node removed from PATH; check UI |
-| Manual | Custom path to alternate node (nvm) |
+| Rust unit | `configured` computed from required fields |
+| Rust unit | `env_vars` included in resolved execution config |
+| Rust unit | Path validation errors (missing, not executable) |
+| Manual | Configure Node via Browse; Test shows version; Run works |
+| Manual | Select unconfigured PHP; Run blocked; configure path; Run enabled in Phase 4 |
+| Manual | Add `NODE_ENV` env var; verify it reaches child process (log or `console.log(process.env.NODE_ENV)`) |
 
 ---
 
 ## Out of scope
 
+- Automatic PATH detection or hiding environments based on what is installed
 - PHP/Python/Ruby execution (Phase 4)
+- GCC/G++ execution (Phase 7)
+- Laravel/Symfony execution (`artisan serve`, `symfony server`, composer)
 - Automatic runtime installation
-- Multiple version selector for same runtime
-- Laravel/Symfony as runtimes
-- Detecting runtimes in non-standard paths without user action
+- Multiple profiles per environment (e.g. two Node versions side by side)
+- Global env vars shared across all environments (only per-environment in this phase)
+- `.env` file import for Laravel/Symfony (manual key/value editor only)
 
 ---
 
@@ -360,13 +482,14 @@ Everything below must be checked before marking Phase 3 as done.
 
 | Risk | Mitigation |
 |------|------------|
-| `python` vs `python3` across OS | Try `python3` first; fallback `python` |
+| User does not know where binaries live | Install guide links; Browse dialog; Test feedback |
 | Inconsistent version strings | Tolerant parser; show raw first line on failure |
-| nvm/fnm use shims | Allow custom path; document in README |
-| Race refreshing during execution | Disable refresh if status === running |
+| Framework envs shown before execution exists | Clear "configuration only" badge; Run blocked until Phase 4+ |
+| Env vars with sensitive values in plain JSON | Document local-only storage; encryption post-MVP |
+| Empty env var keys saved by mistake | Client + server validation on save |
 
 ---
 
 ## Phase deliverable
 
-Runtime management system decoupled from the execution engine, with UI to inspect and configure environments. Foundation for multi-runtime in Phase 4.
+Environment management decoupled from the execution engine: full catalog always visible, user-driven configuration (paths + env vars), and validation on demand. Foundation for multi-runtime execution in Phase 4 and framework support in a later release.

@@ -2,7 +2,6 @@
 
 **Estimated duration:** 5 days  
 **Dependencies:** Phase 0 completed  
-**Suggested PR:** `feat/phase-1-node-execution`
 
 ---
 

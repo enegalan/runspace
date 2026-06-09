@@ -2,7 +2,6 @@
 
 **Estimated duration:** 5 days  
 **Dependencies:** Phase 5 completed  
-**Suggested PR:** `feat/phase-6-security`
 
 ---
 

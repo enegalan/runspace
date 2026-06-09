@@ -2,7 +2,6 @@
 
 **Estimated duration:** 7 days  
 **Dependencies:** Phase 3 completed (RuntimeManager + selector)  
-**Suggested PR:** `feat/phase-4-multi-runtime`
 
 ---
 

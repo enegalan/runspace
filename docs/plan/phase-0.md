@@ -2,7 +2,6 @@
 
 **Estimated duration:** 3 days  
 **Dependencies:** none (project bootstrap)  
-**Suggested PR:** `feat/phase-0-project-shell`
 
 ---
 

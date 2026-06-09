@@ -2,7 +2,6 @@
 
 **Estimated duration:** 5 days  
 **Dependencies:** Phase 4 completed  
-**Suggested PR:** `feat/phase-5-workspace-files`
 
 ---
 

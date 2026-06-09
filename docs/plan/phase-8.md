@@ -2,7 +2,6 @@
 
 **Estimated duration:** 5 days  
 **Dependencies:** Phases 0–7 completed  
-**Suggested PR:** `feat/phase-8-release-v0.1.0`
 
 ---
 
