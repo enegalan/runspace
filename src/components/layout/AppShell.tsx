@@ -1,10 +1,10 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useEffect, useState } from "react";
-import { DEFAULT_RUNTIME_ID } from "../../core/runtimes";
-import type { RuntimeId } from "../../core/types/runtime";
+import { useEffect, useMemo, useState } from "react";
 import { useExecution } from "../../hooks/useExecution";
 import { useEditorStore } from "../../stores/editorStore";
+import { useEnvironmentStore } from "../../stores/environmentStore";
 import { OutputPanel } from "../output/OutputPanel";
+import { SettingsPanel } from "../settings/SettingsPanel";
 import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
@@ -15,7 +15,13 @@ export function AppShell() {
   const saveToDisk = useEditorStore((state) => state.saveToDisk);
   const code = useEditorStore((state) => state.code);
   const loaded = useEditorStore((state) => state.loaded);
-  const [runtime, setRuntime] = useState<RuntimeId>(DEFAULT_RUNTIME_ID);
+
+  const environments = useEnvironmentStore((state) => state.environments);
+  const selectedId = useEnvironmentStore((state) => state.selectedId);
+  const envLoaded = useEnvironmentStore((state) => state.loaded);
+  const loadEnvironments = useEnvironmentStore((state) => state.load);
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const {
     stdout,
@@ -31,9 +37,20 @@ export function AppShell() {
     clear,
   } = useExecution();
 
+  const selectedEnvironment = useMemo(
+    () => environments.find((env) => env.definition.id === selectedId),
+    [environments, selectedId],
+  );
+
+  const runDisabled = !selectedEnvironment?.configured;
+  const runDisabledReason = runDisabled
+    ? "Configure in Settings → Environments"
+    : undefined;
+
   useEffect(() => {
     void loadFromDisk();
-  }, [loadFromDisk]);
+    void loadEnvironments();
+  }, [loadFromDisk, loadEnvironments]);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -51,7 +68,7 @@ export function AppShell() {
     };
   }, [saveToDisk]);
 
-  if (!loaded) {
+  if (!loaded || !envLoaded) {
     return (
       <div className="app-shell app-shell--loading" data-testid="app-shell">
         <div className="app-shell__loading">Loading...</div>
@@ -63,16 +80,17 @@ export function AppShell() {
     <div className="app-shell" data-testid="app-shell">
       <Toolbar
         status={status}
-        runtime={runtime}
-        onRuntimeChange={setRuntime}
-        onRun={() => run(code, { runtime })}
+        runDisabled={runDisabled}
+        runDisabledReason={runDisabledReason}
+        onRun={() => run(code, { environmentId: selectedId })}
         onStop={stop}
         onClear={clear}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
       <div className="main-row">
         <Sidebar />
         <EditorArea
-          onRun={(editorCode) => run(editorCode, { runtime })}
+          onRun={(editorCode) => run(editorCode, { environmentId: selectedId })}
           onSave={saveToDisk}
         />
         <OutputPanel
@@ -90,7 +108,9 @@ export function AppShell() {
         exitCode={exitCode}
         timedOut={timedOut}
         lastRunDurationMs={lastRunDurationMs}
+        environmentName={selectedEnvironment?.definition.name ?? "—"}
       />
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

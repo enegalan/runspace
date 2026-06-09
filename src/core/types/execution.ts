@@ -1,4 +1,4 @@
-import type { RuntimeId } from "./runtime";
+import type { EnvironmentId } from "./environment";
 
 export type ExecutionStream = "stdout" | "stderr";
 
@@ -10,7 +10,7 @@ export type ExecutionStatus =
   | "timeout";
 
 export interface ExecutionOptions {
-  runtime?: RuntimeId;
+  environmentId?: EnvironmentId;
   timeoutSecs?: number;
 }
 

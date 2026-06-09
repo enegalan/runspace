@@ -1,14 +1,14 @@
 import type { ExecutionStatus } from "../../core/types/execution";
-import type { RuntimeId } from "../../core/types/runtime";
-import { RuntimeSelect } from "./RuntimeSelect";
+import { EnvironmentSelector } from "../environment/EnvironmentSelector";
 
 interface ToolbarProps {
   status: ExecutionStatus;
-  runtime: RuntimeId;
-  onRuntimeChange: (runtime: RuntimeId) => void;
+  runDisabled: boolean;
+  runDisabledReason?: string;
   onRun: () => void;
   onStop: () => void;
   onClear: () => void;
+  onOpenSettings: () => void;
 }
 
 const isMac =
@@ -17,13 +17,15 @@ const runShortcut = isMac ? "⌘↵" : "Ctrl+↵";
 
 export function Toolbar({
   status,
-  runtime,
-  onRuntimeChange,
+  runDisabled,
+  runDisabledReason,
   onRun,
   onStop,
   onClear,
+  onOpenSettings,
 }: ToolbarProps) {
   const isRunning = status === "running";
+  const runBlocked = isRunning || runDisabled;
 
   return (
     <header className="toolbar" data-testid="toolbar">
@@ -33,17 +35,14 @@ export function Toolbar({
       </div>
 
       <div className="toolbar__controls">
-        <RuntimeSelect
-          value={runtime}
-          onChange={onRuntimeChange}
-          disabled={isRunning}
-        />
+        <EnvironmentSelector disabled={isRunning} />
 
         <button
           type="button"
           className={`btn btn--primary${isRunning ? " btn--running" : ""}`}
           onClick={onRun}
-          disabled={isRunning}
+          disabled={runBlocked}
+          title={runDisabled && runDisabledReason ? runDisabledReason : undefined}
           data-testid="run-button"
         >
           <span className="btn__icon" aria-hidden="true">
@@ -73,6 +72,16 @@ export function Toolbar({
           data-testid="clear-button"
         >
           Clear
+        </button>
+
+        <button
+          type="button"
+          className="btn toolbar__settings-btn"
+          onClick={onOpenSettings}
+          aria-label="Settings"
+          data-testid="settings-button"
+        >
+          ⚙
         </button>
       </div>
     </header>

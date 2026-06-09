@@ -1,0 +1,14 @@
+[[permission]]
+identifier = "allow-environment"
+description = "Allows environment management commands"
+commands.allow = [
+  "list_environments",
+  "list_available_environments",
+  "get_selected_environment",
+  "install_environment",
+  "uninstall_environment",
+  "set_selected_environment",
+  "set_environment_paths",
+  "set_environment_env_vars",
+  "validate_environment",
+]

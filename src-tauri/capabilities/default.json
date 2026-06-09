@@ -6,6 +6,9 @@
   "permissions": [
     "core:default",
     "allow-execution",
-    "allow-snippet"
+    "allow-snippet",
+    "allow-environment",
+    "dialog:default",
+    "opener:default"
   ]
 }

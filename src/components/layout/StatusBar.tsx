@@ -5,6 +5,7 @@ interface StatusBarProps {
   exitCode: number | null;
   timedOut: boolean;
   lastRunDurationMs: number | null;
+  environmentName: string;
 }
 
 function statusLabel(
@@ -38,6 +39,7 @@ export function StatusBar({
   exitCode,
   timedOut,
   lastRunDurationMs,
+  environmentName,
 }: StatusBarProps) {
   return (
     <footer className="status-bar" data-testid="status-bar">
@@ -45,7 +47,9 @@ export function StatusBar({
         {statusLabel(status, exitCode, timedOut)}
       </span>
       <span className="status-bar__separator">|</span>
-      <span className="status-bar__item">Node.js</span>
+      <span className="status-bar__item" data-testid="status-bar-environment">
+        {environmentName}
+      </span>
       {lastRunDurationMs !== null && (
         <>
           <span className="status-bar__separator">|</span>

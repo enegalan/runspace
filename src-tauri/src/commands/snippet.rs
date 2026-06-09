@@ -64,13 +64,33 @@ mod tests {
         assert!(data.code.contains("Hello, Runspace"));
     }
 
+    struct HomeGuard {
+        original: Option<String>,
+    }
+
+    impl HomeGuard {
+        fn set(path: &std::path::Path) -> Self {
+            let original = env::var("HOME").ok();
+            env::set_var("HOME", path);
+            Self { original }
+        }
+    }
+
+    impl Drop for HomeGuard {
+        fn drop(&mut self) {
+            if let Some(ref home) = self.original {
+                env::set_var("HOME", home);
+            }
+        }
+    }
+
     #[test]
     fn write_and_read_roundtrip() {
+        let _home_lock = crate::test_home_lock::home_test_lock();
         let temp_dir = env::temp_dir().join(format!("runspace-snippet-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&temp_dir).expect("temp dir");
 
-        let original_home = env::var("HOME").ok();
-        env::set_var("HOME", temp_dir.to_str().expect("utf8"));
+        let _guard = HomeGuard::set(&temp_dir);
 
         let snippet = SnippetData {
             code: "console.log(42);".to_string(),
@@ -83,9 +103,6 @@ mod tests {
         assert_eq!(loaded.code, snippet.code);
         assert_eq!(loaded.language, snippet.language);
 
-        if let Some(home) = original_home {
-            env::set_var("HOME", home);
-        }
         let _ = fs::remove_dir_all(temp_dir);
     }
 }
