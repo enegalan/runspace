@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+### Phase 5: Workspace file management
+
+- Extended `WorkspaceManager` with workspace listing, manifest (`runspace.json`), file CRUD, and session persistence
+- Tauri workspace commands: `list_workspaces`, `open_workspace`, `create_workspace`, `list_files`, `read_file`, `write_file`, `delete_file`, `rename_file`, `rename_workspace`, `delete_workspace`, `initialize_workspace`
+- Multiple projects per environment; workspace switcher with right-click rename and delete
+- File tree sidebar with expand/collapse, context menus, create file/folder, rename, delete, and refresh
+- Editor tabs in the toolbar with dirty indicator, close confirmation, and `Cmd+S` save
+- `execute_code` reads entry file from workspace disk (auto-save before Run)
+- Session restored on launch (`~/.runspace/session.json`): last environment, workspace, open tabs, and active file per runtime
+- No default file on editor open; empty editor until the user opens or creates a file
+- New workspaces start empty (no auto-created `main.*` template file)
+- Switching to an environment without projects prompts for the first project name; cancel keeps the current environment
+- In-app prompt/confirm dialogs replace `window.prompt` / `window.confirm` (Tauri and web safe)
+- New files default to unique `Untitled` names; duplicate paths rejected within a workspace
+- Environment indicator in the sidebar with runtime-colored gradient background
+- Dev desktop app uses the HTTP invoke API for parity with the web UI; production Tauri uses native invoke with normalized args
+- Drag-and-drop in the file tree: move files into folders, move nested files to workspace root via empty sidebar space, and open files by dropping on the editor
+- Accidental drops on the same file or parent folder are ignored (no unintended moves)
+- Active workspace synced before file operations so each environment shows only its own project files
+- New folder prompt starts with an empty name (no default)
+
 ### Phase 4: Multi-runtime and framework sandbox
 
 - `RuntimeAdapter` pattern with Node, PHP, Python, Ruby, Laravel, and Symfony adapters

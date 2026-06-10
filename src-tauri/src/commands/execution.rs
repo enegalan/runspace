@@ -15,8 +15,9 @@ pub fn get_runtime_template(environment_id: String) -> Result<String, String> {
 pub async fn execute_code(
     app: AppHandle,
     state: State<'_, SharedState>,
-    code: String,
+    code: Option<String>,
     environment_id: Option<String>,
+    entry_file: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     dispatch_invoke(
@@ -26,6 +27,7 @@ pub async fn execute_code(
         json!({
             "code": code,
             "environmentId": environment_id,
+            "entryFile": entry_file,
             "timeoutSecs": timeout_secs,
         }),
     )

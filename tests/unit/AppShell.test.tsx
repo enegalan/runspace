@@ -1,8 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { invoke } from "@tauri-apps/api/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
 import { AppShell } from "../../src/components/layout/AppShell";
+import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
+import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
+import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useEnvironmentStore } from "../../src/stores/environmentStore";
+import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
   const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
@@ -14,16 +17,35 @@ function mockInstalledEnvironment(id: string, configured = false) {
   };
 }
 
+const mockWorkspace = {
+  id: "ws-test",
+  name: "Untitled",
+  runtime_id: "nodejs",
+  entry_file: "main.js",
+};
+
 describe("AppShell", () => {
   beforeEach(() => {
-    vi.mocked(invoke).mockImplementation((cmd) => {
-      if (cmd === "read_snippet") {
-        return Promise.resolve({
-          code: 'console.log("Hello, Runspace!");',
-          language: "javascript",
-          updated_at: "",
-        });
-      }
+    useWorkspaceStore.setState({
+      workspace: null,
+      workspaces: [],
+      rootFiles: [],
+      expandedDirs: new Set(),
+      loaded: false,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [],
+      activePath: null,
+      loaded: false,
+    });
+    useEnvironmentStore.setState({
+      environments: [],
+      available: [],
+      selectedId: "nodejs",
+      loaded: false,
+    });
+
+    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs")]);
       }
@@ -32,6 +54,29 @@ describe("AppShell", () => {
       }
       if (cmd === "get_selected_environment") {
         return Promise.resolve(mockInstalledEnvironment("nodejs"));
+      }
+      if (cmd === "initialize_workspace") {
+        return Promise.resolve(mockWorkspace);
+      }
+      if (cmd === "list_workspaces") {
+        return Promise.resolve([mockWorkspace]);
+      }
+      if (cmd === "list_files") {
+        return Promise.resolve([
+          { name: "main.js", path: "main.js", is_directory: false },
+        ]);
+      }
+      if (cmd === "read_session") {
+        return Promise.resolve({ environments: {}, last_runtime_id: "nodejs" });
+      }
+      if (cmd === "set_selected_environment") {
+        return Promise.resolve(undefined);
+      }
+      if (cmd === "read_file") {
+        return Promise.resolve('console.log("Hello, Runspace!");');
+      }
+      if (cmd === "write_session") {
+        return Promise.resolve(undefined);
       }
       return Promise.resolve(undefined);
     });
@@ -46,6 +91,10 @@ describe("AppShell", () => {
 
     expect(screen.getByTestId("sidebar")).toBeInTheDocument();
     expect(screen.getByTestId("editor-area")).toBeInTheDocument();
+    expect(screen.getByTestId("file-tree")).toBeInTheDocument();
+    expect(screen.getByTestId("environment-indicator")).toBeInTheDocument();
+    expect(screen.getByTestId("workspace-switcher")).toBeInTheDocument();
+    expect(screen.getByTestId("editor-tabs")).toBeInTheDocument();
     expect(screen.getByTestId("output-panel")).toBeInTheDocument();
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
     expect(screen.getByTestId("environment-select")).toBeInTheDocument();

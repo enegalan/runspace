@@ -9,8 +9,9 @@ use crate::state::SharedState;
 pub fn start_execution(
     state: &SharedState,
     emitter: ExecutionEmitter,
-    code: String,
+    code: Option<String>,
     environment_id: Option<String>,
+    entry_file: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let timeout = timeout_secs.unwrap_or(30);
@@ -36,7 +37,6 @@ pub fn start_execution(
     };
 
     let adapter = get_adapter(&resolved.id).map_err(|e| e.to_string())?;
-    let normalized_code = adapter.normalize_code(&code);
 
     let _ = state.execution_engine.kill();
 
@@ -61,10 +61,32 @@ pub fn start_execution(
         }
 
         let workspace = active_workspace.as_ref().ok_or("No active workspace")?;
-        let entry_file = adapter.entry_filename();
-        let snippet_path = workspace_manager
-            .write_file(workspace, &entry_file, &normalized_code)
+
+        let resolved_entry = workspace_manager
+            .resolve_entry_file(workspace, entry_file.as_deref())
             .map_err(|e| e.to_string())?;
+
+        let file_content = if let Some(editor_code) = code {
+            workspace_manager
+                .write_file(workspace, &resolved_entry, &editor_code)
+                .map_err(|e| e.to_string())?;
+            editor_code
+        } else {
+            workspace_manager
+                .read_file(workspace, &resolved_entry)
+                .map_err(|e| e.to_string())?
+        };
+
+        let normalized_code = adapter.normalize_code(&file_content);
+
+        if normalized_code != file_content {
+            workspace_manager
+                .write_file(workspace, &resolved_entry, &normalized_code)
+                .map_err(|e| e.to_string())?;
+        }
+
+        let snippet_path = workspace.path.join(&resolved_entry);
+        validate_snippet_path(workspace, &snippet_path)?;
 
         let prepared = adapter
             .prepare(PrepareContext {
@@ -111,23 +133,47 @@ pub fn start_execution(
     Ok(())
 }
 
+fn validate_snippet_path(
+    workspace: &crate::workspace::Workspace,
+    snippet_path: &std::path::Path,
+) -> Result<(), String> {
+    crate::security::layer::validate_path_in_workspace(&workspace.path, snippet_path)
+        .map_err(|e| e.to_string())
+}
+
 pub fn start_execution_tauri(
     state: &SharedState,
     app: AppHandle,
-    code: String,
+    code: Option<String>,
     environment_id: Option<String>,
+    entry_file: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let emitter = ExecutionEmitter::tauri(app, state.execution_events.clone());
-    start_execution(state, emitter, code, environment_id, timeout_secs)
+    start_execution(
+        state,
+        emitter,
+        code,
+        environment_id,
+        entry_file,
+        timeout_secs,
+    )
 }
 
 pub fn start_execution_http(
     state: &SharedState,
-    code: String,
+    code: Option<String>,
     environment_id: Option<String>,
+    entry_file: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let emitter = ExecutionEmitter::bus_only(state.execution_events.clone());
-    start_execution(state, emitter, code, environment_id, timeout_secs)
+    start_execution(
+        state,
+        emitter,
+        code,
+        environment_id,
+        entry_file,
+        timeout_secs,
+    )
 }

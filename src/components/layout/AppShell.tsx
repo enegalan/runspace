@@ -1,22 +1,30 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useMemo, useState } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
+import { runspaceInvoke } from "../../core/api/runspaceInvoke";
+import { flushSessionState } from "../../core/workspace/flushSession";
+import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
+import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
 import { isTauri } from "../../core/platform/isTauri";
-import { useEditorStore } from "../../stores/editorStore";
+import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { OutputPanel } from "../output/OutputPanel";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { Toolbar } from "./Toolbar";
+import { AppDialogs } from "../ui/AppDialogs";
 
 export function AppShell() {
-  const loadFromDisk = useEditorStore((state) => state.loadFromDisk);
-  const saveToDisk = useEditorStore((state) => state.saveToDisk);
-  const code = useEditorStore((state) => state.code);
-  const loaded = useEditorStore((state) => state.loaded);
+  const workspace = useWorkspaceStore((state) => state.workspace);
+  const workspaceLoaded = useWorkspaceStore((state) => state.loaded);
+
+  const tabsLoaded = useEditorTabsStore((state) => state.loaded);
+  const activePath = useEditorTabsStore((state) => state.activePath);
+  const selectEnvironment = useEnvironmentStore((state) => state.select);
 
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
@@ -24,7 +32,7 @@ export function AppShell() {
   const loadEnvironments = useEnvironmentStore((state) => state.load);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [backendReady, setBackendReady] = useState(isTauri());
+  const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   const {
     stdout,
@@ -74,9 +82,69 @@ export function AppShell() {
     if (!backendReady) {
       return;
     }
-    void loadFromDisk();
-    void loadEnvironments();
-  }, [backendReady, loadFromDisk, loadEnvironments]);
+
+    let cancelled = false;
+
+    const bootstrap = async () => {
+      try {
+        await loadEnvironments();
+        if (cancelled) {
+          return;
+        }
+
+        const session = await runspaceInvoke<SessionData>("read_session");
+        const storedRuntimeId = session.last_runtime_id;
+        const selectedId = useEnvironmentStore.getState().selectedId;
+        const runtimeId = (storedRuntimeId ?? selectedId) as EnvironmentId;
+
+        if (storedRuntimeId && storedRuntimeId !== selectedId) {
+          await selectEnvironment(runtimeId);
+        }
+
+        await useWorkspaceStore.getState().initialize(runtimeId);
+      } catch (error) {
+        console.error("App bootstrap failed:", error);
+        try {
+          const runtimeId = useEnvironmentStore.getState().selectedId;
+          const active = await runspaceInvoke<WorkspaceInfo | null>(
+            "get_active_workspace",
+          );
+          if (active) {
+            useWorkspaceStore.setState({ workspace: active, loaded: true });
+            await useWorkspaceStore.getState().loadWorkspaces(runtimeId);
+            await useWorkspaceStore.getState().refreshFiles();
+          } else {
+            useWorkspaceStore.setState({ loaded: true });
+          }
+        } catch (recoveryError) {
+          console.error("Workspace recovery failed:", recoveryError);
+          useWorkspaceStore.setState({ loaded: true });
+        }
+        useEnvironmentStore.setState({ loaded: true });
+      } finally {
+        if (!cancelled) {
+          useEditorTabsStore.setState({ loaded: true });
+        }
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [backendReady, loadEnvironments, selectEnvironment]);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        void flushSessionState();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
 
   useEffect(() => {
     if (!isTauri()) {
@@ -86,8 +154,11 @@ export function AppShell() {
     let unlisten: (() => void) | undefined;
 
     void getCurrentWindow()
-      .onCloseRequested(() => {
-        void saveToDisk();
+      .onCloseRequested((event) => {
+        event.preventDefault();
+        void flushSessionState().finally(() => {
+          void getCurrentWindow().destroy();
+        });
       })
       .then((fn) => {
         unlisten = fn;
@@ -96,9 +167,23 @@ export function AppShell() {
     return () => {
       unlisten?.();
     };
-  }, [saveToDisk]);
+  }, []);
 
-  if (!backendReady || !loaded || !envLoaded) {
+  const handleRun = () => {
+    void (async () => {
+      await useEditorTabsStore.getState().saveActiveFile();
+      await run({
+        environmentId: selectedId,
+        entryFile: activePath ?? workspace?.entry_file,
+      });
+    })();
+  };
+
+  const handleSave = () => {
+    void useEditorTabsStore.getState().saveActiveFile();
+  };
+
+  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
     return (
       <div className="app-shell app-shell--loading" data-testid="app-shell">
         <div className="app-shell__loading">
@@ -114,17 +199,14 @@ export function AppShell() {
         status={status}
         runDisabled={runDisabled}
         runDisabledReason={runDisabledReason}
-        onRun={() => run(code, { environmentId: selectedId })}
+        onRun={handleRun}
         onStop={stop}
         onClear={clear}
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <div className="main-row">
         <Sidebar />
-        <EditorArea
-          onRun={(editorCode) => run(editorCode, { environmentId: selectedId })}
-          onSave={saveToDisk}
-        />
+        <EditorArea onRun={handleRun} onSave={handleSave} />
         <OutputPanel
           stdout={stdout}
           stderr={stderr}
@@ -143,6 +225,7 @@ export function AppShell() {
         environmentName={selectedEnvironment?.definition.name ?? "—"}
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <AppDialogs />
     </div>
   );
 }

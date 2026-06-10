@@ -11,10 +11,14 @@ mod test_home_lock;
 mod workspace;
 
 use commands::{
-    execute_code, get_runtime_template, get_selected_environment, install_environment,
-    kill_process, list_available_environments, list_environments, read_snippet,
-    set_environment_env_vars, set_environment_paths, set_selected_environment,
-    uninstall_environment, validate_environment, write_snippet,
+    create_directory, create_workspace, delete_file, delete_workspace, execute_code,
+    get_active_workspace,
+    get_runtime_template, get_selected_environment, initialize_workspace, install_environment,
+    kill_process, list_available_environments, list_environments, list_files, list_workspaces,
+    open_workspace, read_file, read_session, read_snippet, rename_file, rename_workspace,
+    set_environment_env_vars,
+    set_environment_paths, set_selected_environment, uninstall_environment, update_manifest,
+    validate_environment, write_file, write_session, write_snippet,
 };
 use std::sync::{Arc, Mutex};
 
@@ -62,6 +66,22 @@ pub fn run() {
             set_environment_paths,
             set_environment_env_vars,
             validate_environment,
+            list_workspaces,
+            open_workspace,
+            create_workspace,
+            get_active_workspace,
+            initialize_workspace,
+            list_files,
+            read_file,
+            write_file,
+            delete_file,
+            delete_workspace,
+            rename_file,
+            rename_workspace,
+            create_directory,
+            read_session,
+            write_session,
+            update_manifest,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

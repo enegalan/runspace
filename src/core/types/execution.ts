@@ -12,6 +12,7 @@ export type ExecutionStatus =
 export interface ExecutionOptions {
   environmentId?: EnvironmentId;
   timeoutSecs?: number;
+  entryFile?: string;
 }
 
 export interface ExecutionOutputEvent {

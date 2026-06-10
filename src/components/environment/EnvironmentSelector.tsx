@@ -5,9 +5,12 @@ import {
 } from "../../core/environment/switchEnvironment";
 import type { Environment, EnvironmentCategory } from "../../core/types/environment";
 import { getCatalogDefinition } from "../../core/constants/environmentCatalog";
+import { getRuntimePresentation } from "../../core/constants/runtimePresentation";
 import { RuntimeChangeDialog } from "../runtime/RuntimeChangeDialog";
 import { useEditorStore } from "../../stores/editorStore";
+import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 interface EnvironmentSelectorProps {
   disabled?: boolean;
@@ -36,6 +39,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
   const code = useEditorStore((state) => state.code);
   const setCode = useEditorStore((state) => state.setCode);
   const setLanguage = useEditorStore((state) => state.setLanguage);
+  const hasDirtyFiles = useEditorTabsStore((state) => state.hasDirtyFiles);
 
   const [open, setOpen] = useState(false);
   const [pendingEnvironmentId, setPendingEnvironmentId] = useState<string | null>(null);
@@ -43,6 +47,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
 
   const selected =
     environments.find((env) => env.definition.id === selectedId) ?? environments[0];
+  const presentation = getRuntimePresentation(selectedId);
   const groups = groupByCategory(environments);
   const pendingDefinition = pendingEnvironmentId
     ? getCatalogDefinition(pendingEnvironmentId)
@@ -73,11 +78,17 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
     };
   }, [open]);
 
-  const applyEnvironmentSwitch = async (id: string) => {
+  const applyEnvironmentSwitch = async (id: string): Promise<boolean> => {
+    const switched = await useWorkspaceStore.getState().switchEnvironment(id);
+    if (!switched) {
+      return false;
+    }
+
     await select(id as typeof selectedId);
     const nextEditor = environmentEditorState(id);
     setLanguage(nextEditor.language);
     setCode(nextEditor.code);
+    return true;
   };
 
   const handleSelect = (id: string) => {
@@ -86,7 +97,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
       return;
     }
 
-    if (shouldConfirmEnvironmentSwitch(code, selectedId)) {
+    if (hasDirtyFiles() || shouldConfirmEnvironmentSwitch(code, selectedId)) {
       setPendingEnvironmentId(id);
       setOpen(false);
       return;
@@ -114,6 +125,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
         ref={rootRef}
         className={`env-select${open ? " env-select--open" : ""}${disabled ? " env-select--disabled" : ""}`}
         data-testid="environment-select"
+        style={{ "--env-accent": presentation.accent } as React.CSSProperties}
       >
         <button
           type="button"
@@ -122,7 +134,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
           disabled={disabled}
           aria-haspopup="listbox"
           aria-expanded={open}
-          aria-label="Environment"
+          aria-label={`Environment: ${selected?.definition.name ?? "Environment"}`}
         >
           <span className="env-select__value">{selected?.definition.name ?? "Environment"}</span>
           {selected && (

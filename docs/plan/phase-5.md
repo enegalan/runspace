@@ -294,43 +294,43 @@ Everything below must be checked before marking Phase 5 as done.
 
 ### Backend (Rust)
 
-- [ ] `WorkspaceManager` extended: list/open/create workspaces, CRUD files, manifest
-- [ ] `runspace.json` manifest read/write (name, runtime_id, entry_file, timestamps)
-- [ ] Path validation rejects `..` and paths outside workspace
-- [ ] Tauri workspace commands: `list_workspaces`, `open_workspace`, `create_workspace`, `list_files`, `read_file`, `write_file`, `delete_file`, `rename_file`
-- [ ] `execute_code` accepts `entry_file`; auto-reads from disk before run
-- [ ] `session.json` persists last workspace, open files, active file
-- [ ] FS permissions scoped to `~/.runspace/workspaces/**`
+- [x] `WorkspaceManager` extended: list/open/create workspaces, CRUD files, manifest
+- [x] `runspace.json` manifest read/write (name, runtime_id, entry_file, timestamps)
+- [x] Path validation rejects `..` and paths outside workspace
+- [x] Tauri workspace commands: `list_workspaces`, `open_workspace`, `create_workspace`, `list_files`, `read_file`, `write_file`, `delete_file`, `rename_file`
+- [x] `execute_code` accepts `entry_file`; auto-reads from disk before run
+- [x] `session.json` persists last workspace, open files, active file
+- [x] FS permissions scoped to `~/.runspace/workspaces/**`
 
 ### Frontend
 
-- [ ] `FileTree` with expand/collapse, create, rename, delete, refresh
-- [ ] `EditorTabs` with dirty indicator, close confirmation, `Cmd+S` save
-- [ ] Language inferred from file extension in Monaco
-- [ ] `workspaceStore` and `editorTabsStore` implemented
-- [ ] "New workspace" flow when none exist
-- [ ] Session restored on app launch (workspace + tabs)
+- [x] `FileTree` with expand/collapse, create, rename, delete, refresh
+- [x] `EditorTabs` with dirty indicator, close confirmation, `Cmd+S` save
+- [x] Language inferred from file extension in Monaco
+- [x] `workspaceStore` and `editorTabsStore` implemented
+- [x] "New workspace" flow when none exist
+- [x] Session restored on app launch (workspace + tabs)
 
 ### Verification
 
-- [ ] Node: `utils.js` + `main.js` with `require('./utils')` works
-- [ ] PHP: local `include` works
-- [ ] File tree updates in real time on CRUD operations
-- [ ] Tabs switch between open files without crash
-- [ ] Closing active tab does not crash app
-- [ ] Run auto-saves active file before executing
-- [ ] Cannot create file with path `../outside.txt`
-- [ ] `runspace.json` created and updated correctly
+- [x] Node: `utils.js` + `main.js` with `require('./utils')` works
+- [x] PHP: local `include` works
+- [x] File tree updates in real time on CRUD operations
+- [x] Tabs switch between open files without crash
+- [x] Closing active tab does not crash app
+- [x] Run auto-saves active file before executing
+- [x] Cannot create file with path `../outside.txt`
+- [x] `runspace.json` created and updated correctly
 
 ### Tests
 
-- [ ] Rust unit: path validation rejects `..`
+- [x] Rust unit: path validation rejects `..`
 - [ ] Rust integration: Node multi-file `require` in temp workspace
-- [ ] Manual: full file tree CRUD and rename open file
+- [x] Manual: full file tree CRUD and rename open file
 
 ### Documentation & PR
 
-- [ ] `CHANGELOG.md` entry added for Phase 5
+- [x] `CHANGELOG.md` entry added for Phase 5
 - [ ] PR includes screenshot of file tree + multi-tab editor
 - [ ] PR description lists what is explicitly out of scope
 - [ ] CI passes
@@ -353,7 +353,7 @@ Everything below must be checked before marking Phase 5 as done.
 - Import external project (open user folder)
 - Git integration
 - File search
-- Drag & drop files
+- Drag & drop from external OS (Finder/Explorer)
 - npm/composer install
 - Watch mode / code hot reload
 
