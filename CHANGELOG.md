@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Phase 6: C/C++ (compiled languages)
+
+- `GccAdapter` and `GppAdapter` with compile-then-run pipeline
+- `CompiledAdapter` trait with separate compile (15s) and run (30s) timeouts
+- `execution-phase` event (`compile` | `run`) for StatusBar and output panel
+- Compile stderr prefixed `[compile]`; runtime stderr prefixed `[runtime]`
+- Binary output hardcoded to `runspace_out`; forbidden compiler flags not exposed
+- Artifact cleanup after every run (`runspace_out`, `.dSYM`, and related files)
+- GCC (C) and G++ (C++) added to environment catalog with PATH auto-detection
+- Monaco `c` and `cpp` modes and default templates for gcc/gpp environments
+
 ### Onboarding
 
 - Welcome screen on first launch when no projects exist (intro, concepts, and first-project setup)

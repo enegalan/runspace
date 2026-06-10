@@ -3,6 +3,8 @@ export const RUNTIME_TEMPLATES: Record<string, string> = {
   php: '<?php\necho "Hello from PHP!";\n',
   python: "print('Hello from Python!')\n",
   ruby: "puts 'Hello from Ruby!'\n",
+  gcc: '#include <stdio.h>\n\nint main() {\n    printf("Hello from C!\\n");\n    return 0;\n}\n',
+  gpp: '#include <iostream>\n\nint main() {\n    std::cout << "Hello from C++!" << std::endl;\n    return 0;\n}\n',
   laravel:
     "<?php\n\nuse Illuminate\\Support\\Str;\n\necho Str::upper('Hello from Laravel!');\n",
   symfony:
@@ -19,6 +21,8 @@ export function getMonacoLanguage(environmentId: string): string {
     php: "php",
     python: "python",
     ruby: "ruby",
+    gcc: "c",
+    gpp: "cpp",
     laravel: "php",
     symfony: "php",
   } as Record<string, string>;

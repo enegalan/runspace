@@ -2,9 +2,18 @@ use std::path::PathBuf;
 
 use tauri::AppHandle;
 
-use crate::engine::adapters::{get_adapter, PrepareContext};
+use crate::engine::adapters::{
+    get_adapter, get_compiled_adapter, is_compiled_environment, PrepareContext,
+};
+use crate::engine::compiled::run_compiled;
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
 use crate::state::SharedState;
+
+struct PreparedExecution {
+    workspace_path: PathBuf,
+    script_path: PathBuf,
+    env_vars: Vec<(String, String)>,
+}
 
 pub fn start_execution(
     state: &SharedState,
@@ -14,8 +23,6 @@ pub fn start_execution(
     entry_file: Option<String>,
     timeout_secs: Option<u64>,
 ) -> Result<(), String> {
-    let timeout = timeout_secs.unwrap_or(30);
-
     let resolved = {
         let manager = state
             .environment_manager
@@ -36,13 +43,23 @@ pub fn start_execution(
             .map_err(|e| e.to_string())?
     };
 
-    let adapter = get_adapter(&resolved.id).map_err(|e| e.to_string())?;
+    let environment_id = resolved.id.clone();
+    let adapter = get_adapter(&environment_id).map_err(|e| e.to_string())?;
+    let is_compiled = is_compiled_environment(&environment_id);
+    let timeout = if is_compiled {
+        timeout_secs.unwrap_or_else(|| {
+            get_compiled_adapter(&environment_id)
+                .map(|adapter| adapter.run_timeout_secs())
+                .unwrap_or(30)
+        })
+    } else {
+        timeout_secs.unwrap_or(30)
+    };
+    let binary = PathBuf::from(&resolved.binary_path);
 
     let _ = state.execution_engine.kill();
 
-    let binary = PathBuf::from(&resolved.binary_path);
-
-    let request = {
+    let prepared = {
         let workspace_manager = state
             .workspace_manager
             .lock()
@@ -88,7 +105,7 @@ pub fn start_execution(
         let snippet_path = workspace.path.join(&resolved_entry);
         validate_snippet_path(workspace, &snippet_path)?;
 
-        let prepared = adapter
+        let adapter_prepared = adapter
             .prepare(PrepareContext {
                 workspace_path: &workspace.path,
                 snippet_path: &snippet_path,
@@ -99,12 +116,22 @@ pub fn start_execution(
         let mut env_vars: Vec<(String, String)> = resolved
             .env_vars
             .into_iter()
-            .chain(prepared.extra_env.into_iter())
+            .chain(adapter_prepared.extra_env.into_iter())
             .collect();
 
         env_vars.sort_by(|a, b| a.0.cmp(&b.0));
         env_vars.dedup_by(|a, b| a.0 == b.0);
 
+        PreparedExecution {
+            workspace_path: workspace.path.clone(),
+            script_path: adapter_prepared.script_path,
+            env_vars,
+        }
+    };
+
+    let interpreted_request = if is_compiled {
+        None
+    } else {
         let built = adapter.build_command(&binary, &prepared.script_path);
         let program = PathBuf::from(built.get_program());
         let args: Vec<String> = built
@@ -112,21 +139,51 @@ pub fn start_execution(
             .map(|arg| arg.to_string_lossy().to_string())
             .collect();
 
-        ExecutionRequest {
+        Some(ExecutionRequest::with_defaults(
             program,
             args,
-            cwd: workspace.path.clone(),
-            timeout_secs: timeout,
-            env_vars,
-        }
+            prepared.workspace_path.clone(),
+            timeout,
+            prepared.env_vars.clone(),
+        ))
+    };
+
+    let compiled_adapter = if is_compiled {
+        get_compiled_adapter(&environment_id)
+    } else {
+        None
     };
 
     let engine = state.execution_engine.clone();
     std::thread::spawn(move || {
+        if let Some(compiled_adapter) = compiled_adapter {
+            if let Err(error) = run_compiled(
+                &engine,
+                &emitter,
+                compiled_adapter.as_ref(),
+                &binary,
+                &prepared.script_path,
+                &prepared.workspace_path,
+                prepared.env_vars,
+                timeout,
+            ) {
+                eprintln!("Compiled execution failed: {error}");
+                emitter.emit_output("stderr", &format!("[compile] {error}\n"));
+                emitter.emit_finished(Some(1), false, true);
+            }
+            return;
+        }
+
+        let Some(request) = interpreted_request else {
+            emitter.emit_output("stderr", "No execution request\n");
+            emitter.emit_finished(Some(1), false, false);
+            return;
+        };
+
         if let Err(error) = engine.run(&emitter, request) {
             eprintln!("Execution failed: {error}");
             emitter.emit_output("stderr", &format!("{error}\n"));
-            emitter.emit_finished(Some(1), false);
+            emitter.emit_finished(Some(1), false, false);
         }
     });
 

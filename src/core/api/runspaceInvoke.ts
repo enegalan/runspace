@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import { shouldUseHttpApi } from "./backendTransport";
 import { fetchBackend } from "./fetchBackend";
-import { isTauri } from "../platform/isTauri";
 import { toTauriArgs } from "./tauriArgs";
 
 interface InvokeResponse<T> {
@@ -9,10 +9,6 @@ interface InvokeResponse<T> {
 
 interface ErrorResponse {
   error: string;
-}
-
-function shouldUseHttpApi(): boolean {
-  return !isTauri() || import.meta.env.DEV;
 }
 
 async function invokeHttp<T>(

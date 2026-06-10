@@ -50,7 +50,7 @@ The catalog is **built into the app** and always shown in the selector and setti
 | `laravel` | Laravel | framework | `snippet.php` | `php_path` — PHP binary (skeleton bootstrapped internally by Runspace) |
 | `symfony` | Symfony | framework | `snippet.php` | `php_path` — PHP binary (skeleton bootstrapped internally by Runspace) |
 
-In this phase only **Node.js** must be end-to-end executable. The rest appears in the catalog with its configuration form; full execution for interpreted languages comes in Phase 4, compiled in Phase 7, and framework sandbox execution in a later release (see Phase 4 — [Framework sandbox](phase-4.md#framework-sandbox-post-phase-4)).
+In this phase only **Node.js** must be end-to-end executable. The rest appears in the catalog with its configuration form; full execution for interpreted languages comes in Phase 4, compiled in Phase 6, and framework sandbox execution in a later release (see Phase 4 — [Framework sandbox](phase-4.md#framework-sandbox-post-phase-4)).
 
 Each catalog entry also includes metadata used by later phases: `monaco_language`, `file_extension`, `install_guide_url`.
 
@@ -97,7 +97,7 @@ Frameworks use the same **snippet-in-sandbox** flow as plain PHP/Python/Ruby. Th
 
 ### Environment variables (per environment)
 
-Each environment has its own `env_vars` map (`key → value`). These are injected when executing code in that environment (merged on top of the sanitized base env from Phase 6; in Phase 3, passed through directly).
+Each environment has its own `env_vars` map (`key → value`). These are injected when executing code in that environment (merged on top of the sanitized base env from `SecurityLayer`; in Phase 3, passed through directly).
 
 Examples:
 
@@ -501,7 +501,7 @@ Everything below must be checked before marking Phase 3 as done.
 - Full 8-environment catalog in Phase 3 (added incrementally per phase)
 - Automatic PATH detection or hiding environments based on what is installed (startup auto-detect fills paths only; does not hide environments)
 - PHP/Python/Ruby execution (Phase 4)
-- GCC/G++ execution (Phase 7)
+- GCC/G++ execution (Phase 6)
 - Framework sandbox execution (internal bootstrap + snippet wrapper; see Phase 4)
 - Automatic runtime installation
 - Multiple profiles per environment (e.g. two Node versions side by side)

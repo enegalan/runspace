@@ -24,6 +24,14 @@ const COMPOSER_PROBE: BinaryProbe = BinaryProbe {
     command_names: &["composer"],
 };
 
+const GCC_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["gcc"],
+};
+
+const GPP_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["g++", "c++"],
+};
+
 fn probe_binary(probe: &BinaryProbe) -> Option<PathBuf> {
     for name in probe.command_names {
         if let Ok(path) = which::which(name) {
@@ -56,6 +64,8 @@ fn probe_for_field(field_key: &str) -> Option<PathBuf> {
         "python_path" => &PYTHON_PROBE,
         "ruby_path" => &RUBY_PROBE,
         "composer_path" => &COMPOSER_PROBE,
+        "gcc_path" => &GCC_PROBE,
+        "gpp_path" => &GPP_PROBE,
         _ => return None,
     };
 

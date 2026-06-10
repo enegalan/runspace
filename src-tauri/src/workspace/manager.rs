@@ -613,6 +613,24 @@ impl WorkspaceManager {
         session.remove_workspace(workspace_id);
         self.save_session(session)
     }
+
+    pub fn delete_workspaces_for_runtime(
+        &self,
+        runtime_id: &str,
+    ) -> Result<Vec<String>, WorkspaceError> {
+        let workspaces = self.list_workspaces_for_runtime(Some(runtime_id))?;
+        let deleted_ids: Vec<String> = workspaces.iter().map(|info| info.id.clone()).collect();
+
+        for id in &deleted_ids {
+            self.delete_workspace(id)?;
+        }
+
+        let mut session = self.load_session()?;
+        session.remove_runtime(runtime_id, &deleted_ids);
+        self.save_session(&session)?;
+
+        Ok(deleted_ids)
+    }
 }
 
 #[cfg(test)]
@@ -705,6 +723,66 @@ mod tests {
         assert_eq!(info.entry_file, "main.js");
         assert_eq!(info.runtime_id, "nodejs");
         assert!(workspace.path.join(MANIFEST_FILENAME).is_file());
+    }
+
+    #[test]
+    fn delete_workspaces_for_runtime_removes_matching_projects() {
+        use std::collections::HashMap;
+
+        use super::super::types::EnvironmentSession;
+
+        let (manager, _temp) = temp_manager();
+        let node_ws = manager
+            .create_named_workspace("Node project", "nodejs")
+            .expect("node workspace");
+        let php_ws = manager
+            .create_named_workspace("PHP project", "php")
+            .expect("php workspace");
+
+        let mut session = SessionData {
+            environments: HashMap::from([
+                (
+                    "nodejs".to_string(),
+                    EnvironmentSession {
+                        workspace_id: Some(node_ws.id.clone()),
+                        workspace_tabs: HashMap::new(),
+                    },
+                ),
+                (
+                    "php".to_string(),
+                    EnvironmentSession {
+                        workspace_id: Some(php_ws.id.clone()),
+                        workspace_tabs: HashMap::new(),
+                    },
+                ),
+            ]),
+            last_runtime_id: Some("nodejs".to_string()),
+            last_workspace_id: Some(node_ws.id.clone()),
+            ..SessionData::default()
+        };
+        manager.save_session(&session).expect("save session");
+
+        let deleted = manager
+            .delete_workspaces_for_runtime("nodejs")
+            .expect("delete node workspaces");
+        assert_eq!(deleted, vec![node_ws.id.clone()]);
+        assert!(!node_ws.path.exists());
+        assert!(php_ws.path.exists());
+
+        session = manager.load_session().expect("reload session");
+        assert!(!session.environments.contains_key("nodejs"));
+        assert!(session.environments.contains_key("php"));
+        assert_eq!(session.last_runtime_id, None);
+        assert_eq!(session.last_workspace_id, None);
+
+        let remaining = manager
+            .list_workspaces_for_runtime(Some("nodejs"))
+            .expect("list node");
+        assert!(remaining.is_empty());
+        let php_remaining = manager
+            .list_workspaces_for_runtime(Some("php"))
+            .expect("list php");
+        assert_eq!(php_remaining.len(), 1);
     }
 
     #[test]

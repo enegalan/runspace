@@ -70,6 +70,9 @@ impl EnvironmentManager {
         }
         self.store.installed_ids.push(id.to_string());
         self.store.configs.entry(id.to_string()).or_default();
+        if self.get_selected().is_none() {
+            self.store.selected_environment_id = id.to_string();
+        }
         self.autodetect_for_environment(id)?;
         self.save()
     }
@@ -78,23 +81,18 @@ impl EnvironmentManager {
         if !self.is_installed(id) {
             return Err(EnvironmentError::NotInstalled(id.to_string()));
         }
-        if self.store.installed_ids.len() <= 1 {
-            return Err(EnvironmentError::InvalidConfig(
-                "Cannot remove the last installed environment".to_string(),
-            ));
-        }
 
         self.store.installed_ids.retain(|installed_id| installed_id != id);
         self.store.configs.remove(id);
         self.versions.remove(id);
 
-        if self.store.selected_environment_id == id {
+        if !self.store.installed_ids.contains(&self.store.selected_environment_id) {
             self.store.selected_environment_id = self
                 .store
                 .installed_ids
                 .first()
                 .cloned()
-                .unwrap_or_else(|| DEFAULT_SELECTED_ID.to_string());
+                .unwrap_or_default();
         }
 
         self.save()
@@ -321,24 +319,18 @@ fn migrate_store(store: &mut EnvironmentsStore) {
     store.installed_ids.retain(|id| get_definition(id).is_some());
     store.configs.retain(|id, _| get_definition(id).is_some());
 
-    if !store.installed_ids.contains(&DEFAULT_SELECTED_ID.to_string()) {
-        store.installed_ids.insert(0, DEFAULT_SELECTED_ID.to_string());
-    }
-
-    if store.installed_ids.is_empty() {
-        store.installed_ids.push(DEFAULT_SELECTED_ID.to_string());
-    }
-
     store
         .installed_ids
         .sort_by_key(|id| catalog_index(id));
 
-    if !store.installed_ids.contains(&store.selected_environment_id) {
+    if store.installed_ids.is_empty() {
+        store.selected_environment_id.clear();
+    } else if !store.installed_ids.contains(&store.selected_environment_id) {
         store.selected_environment_id = store
             .installed_ids
             .first()
             .cloned()
-            .unwrap_or_else(|| DEFAULT_SELECTED_ID.to_string());
+            .unwrap_or_default();
     }
 }
 
@@ -526,13 +518,15 @@ mod tests {
 
         let mut manager = EnvironmentManager::new(config_path).unwrap();
         assert_eq!(manager.list_installed().len(), 1);
-        assert_eq!(manager.list_available().len(), 5);
+        assert_eq!(manager.list_available().len(), 7);
 
         let err = manager.install("unknown").unwrap_err();
         assert!(err.to_string().contains("not found"));
 
-        let err = manager.uninstall("nodejs").unwrap_err();
-        assert!(err.to_string().contains("last installed"));
+        manager.uninstall("nodejs").unwrap();
+        assert!(manager.list_installed().is_empty());
+        assert!(manager.get_selected().is_none());
+        assert_eq!(manager.list_available().len(), 8);
 
         let _ = fs::remove_dir_all(&temp_dir);
     }

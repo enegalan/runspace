@@ -109,4 +109,16 @@ impl SessionData {
             self.last_workspace_id = None;
         }
     }
+
+    pub fn remove_runtime(&mut self, runtime_id: &str, deleted_workspace_ids: &[String]) {
+        self.environments.remove(runtime_id);
+
+        if self.last_runtime_id.as_deref() == Some(runtime_id) {
+            self.last_runtime_id = None;
+        }
+
+        for workspace_id in deleted_workspace_ids {
+            self.remove_workspace(workspace_id);
+        }
+    }
 }

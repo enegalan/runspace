@@ -10,6 +10,8 @@ describe("fileExtension", () => {
     expect(getRuntimeFileExtension("php")).toBe("php");
     expect(getRuntimeFileExtension("python")).toBe("py");
     expect(getRuntimeFileExtension("laravel")).toBe("php");
+    expect(getRuntimeFileExtension("gcc")).toBe("c");
+    expect(getRuntimeFileExtension("gpp")).toBe("cpp");
   });
 
   it("appends the runtime extension when the name has none", () => {

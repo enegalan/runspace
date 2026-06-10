@@ -9,6 +9,8 @@ export type ExecutionStatus =
   | "error"
   | "timeout";
 
+export type ExecutionPhase = "compile" | "run";
+
 export interface ExecutionOptions {
   environmentId?: EnvironmentId;
   timeoutSecs?: number;
@@ -23,6 +25,11 @@ export interface ExecutionOutputEvent {
 export interface ExecutionFinishedEvent {
   exit_code: number | null;
   timed_out: boolean;
+  compile_failed?: boolean;
+}
+
+export interface ExecutionPhaseEvent {
+  phase: ExecutionPhase;
 }
 
 export interface ExecutionStartedEvent {

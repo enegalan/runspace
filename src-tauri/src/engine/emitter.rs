@@ -44,19 +44,41 @@ impl ExecutionEmitter {
         });
     }
 
-    pub fn emit_finished(&self, exit_code: Option<i32>, timed_out: bool) {
+    pub fn emit_phase(&self, phase: &str) {
+        if let Some(app) = &self.app {
+            let _ = app.emit(
+                "execution-phase",
+                PhasePayload {
+                    phase: phase.to_string(),
+                },
+            );
+        }
+        self.bus
+            .publish(ExecutionEvent::Phase {
+                phase: phase.to_string(),
+            });
+    }
+
+    pub fn emit_finished(
+        &self,
+        exit_code: Option<i32>,
+        timed_out: bool,
+        compile_failed: bool,
+    ) {
         if let Some(app) = &self.app {
             let _ = app.emit(
                 "execution-finished",
                 FinishedPayload {
                     exit_code,
                     timed_out,
+                    compile_failed,
                 },
             );
         }
         self.bus.publish(ExecutionEvent::Finished {
             exit_code,
             timed_out,
+            compile_failed,
         });
     }
 }
@@ -73,7 +95,13 @@ struct StartedPayload {
 }
 
 #[derive(Clone, serde::Serialize)]
+struct PhasePayload {
+    phase: String,
+}
+
+#[derive(Clone, serde::Serialize)]
 struct FinishedPayload {
     exit_code: Option<i32>,
     timed_out: bool,
+    compile_failed: bool,
 }

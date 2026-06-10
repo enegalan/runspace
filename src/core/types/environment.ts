@@ -43,5 +43,7 @@ export type EnvironmentId =
   | "php"
   | "python"
   | "ruby"
+  | "gcc"
+  | "gpp"
   | "laravel"
   | "symfony";

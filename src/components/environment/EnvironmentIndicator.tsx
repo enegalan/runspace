@@ -1,4 +1,3 @@
-import { getCatalogDefinition } from "../../core/constants/environmentCatalog";
 import { getRuntimePresentation } from "../../core/constants/runtimePresentation";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 
@@ -6,11 +5,12 @@ export function EnvironmentIndicator() {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const environments = useEnvironmentStore((state) => state.environments);
 
-  const environment = environments.find((env) => env.definition.id === selectedId);
-  const definition = getCatalogDefinition(selectedId);
-  const presentation = getRuntimePresentation(selectedId);
-  const name = definition?.name ?? presentation.label;
-  const category = definition?.category === "framework" ? "Framework" : "Language";
+  const environment = selectedId
+    ? environments.find((env) => env.definition.id === selectedId)
+    : undefined;
+  const presentation = getRuntimePresentation(selectedId ?? "nodejs");
+  const name = environment?.definition.name ?? "No environment";
+  const category = environment?.definition.category === "framework" ? "Framework" : "Language";
 
   return (
     <div

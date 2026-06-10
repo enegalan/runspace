@@ -48,6 +48,27 @@ describe("environmentStore", () => {
     expect(useEnvironmentStore.getState().selectedId).toBe("nodejs");
   });
 
+  it("loads with no installed environments", async () => {
+    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "list_environments") {
+        return Promise.resolve([]);
+      }
+      if (cmd === "list_available_environments") {
+        return Promise.resolve(ENVIRONMENT_CATALOG);
+      }
+      if (cmd === "get_selected_environment") {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(undefined);
+    });
+
+    await useEnvironmentStore.getState().load();
+
+    expect(useEnvironmentStore.getState().environments).toHaveLength(0);
+    expect(useEnvironmentStore.getState().available).toHaveLength(ENVIRONMENT_CATALOG.length);
+    expect(useEnvironmentStore.getState().selectedId).toBeNull();
+  });
+
   it("refreshes installed and available lists", async () => {
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
       if (cmd === "list_environments") {
