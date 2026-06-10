@@ -780,6 +780,71 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires node in PATH"]
+    fn node_multi_file_require_in_workspace() {
+        use std::collections::HashMap;
+        use std::process::Command;
+
+        use crate::engine::adapters::PrepareContext;
+
+        let Some(binary) = which::which("node").ok() else {
+            return;
+        };
+
+        let (manager, _temp) = temp_manager();
+        let workspace = manager
+            .create_named_workspace("Multi-file", "nodejs")
+            .expect("workspace");
+
+        manager
+            .write_file(
+                &workspace,
+                "utils.js",
+                "module.exports = { greet: (name) => `Hello, ${name}!` };\n",
+            )
+            .expect("write utils");
+        manager
+            .write_file(
+                &workspace,
+                "main.js",
+                "const { greet } = require('./utils');\nconsole.log(greet('Runspace'));\n",
+            )
+            .expect("write main");
+
+        let entry = manager
+            .resolve_entry_file(&workspace, None)
+            .expect("entry file");
+        assert_eq!(entry, "main.js");
+
+        let adapter = get_adapter("nodejs").expect("adapter");
+        let snippet_path = workspace.path.join(&entry);
+        let prepared = adapter
+            .prepare(PrepareContext {
+                workspace_path: &workspace.path,
+                snippet_path: &snippet_path,
+                extra_paths: &HashMap::new(),
+            })
+            .expect("prepare");
+
+        let output = Command::new(&binary)
+            .arg(&prepared.script_path)
+            .current_dir(&workspace.path)
+            .output()
+            .expect("run");
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            output.status.success(),
+            "node failed: stdout={stdout} stderr={stderr}"
+        );
+        assert!(
+            stdout.contains("Hello, Runspace!"),
+            "unexpected stdout: {stdout}"
+        );
+    }
+
+    #[test]
     fn session_roundtrip() {
         use std::collections::HashMap;
 

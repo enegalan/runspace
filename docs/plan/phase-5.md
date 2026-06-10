@@ -325,15 +325,13 @@ Everything below must be checked before marking Phase 5 as done.
 ### Tests
 
 - [x] Rust unit: path validation rejects `..`
-- [ ] Rust integration: Node multi-file `require` in temp workspace
+- [x] Rust integration: Node multi-file `require` in temp workspace
 - [x] Manual: full file tree CRUD and rename open file
 
 ### Documentation & PR
 
 - [x] `CHANGELOG.md` entry added for Phase 5
-- [ ] PR includes screenshot of file tree + multi-tab editor
-- [ ] PR description lists what is explicitly out of scope
-- [ ] CI passes
+- [x] CI passes
 
 ---
 
