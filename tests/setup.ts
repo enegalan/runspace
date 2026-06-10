@@ -27,7 +27,17 @@ vi.mock("@tauri-apps/api/event", () => ({
 vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: vi.fn(() => ({
     onCloseRequested: vi.fn().mockResolvedValue(() => {}),
+    scaleFactor: vi.fn().mockResolvedValue(1),
+    destroy: vi.fn().mockResolvedValue(undefined),
   })),
+}));
+
+vi.mock("@tauri-apps/api/webview", () => ({
+  getCurrentWebview: vi.fn(() =>
+    Promise.resolve({
+      onDragDropEvent: vi.fn().mockResolvedValue(() => {}),
+    }),
+  ),
 }));
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({
@@ -38,19 +48,38 @@ vi.mock("@tauri-apps/plugin-opener", () => ({
   openUrl: vi.fn().mockResolvedValue(undefined),
 }));
 
+const dialogStoreState = {
+  prompt: null as null | {
+    title: string;
+    value: string;
+    placeholder?: string;
+  },
+  confirm: null as null | {
+    message: string;
+    confirmLabel: string;
+    danger: boolean;
+  },
+  askPrompt: vi.fn().mockResolvedValue("test-name"),
+  askConfirm: vi.fn().mockResolvedValue(true),
+  setPromptValue: vi.fn(),
+  submitPrompt: vi.fn(),
+  cancelPrompt: vi.fn(),
+  answerConfirm: vi.fn(),
+};
+
+function useDialogStoreMock<T>(selector: (state: typeof dialogStoreState) => T): T;
+function useDialogStoreMock(): typeof dialogStoreState;
+function useDialogStoreMock(selector?: (state: typeof dialogStoreState) => unknown) {
+  if (selector) {
+    return selector(dialogStoreState);
+  }
+  return dialogStoreState;
+}
+
 vi.mock("../src/stores/dialogStore", () => ({
-  useDialogStore: Object.assign(
-    vi.fn(() => ({
-      askPrompt: vi.fn().mockResolvedValue("test-name"),
-      askConfirm: vi.fn().mockResolvedValue(true),
-    })),
-    {
-      getState: vi.fn(() => ({
-        askPrompt: vi.fn().mockResolvedValue("test-name"),
-        askConfirm: vi.fn().mockResolvedValue(true),
-      })),
-    },
-  ),
+  useDialogStore: Object.assign(useDialogStoreMock, {
+    getState: () => dialogStoreState,
+  }),
 }));
 
 vi.mock("@monaco-editor/react", () => {
