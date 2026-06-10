@@ -1,4 +1,5 @@
 pub mod adapters;
+pub mod compiled;
 pub mod emitter;
 pub mod events;
 pub mod executor;

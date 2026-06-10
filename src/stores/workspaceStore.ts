@@ -22,7 +22,7 @@ interface WorkspaceStore {
   loaded: boolean;
   onboardingRequired: boolean;
   onboardingComplete: boolean;
-  initialize: (runtimeId: string) => Promise<void>;
+  initialize: (runtimeId: string | null) => Promise<void>;
   finishOnboarding: (runtimeId: string, projectName: string) => Promise<void>;
   switchEnvironment: (runtimeId: string) => Promise<boolean>;
   switchWorkspace: (id: string) => Promise<void>;
@@ -103,8 +103,22 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   onboardingComplete: false,
 
   initialize: async (runtimeId) => {
-    const allWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {});
     const onboardingComplete = get().onboardingComplete || isOnboardingComplete();
+
+    if (!runtimeId) {
+      set({
+        workspace: null,
+        workspaces: [],
+        rootFiles: [],
+        expandedDirs: new Set<string>(),
+        onboardingComplete,
+        onboardingRequired: !onboardingComplete,
+        loaded: true,
+      });
+      return;
+    }
+
+    const allWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {});
 
     if (allWorkspaces.length === 0) {
       set({
@@ -168,15 +182,23 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         .persistForEnvironment(current.runtime_id, current.id);
     }
 
+    const runtimeWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {
+      runtimeId,
+    });
+
+    if (runtimeWorkspaces.length === 0) {
+      const projectName = await requireProjectName(
+        "Name for the first project in this environment",
+      );
+      if (!projectName) {
+        return false;
+      }
+      await get().createProject(runtimeId, projectName);
+      return get().workspace !== null;
+    }
+
     const workspace = await activateRuntime(runtimeId);
     if (!workspace) {
-      set({
-        workspace: null,
-        rootFiles: [],
-        expandedDirs: new Set<string>(),
-        filesRevision: get().filesRevision + 1,
-      });
-      await get().loadWorkspaces(runtimeId);
       return false;
     }
 

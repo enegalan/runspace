@@ -72,10 +72,10 @@ pub async fn dispatch_invoke(
                 .environment_manager
                 .lock()
                 .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            let environment = manager
-                .get_selected()
-                .ok_or_else(|| "No selected environment".to_string())?;
-            Ok(json!(environment))
+            Ok(match manager.get_selected() {
+                Some(environment) => json!(environment),
+                None => Value::Null,
+            })
         }
         "install_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
@@ -92,14 +92,7 @@ pub async fn dispatch_invoke(
         "uninstall_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid uninstall_environment args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            manager
-                .uninstall(&args.environment_id)
-                .map_err(|e| e.to_string())?;
-            Ok(Value::Null)
+            uninstall_environment(state, &args.environment_id)
         }
         "set_selected_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
@@ -602,4 +595,37 @@ pub async fn dispatch_invoke(
         }
         _ => Err(format!("Unknown command: {cmd}")),
     }
+}
+
+fn uninstall_environment(state: &SharedState, runtime_id: &str) -> Result<Value, String> {
+    {
+        let mut manager = state
+            .environment_manager
+            .lock()
+            .map_err(|_| "Environment manager lock poisoned".to_string())?;
+        manager.uninstall(runtime_id).map_err(|e| e.to_string())?;
+    }
+
+    let deleted_workspace_ids = {
+        let manager = state
+            .workspace_manager
+            .lock()
+            .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+        manager
+            .delete_workspaces_for_runtime(runtime_id)
+            .map_err(|e| e.to_string())?
+    };
+
+    let mut active = state
+        .active_workspace
+        .lock()
+        .map_err(|_| "Active workspace lock poisoned".to_string())?;
+    if active
+        .as_ref()
+        .is_some_and(|current| deleted_workspace_ids.contains(&current.id))
+    {
+        *active = None;
+    }
+
+    Ok(Value::Null)
 }

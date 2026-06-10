@@ -62,7 +62,6 @@ export function WorkspaceSwitcher() {
 
   const handleCreateProject = async () => {
     if (!runtimeId) {
-      console.error("Cannot create project: no runtime selected");
       return;
     }
 
@@ -174,6 +173,8 @@ export function WorkspaceSwitcher() {
             type="button"
             className="workspace-switcher__create"
             onClick={() => void handleCreateProject()}
+            disabled={!runtimeId}
+            title={!runtimeId ? "Add an environment in Settings" : undefined}
           >
             + New project
           </button>

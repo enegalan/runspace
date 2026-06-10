@@ -8,6 +8,8 @@ const RUNTIME_PRESENTATION: Record<string, RuntimePresentation> = {
   php: { label: "PHP", accent: "#8892bf" },
   python: { label: "Python", accent: "#3776ab" },
   ruby: { label: "Ruby", accent: "#cc342d" },
+  gcc: { label: "GCC (C)", accent: "#00599c" },
+  gpp: { label: "G++ (C++)", accent: "#00599c" },
   laravel: { label: "Laravel", accent: "#ff2d20" },
   symfony: { label: "Symfony", accent: "#000000" },
 };

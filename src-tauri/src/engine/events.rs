@@ -13,9 +13,13 @@ pub enum ExecutionEvent {
         stream: String,
         chunk: String,
     },
+    Phase {
+        phase: String,
+    },
     Finished {
         exit_code: Option<i32>,
         timed_out: bool,
+        compile_failed: bool,
     },
 }
 

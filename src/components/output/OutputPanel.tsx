@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "../../core/types/execution";
+import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
 import { DurationBadge, ExitCodeBadge, OutputStatus } from "./OutputStatus";
 import { OutputStream } from "./OutputStream";
 
@@ -6,6 +6,7 @@ interface OutputPanelProps {
   stdout: string;
   stderr: string;
   status: ExecutionStatus;
+  phase: ExecutionPhase | null;
   exitCode: number | null;
   timedOut: boolean;
   error: string | null;
@@ -16,6 +17,7 @@ export function OutputPanel({
   stdout,
   stderr,
   status,
+  phase,
   exitCode,
   timedOut,
   error,
@@ -47,6 +49,7 @@ export function OutputPanel({
             error={error}
             timedOut={timedOut}
             isRunning={isRunning}
+            phase={phase}
           />
         ) : (
           <p className="output-panel__placeholder">No output yet</p>

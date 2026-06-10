@@ -1,13 +1,13 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect } from "react";
+import { shouldUseHttpApi } from "../core/api/backendTransport";
 import { subscribeExecutionEvents } from "../core/api/executionEvents";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
-import { DEFAULT_ENVIRONMENT_ID } from "../core/constants/environmentCatalog";
-import { isTauri } from "../core/platform/isTauri";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
   ExecutionOutputEvent,
+  ExecutionPhaseEvent,
 } from "../core/types/execution";
 import { useExecutionStore } from "../stores/executionStore";
 
@@ -25,71 +25,90 @@ export function useExecution() {
     lastRunDurationMs,
     appendOutput,
     reset,
+    phase,
     setRunning,
     setStarted,
+    setPhase,
     setFinished,
     setError,
   } = useExecutionStore();
 
   useEffect(() => {
-    if (isTauri()) {
-      let cancelled = false;
-      const unlisteners: Array<() => void> = [];
-
-      const register = (unlisten: () => void) => {
-        if (cancelled) {
-          unlisten();
-          return;
-        }
-        unlisteners.push(unlisten);
-      };
-
-      const setup = async () => {
-        const outputUnlisten = await listen<ExecutionOutputEvent>(
-          "execution-output",
-          (event) => {
-            appendOutput(event.payload.stream, event.payload.chunk);
-          },
-        );
-        register(outputUnlisten);
-
-        const finishedUnlisten = await listen<ExecutionFinishedEvent>(
-          "execution-finished",
-          (event) => {
-            setFinished(event.payload.exit_code, event.payload.timed_out);
-          },
-        );
-        register(finishedUnlisten);
-
-        const startedUnlisten = await listen("execution-started", () => {
-          setStarted();
-        });
-        register(startedUnlisten);
-      };
-
-      void setup();
-
-      return () => {
-        cancelled = true;
-        for (const unlisten of unlisteners) {
-          unlisten();
-        }
-      };
+    if (shouldUseHttpApi()) {
+      return subscribeExecutionEvents({
+        onStarted: setStarted,
+        onOutput: appendOutput,
+        onPhase: setPhase,
+        onFinished: (payload) => {
+          setFinished(payload.exit_code, payload.timed_out, payload.compile_failed);
+        },
+      });
     }
 
-    return subscribeExecutionEvents({
-      onStarted: setStarted,
-      onOutput: appendOutput,
-      onFinished: (payload) => {
-        setFinished(payload.exit_code, payload.timed_out);
-      },
-    });
-  }, [appendOutput, setFinished, setStarted]);
+    let cancelled = false;
+    const unlisteners: Array<() => void> = [];
+
+    const register = (unlisten: () => void) => {
+      if (cancelled) {
+        unlisten();
+        return;
+      }
+      unlisteners.push(unlisten);
+    };
+
+    const setup = async () => {
+      const outputUnlisten = await listen<ExecutionOutputEvent>(
+        "execution-output",
+        (event) => {
+          appendOutput(event.payload.stream, event.payload.chunk);
+        },
+      );
+      register(outputUnlisten);
+
+      const finishedUnlisten = await listen<ExecutionFinishedEvent>(
+        "execution-finished",
+        (event) => {
+          setFinished(
+            event.payload.exit_code,
+            event.payload.timed_out,
+            event.payload.compile_failed,
+          );
+        },
+      );
+      register(finishedUnlisten);
+
+      const phaseUnlisten = await listen<ExecutionPhaseEvent>(
+        "execution-phase",
+        (event) => {
+          setPhase(event.payload.phase);
+        },
+      );
+      register(phaseUnlisten);
+
+      const startedUnlisten = await listen("execution-started", () => {
+        setStarted();
+      });
+      register(startedUnlisten);
+    };
+
+    void setup();
+
+    return () => {
+      cancelled = true;
+      for (const unlisten of unlisteners) {
+        unlisten();
+      }
+    };
+  }, [appendOutput, setFinished, setPhase, setStarted]);
 
   const run = useCallback(async (options?: ExecutionOptions) => {
     setRunning();
 
-    const environmentId = options?.environmentId ?? DEFAULT_ENVIRONMENT_ID;
+    const environmentId = options?.environmentId;
+    if (!environmentId) {
+      setError("No environment selected. Add one in Settings → Environments.");
+      return;
+    }
     const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
     const entryFile = options?.entryFile;
 
@@ -120,6 +139,7 @@ export function useExecution() {
     stdout,
     stderr,
     status,
+    phase,
     exitCode,
     timedOut,
     error,

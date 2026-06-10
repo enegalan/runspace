@@ -1,12 +1,14 @@
 import { create } from "zustand";
-import type { ExecutionStatus } from "../core/types/execution";
+import type { ExecutionPhase, ExecutionStatus } from "../core/types/execution";
 
 export interface ExecutionState {
   status: ExecutionStatus;
+  phase: ExecutionPhase | null;
   stdout: string;
   stderr: string;
   exitCode: number | null;
   timedOut: boolean;
+  compileFailed: boolean;
   error: string | null;
   startedAt: number | null;
   durationMs: number | null;
@@ -15,16 +17,23 @@ export interface ExecutionState {
   reset: () => void;
   setRunning: () => void;
   setStarted: () => void;
-  setFinished: (exitCode: number | null, timedOut: boolean) => void;
+  setPhase: (phase: ExecutionPhase) => void;
+  setFinished: (
+    exitCode: number | null,
+    timedOut: boolean,
+    compileFailed?: boolean,
+  ) => void;
   setError: (message: string) => void;
 }
 
 const initialState = {
   status: "idle" as ExecutionStatus,
+  phase: null as ExecutionPhase | null,
   stdout: "",
   stderr: "",
   exitCode: null as number | null,
   timedOut: false,
+  compileFailed: false,
   error: null as string | null,
   startedAt: null as number | null,
   durationMs: null as number | null,
@@ -34,11 +43,12 @@ const initialState = {
 function resolveStatus(
   exitCode: number | null,
   timedOut: boolean,
+  compileFailed: boolean,
 ): ExecutionStatus {
   if (timedOut) {
     return "timeout";
   }
-  if (exitCode !== null && exitCode !== 0) {
+  if (compileFailed || (exitCode !== null && exitCode !== 0)) {
     return "error";
   }
   return "success";
@@ -66,6 +76,8 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       stderr: "",
       exitCode: null,
       timedOut: false,
+      compileFailed: false,
+      phase: null,
       error: null,
       status: "running",
       startedAt: Date.now(),
@@ -77,13 +89,19 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     set({ status: "running" });
   },
 
-  setFinished: (exitCode, timedOut) => {
+  setPhase: (phase) => {
+    set({ phase, status: "running" });
+  },
+
+  setFinished: (exitCode, timedOut, compileFailed = false) => {
     const { startedAt } = get();
     const durationMs = startedAt !== null ? Date.now() - startedAt : null;
     set({
       exitCode,
       timedOut,
-      status: resolveStatus(exitCode, timedOut),
+      compileFailed,
+      phase: null,
+      status: resolveStatus(exitCode, timedOut, compileFailed),
       durationMs,
       lastRunDurationMs: durationMs,
     });

@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  environmentEditorState,
-  shouldConfirmEnvironmentSwitch,
-} from "../../core/environment/switchEnvironment";
-import type { Environment, EnvironmentCategory } from "../../core/types/environment";
-import { getCatalogDefinition } from "../../core/constants/environmentCatalog";
+import type { Environment, EnvironmentCategory, EnvironmentId } from "../../core/types/environment";
 import { getRuntimePresentation } from "../../core/constants/runtimePresentation";
-import { RuntimeChangeDialog } from "../runtime/RuntimeChangeDialog";
-import { useEditorStore } from "../../stores/editorStore";
-import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
@@ -36,22 +28,15 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const select = useEnvironmentStore((state) => state.select);
-  const code = useEditorStore((state) => state.code);
-  const setCode = useEditorStore((state) => state.setCode);
-  const setLanguage = useEditorStore((state) => state.setLanguage);
-  const hasDirtyFiles = useEditorTabsStore((state) => state.hasDirtyFiles);
 
   const [open, setOpen] = useState(false);
-  const [pendingEnvironmentId, setPendingEnvironmentId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const selected =
     environments.find((env) => env.definition.id === selectedId) ?? environments[0];
-  const presentation = getRuntimePresentation(selectedId);
+  const presentation = getRuntimePresentation(selectedId ?? "nodejs");
+  const selectorDisabled = disabled || environments.length === 0;
   const groups = groupByCategory(environments);
-  const pendingDefinition = pendingEnvironmentId
-    ? getCatalogDefinition(pendingEnvironmentId)
-    : undefined;
 
   useEffect(() => {
     if (!open) {
@@ -84,10 +69,7 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
       return false;
     }
 
-    await select(id as typeof selectedId);
-    const nextEditor = environmentEditorState(id);
-    setLanguage(nextEditor.language);
-    setCode(nextEditor.code);
+    await select(id as EnvironmentId);
     return true;
   };
 
@@ -97,103 +79,79 @@ export function EnvironmentSelector({ disabled = false }: EnvironmentSelectorPro
       return;
     }
 
-    if (hasDirtyFiles() || shouldConfirmEnvironmentSwitch(code, selectedId)) {
-      setPendingEnvironmentId(id);
-      setOpen(false);
-      return;
-    }
-
     void applyEnvironmentSwitch(id);
     setOpen(false);
   };
 
-  const handleConfirmSwitch = () => {
-    if (!pendingEnvironmentId) {
-      return;
-    }
-    void applyEnvironmentSwitch(pendingEnvironmentId);
-    setPendingEnvironmentId(null);
-  };
-
-  const handleCancelSwitch = () => {
-    setPendingEnvironmentId(null);
-  };
-
   return (
-    <>
-      <div
-        ref={rootRef}
-        className={`env-select${open ? " env-select--open" : ""}${disabled ? " env-select--disabled" : ""}`}
-        data-testid="environment-select"
-        style={{ "--env-accent": presentation.accent } as React.CSSProperties}
+    <div
+      ref={rootRef}
+      className={`env-select${open ? " env-select--open" : ""}${selectorDisabled ? " env-select--disabled" : ""}`}
+      data-testid="environment-select"
+      style={{ "--env-accent": presentation.accent } as React.CSSProperties}
+    >
+      <button
+        type="button"
+        className="env-select__trigger"
+        onClick={() => !selectorDisabled && setOpen((prev) => !prev)}
+        disabled={selectorDisabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Environment: ${selected?.definition.name ?? "No environment"}`}
+        title={selectorDisabled && !disabled ? "Add an environment in Settings" : undefined}
       >
-        <button
-          type="button"
-          className="env-select__trigger"
-          onClick={() => !disabled && setOpen((prev) => !prev)}
-          disabled={disabled}
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-label={`Environment: ${selected?.definition.name ?? "Environment"}`}
-        >
-          <span className="env-select__value">{selected?.definition.name ?? "Environment"}</span>
-          {selected && (
-            <span
-              className={`env-select__badge${selected.configured ? " env-select__badge--configured" : " env-select__badge--unconfigured"}`}
-            >
-              {selected.configured ? "Configured" : "Not configured"}
-            </span>
-          )}
-          <span className="env-select__chevron" aria-hidden="true">
-            ▾
+        <span className="env-select__value">
+          {selected?.definition.name ?? "No environment"}
+        </span>
+        {selected && (
+          <span
+            className={`env-select__badge${selected.configured ? " env-select__badge--configured" : " env-select__badge--unconfigured"}`}
+          >
+            {selected.configured ? "Configured" : "Not configured"}
           </span>
-        </button>
-
-        {open && (
-          <div className="env-select__menu" role="listbox" aria-label="Environment">
-            {(Object.keys(groups) as EnvironmentCategory[]).map((category) => {
-              const items = groups[category];
-              if (items.length === 0) {
-                return null;
-              }
-              return (
-                <div key={category} className="env-select__group">
-                  <div className="env-select__group-label">{CATEGORY_LABELS[category]}</div>
-                  <ul className="env-select__list">
-                    {items.map((env) => (
-                      <li
-                        key={env.definition.id}
-                        role="option"
-                        aria-selected={env.definition.id === selectedId}
-                      >
-                        <button
-                          type="button"
-                          className={`env-select__option${env.definition.id === selectedId ? " env-select__option--selected" : ""}`}
-                          onClick={() => handleSelect(env.definition.id)}
-                        >
-                          <span className="env-select__option-name">{env.definition.name}</span>
-                          <span
-                            className={`env-select__badge${env.configured ? " env-select__badge--configured" : " env-select__badge--unconfigured"}`}
-                          >
-                            {env.configured ? "Configured" : "Not configured"}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
         )}
-      </div>
+        <span className="env-select__chevron" aria-hidden="true">
+          ▾
+        </span>
+      </button>
 
-      <RuntimeChangeDialog
-        open={pendingEnvironmentId !== null}
-        environmentName={pendingDefinition?.name ?? "environment"}
-        onCancel={handleCancelSwitch}
-        onConfirm={handleConfirmSwitch}
-      />
-    </>
+      {open && (
+        <div className="env-select__menu" role="listbox" aria-label="Environment">
+          {(Object.keys(groups) as EnvironmentCategory[]).map((category) => {
+            const items = groups[category];
+            if (items.length === 0) {
+              return null;
+            }
+            return (
+              <div key={category} className="env-select__group">
+                <div className="env-select__group-label">{CATEGORY_LABELS[category]}</div>
+                <ul className="env-select__list">
+                  {items.map((env) => (
+                    <li
+                      key={env.definition.id}
+                      role="option"
+                      aria-selected={env.definition.id === selectedId}
+                    >
+                      <button
+                        type="button"
+                        className={`env-select__option${env.definition.id === selectedId ? " env-select__option--selected" : ""}`}
+                        onClick={() => handleSelect(env.definition.id)}
+                      >
+                        <span className="env-select__option-name">{env.definition.name}</span>
+                        <span
+                          className={`env-select__badge${env.configured ? " env-select__badge--configured" : " env-select__badge--unconfigured"}`}
+                        >
+                          {env.configured ? "Configured" : "Not configured"}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

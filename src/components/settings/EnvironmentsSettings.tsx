@@ -25,10 +25,9 @@ const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
 
 interface EnvironmentCardProps {
   environment: Environment;
-  canUninstall: boolean;
 }
 
-function EnvironmentCard({ environment, canUninstall }: EnvironmentCardProps) {
+function EnvironmentCard({ environment }: EnvironmentCardProps) {
   const refresh = useEnvironmentStore((state) => state.refresh);
   const uninstall = useEnvironmentStore((state) => state.uninstall);
   const [expanded, setExpanded] = useState(false);
@@ -194,16 +193,14 @@ function EnvironmentCard({ environment, canUninstall }: EnvironmentCardProps) {
               Install guide
             </a>
             <div className="env-card__action-buttons">
-              {canUninstall && (
-                <button
-                  type="button"
-                  className="btn btn--danger"
-                  onClick={() => void handleUninstall()}
-                  disabled={removing || saving || testing}
-                >
-                  {removing ? "Removing..." : "Remove"}
-                </button>
-              )}
+              <button
+                type="button"
+                className="btn btn--danger"
+                onClick={() => void handleUninstall()}
+                disabled={removing || saving || testing}
+              >
+                {removing ? "Removing..." : "Remove"}
+              </button>
               <button
                 type="button"
                 className="btn"
@@ -296,7 +293,6 @@ function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
 export function EnvironmentsSettings() {
   const environments = useEnvironmentStore((state) => state.environments);
   const available = useEnvironmentStore((state) => state.available);
-  const canUninstall = environments.length > 1;
 
   return (
     <div className="environments-settings" data-testid="environments-settings">
@@ -308,15 +304,17 @@ export function EnvironmentsSettings() {
 
       <section className="environments-settings__section">
         <h3 className="environments-settings__section-title">Installed</h3>
-        <div className="environments-settings__list">
-          {environments.map((env) => (
-            <EnvironmentCard
-              key={env.definition.id}
-              environment={env}
-              canUninstall={canUninstall}
-            />
-          ))}
-        </div>
+        {environments.length === 0 ? (
+          <p className="environments-settings__empty" data-testid="environments-empty">
+            No environments installed. Add one from the list below.
+          </p>
+        ) : (
+          <div className="environments-settings__list">
+            {environments.map((env) => (
+              <EnvironmentCard key={env.definition.id} environment={env} />
+            ))}
+          </div>
+        )}
       </section>
 
       {available.length > 0 && (

@@ -1,14 +1,7 @@
-const RUNTIME_EXTENSIONS: Record<string, string> = {
-  nodejs: "js",
-  php: "php",
-  python: "py",
-  ruby: "rb",
-  laravel: "php",
-  symfony: "php",
-};
+import { getCatalogDefinition } from "../constants/environmentCatalog";
 
 export function getRuntimeFileExtension(environmentId: string): string {
-  return RUNTIME_EXTENSIONS[environmentId] ?? "txt";
+  return getCatalogDefinition(environmentId)?.file_extension ?? "txt";
 }
 
 export function normalizeFileName(input: string, environmentId: string): string {

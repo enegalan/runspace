@@ -39,7 +39,7 @@ export function Toolbar({
         <EditorTabs />
 
         <div className="toolbar__controls">
-          <EnvironmentSelector disabled={isRunning} />
+          <EnvironmentSelector />
 
           <button
             type="button"

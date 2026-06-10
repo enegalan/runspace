@@ -71,7 +71,6 @@ flowchart TB
 | Workspaces | `~/.runspace/workspaces/{uuid}/` |
 | Runtime config | `~/.runspace/runtimes.json` |
 | Snippets | `~/.runspace/snippets/` |
-| Audit log | `~/.runspace/audit.log` |
 | Settings | `~/.runspace/settings.json` |
 | Framework skeletons | `~/.runspace/frameworks/{laravel,symfony}/` |
 
@@ -84,7 +83,7 @@ flowchart TB
 - Sandbox execution: Node.js, PHP, Python, Ruby, Laravel/Symfony snippets, C, C++
 - Runtime detection on PATH
 - Basic file tree and persistent workspace
-- Reinforced minimum security
+- Basic workspace sandbox (isolated cwd, sanitized env vars)
 - Local snippets and Welcome screen
 
 ### Out of MVP
@@ -99,7 +98,7 @@ flowchart TB
 
 ## Phase completion checklists
 
-Each phase document (`phase-0.md` … `phase-8.md`) ends with a **Phase completion checklist**: the full list of implementation, verification, test, and PR items required before that phase can be marked done. Use it as the single gate for closing a phase PR.
+Each phase document (`phase-0.md` … `phase-7.md`) ends with a **Phase completion checklist**: the full list of implementation, verification, test, and PR items required before that phase can be marked done. Use it as the single gate for closing a phase PR.
 
 ## Per-phase review flow
 
@@ -129,5 +128,5 @@ flowchart TD
 | stdout streaming | Tauri events (`emit`) | Phase 1 |
 | Snippet persistence | JSON in `~/.runspace/` | Phase 2 |
 | Primary platform | macOS | Phase 0 |
-| Network in sandbox | Off by default | Phase 6 |
+| Network in sandbox | Off by default | post-MVP |
 | Laravel/Symfony (snippet sandbox) | Phase 4 | v0.1.0 |

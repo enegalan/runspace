@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
+import type { ExecutionPhase } from "../../core/types/execution";
+
 interface OutputStreamProps {
   stdout: string;
   stderr: string;
   error: string | null;
   timedOut: boolean;
   isRunning: boolean;
+  phase: ExecutionPhase | null;
 }
 
 export function OutputStream({
@@ -14,6 +17,7 @@ export function OutputStream({
   error,
   timedOut,
   isRunning,
+  phase,
 }: OutputStreamProps) {
   const containerRef = useRef<HTMLPreElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -63,7 +67,9 @@ export function OutputStream({
       {stdout.length > 0 && stderr.length > 0 && "\n"}
       {stderr.length > 0 && <span className="output-stderr">{stderr}</span>}
       {isRunning && !hasContent && (
-        <span className="output-stream__running">Running...</span>
+        <span className="output-stream__running">
+          {phase === "compile" ? "Compiling..." : "Running..."}
+        </span>
       )}
     </pre>
   );

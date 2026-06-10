@@ -460,7 +460,7 @@ Same as Phase 3 catalog: **`php_path` only required**. No project root field. Se
 
 ## Out of scope
 
-- C/C++ (Phase 7)
+- C/C++ (Phase 6)
 - Multiple files / imports (Phase 5)
 - Composer/pip/bundler for **user** dependency management (PHP/Python/Ruby runtimes use stdlib only in this phase)
 - Embedded web servers for any runtime

@@ -52,6 +52,7 @@ export function AppShell() {
     stdout,
     stderr,
     status,
+    phase,
     exitCode,
     timedOut,
     error,
@@ -70,9 +71,11 @@ export function AppShell() {
   const runDisabled = !workspace || !selectedEnvironment?.configured;
   const runDisabledReason = !workspace
     ? "Create a project to run code"
-    : !selectedEnvironment?.configured
-      ? "Configure in Settings → Environments"
-      : undefined;
+    : !selectedEnvironment
+      ? "Add an environment in Settings"
+      : !selectedEnvironment.configured
+        ? "Configure in Settings → Environments"
+        : undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -124,10 +127,14 @@ export function AppShell() {
             : useWorkspaceStore.getState().onboardingRequired,
         });
         const storedRuntimeId = session.last_runtime_id;
-        const selectedId = useEnvironmentStore.getState().selectedId;
-        const runtimeId = (storedRuntimeId ?? selectedId) as EnvironmentId;
+        const { selectedId, environments } = useEnvironmentStore.getState();
+        const runtimeId =
+          storedRuntimeId &&
+          environments.some((env) => env.definition.id === storedRuntimeId)
+            ? (storedRuntimeId as EnvironmentId)
+            : selectedId;
 
-        if (storedRuntimeId && storedRuntimeId !== selectedId) {
+        if (runtimeId && storedRuntimeId === runtimeId && storedRuntimeId !== selectedId) {
           await selectEnvironment(runtimeId);
         }
 
@@ -141,8 +148,10 @@ export function AppShell() {
           );
           if (active) {
             useWorkspaceStore.setState({ workspace: active, loaded: true });
-            await useWorkspaceStore.getState().loadWorkspaces(runtimeId);
-            await useWorkspaceStore.getState().refreshFiles();
+            if (runtimeId) {
+              await useWorkspaceStore.getState().loadWorkspaces(runtimeId);
+              await useWorkspaceStore.getState().refreshFiles();
+            }
           } else {
             useWorkspaceStore.setState({ loaded: true });
           }
@@ -200,6 +209,10 @@ export function AppShell() {
   }, []);
 
   const handleRun = () => {
+    if (!selectedId || !workspace) {
+      return;
+    }
+
     void (async () => {
       await useEditorTabsStore.getState().saveActiveFile();
       await run({
@@ -257,6 +270,7 @@ export function AppShell() {
           stdout={stdout}
           stderr={stderr}
           status={status}
+          phase={phase}
           exitCode={exitCode}
           timedOut={timedOut}
           error={error}
@@ -265,6 +279,7 @@ export function AppShell() {
       </div>
       <StatusBar
         status={status}
+        phase={phase}
         exitCode={exitCode}
         timedOut={timedOut}
         lastRunDurationMs={lastRunDurationMs}

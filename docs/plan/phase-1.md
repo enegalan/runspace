@@ -376,7 +376,7 @@ Everything below must be checked before marking Phase 1 as done.
 - Monaco Editor (Phase 2)
 - Multi-runtime (Phases 3–4)
 - File tree and multiple files (Phase 5)
-- Network blocking (Phase 6)
+- Network blocking (post-MVP)
 - Snippet persistence on app close
 - Multiple Node version detection
 

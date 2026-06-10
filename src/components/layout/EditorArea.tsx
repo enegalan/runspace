@@ -102,12 +102,15 @@ export function EditorArea({ onRun, onSave }: EditorAreaProps) {
         <div className="editor-area__empty">
           <p className="editor-area__empty-title">No project open</p>
           <p className="editor-area__empty-hint">
-            Create a project to start editing and running code.
+            {selectedRuntimeId
+              ? "Create a project to start editing and running code."
+              : "Add an environment in Settings before creating a project."}
           </p>
           <button
             type="button"
             className="btn btn--primary editor-area__empty-action"
-            onClick={() => void createProject(selectedRuntimeId)}
+            onClick={() => selectedRuntimeId && void createProject(selectedRuntimeId)}
+            disabled={!selectedRuntimeId}
           >
             Create project
           </button>

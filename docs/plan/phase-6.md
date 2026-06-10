@@ -1,277 +1,231 @@
-# Phase 6 — Hardened security and isolation
+# Phase 6 — C/C++ (compiled languages)
 
-**Estimated duration:** 5 days  
+**Estimated duration:** 4 days  
 **Dependencies:** Phase 5 completed  
 
 ---
 
 ## Goal
 
-Harden the sandbox before expanding attack surface (C/C++, more runtimes, public release). Document the threat model, apply network and filesystem policies, sanitize the environment, limit resources, and log execution audit trails.
+Support C and C++ execution by compiling in the sandbox followed by running the generated binary. Show compilation errors clearly and clean up artifacts after each run.
 
 ---
 
 ## What this phase covers
 
-1. Network policy (off by default)
-2. Directory whitelist for child process
-3. Extended environment variable sanitization
-4. Output and workspace file limits
-5. Local audit log
-6. First-run consent screen
-7. `SECURITY.md` document
+1. `GccAdapter` and `GppAdapter`
+2. Two-phase compile-then-run pipeline
+3. Separate timeouts for compilation and execution
+4. Monaco C and C++ modes
+5. Compiler error presentation in Errors tab
+6. Binary cleanup in sandbox
 
 ---
 
-## Threat model (summary)
-
-| Threat | Impact | MVP mitigation |
-|--------|--------|----------------|
-| Malicious code reads user files | High | Sandbox cwd; no access outside workspace |
-| Network exfiltration | High | Network disabled by default |
-| Environment token theft | High | Sanitize env vars |
-| DoS via infinite output | Medium | 1 MB output limit |
-| DoS via many files | Low | 50 file limit |
-| Arbitrary binary execution | High | Registered runtimes only |
-
-**Out of MVP scope:** seccomp, containers, full macOS App Sandbox.
-
----
-
-## Security architecture
+## Execution pipeline
 
 ```mermaid
-flowchart TB
-  subgraph sl [SecurityLayer]
-    EnvSan[sanitize_env]
-    PathVal[validate_path]
-    NetPol[network_policy]
-    OutLim[output_limiter]
-    FileLim[file_count_limit]
-    Audit[audit_logger]
-  end
+sequenceDiagram
+  participant UI as React
+  participant EE as ExecutionEngine
+  participant GCC as gcc/g++
+  participant BIN as ./output
 
-  Request[execute_code] --> EnvSan
-  Request --> PathVal
-  Request --> NetPol
-  EE[ExecutionEngine] --> OutLim
-  WM[WorkspaceManager] --> FileLim
-  EE --> Audit
+  UI->>EE: execute_code(main.c)
+  EE->>EE: write main.c to workspace
+  EE->>GCC: gcc -o output main.c
+  alt compile error
+    GCC-->>EE: stderr compile errors
+    EE-->>UI: execution-finished exit=-1
+  else compile ok
+    GCC-->>EE: exit 0
+    EE->>BIN: ./output
+    BIN-->>EE: stdout
+    EE-->>UI: execution-finished exit=0
+    EE->>EE: delete output binary
+  end
 ```
 
 ---
 
 ## How to implement
 
-### 1. Persistent settings
+### 1. Compiled adapters
 
-**File:** `~/.runspace/settings.json`
-
-```json
-{
-  "allow_network": false,
-  "execution_timeout_secs": 30,
-  "max_output_bytes": 1048576,
-  "max_workspace_files": 50,
-  "consent_given": false,
-  "consent_given_at": null
-}
-```
-
-**Tauri commands:**
+**Location:** `src-tauri/src/engine/adapters/gcc.rs`, `gpp.rs`
 
 ```rust
-#[tauri::command]
-fn get_settings(state: State<AppState>) -> Result<Settings, String>;
+pub struct GccAdapter;
 
-#[tauri::command]
-fn update_settings(state: State<AppState>, settings: Settings) -> Result<(), String>;
-
-#[tauri::command]
-fn give_execution_consent(state: State<AppState>) -> Result<(), String>;
-```
-
-### 2. Network policy
-
-**Pragmatic MVP (macOS/Linux):**
-
-Tauri does not offer per-process firewall natively. Options:
-
-| Option | Complexity | MVP |
-|--------|------------|-----|
-| Document risk + UI toggle | Low | Yes |
-| macOS `sandbox-exec` | Medium | Optional |
-| Linux network namespace | High | No |
-
-**MVP implementation:**
-
-1. `allow_network: false` by default
-2. If `false`: empty proxy env; document that there is no real OS-level network isolation
-3. If `true`: show UI warning before executing
-4. In `SECURITY.md`: be honest about limitations
-
-**Post-MVP:** investigate `sandbox-exec` profile or container execution.
-
-### 3. Extended environment sanitization
-
-**Location:** `src-tauri/src/security/env.rs`
-
-**Block prefixes:**
-
-```
-AWS_, AZURE_, GCP_, GOOGLE_, GITHUB_, GITLAB_, BITBUCKET_,
-NPM_, PNPM_, YARN_, DOCKER_, KUBECONFIG, SSH_, GPG_,
-CI_, TRAVIS_, CIRCLE_, JENKINS_, TAURI_, RUNSPACE_,
-DATABASE_, DB_, MYSQL_, POSTGRES_, REDIS_, MONGO_,
-SECRET, TOKEN, PASSWORD, PRIVATE_KEY, API_KEY
-```
-
-**Block exact names:**
-
-```
-HOME, USER, LOGNAME, SHELL, MAIL, PATH
-```
-
-**Explicitly allow:**
-
-```
-PATH          // required to find runtime
-LANG, LC_ALL  // encoding
-TMPDIR        // sandbox temp, override to workspace/tmp
-```
-
-**Sanitized PATH:**
-
-- Build minimal PATH: runtime binary directory + `/usr/bin` + `/usr/local/bin`
-- Do not propagate full user PATH (reduces surface)
-
-```rust
-pub fn build_safe_env(runtime_binary: &Path, settings: &Settings) -> HashMap<String, String> {
-    let mut env = HashMap::new();
-    env.insert("PATH".into(), build_minimal_path(runtime_binary));
-    env.insert("LANG".into(), "en_US.UTF-8".into());
-    env.insert("TMPDIR".into(), workspace_tmp.to_string_lossy().into());
-    env
-}
-```
-
-### 4. Path validation
-
-**Rules:**
-
-```rust
-pub fn validate_workspace_path(workspace: &Path, relative: &str) -> Result<PathBuf, SecurityError> {
-    // 1. Reject if contains ".."
-    // 2. Canonicalize workspace + join
-    // 3. Verify result starts_with(canonical workspace)
-}
-```
-
-**Pre-execution:**
-
-- Verify `entry_file` exists and is in workspace
-- Verify runtime `binary_path` is in configured runtime allowlist
-
-### 5. Output limit
-
-**Location:** `src-tauri/src/security/output_limiter.rs`
-
-```rust
-pub struct OutputLimiter {
-    max_bytes: usize,
-    stdout_bytes: usize,
-    stderr_bytes: usize,
-    truncated: bool,
+impl RuntimeAdapter for GccAdapter {
+    fn runtime_id(&self) -> &str { "gcc" }
+    fn file_extension(&self) -> &str { "c" }
+    fn default_template(&self) -> &str {
+        "#include <stdio.h>\n\nint main() {\n    printf(\"Hello from C!\\n\");\n    return 0;\n}\n"
+    }
+    // build_command NOT used directly; special compile pipeline
 }
 
-impl OutputLimiter {
-    pub fn append(&mut self, stream: &str, chunk: &str) -> Option<String> {
-        // If exceeds max_bytes, set truncated=true and return None or truncated message
+pub struct GppAdapter;
+
+impl RuntimeAdapter for GppAdapter {
+    fn runtime_id(&self) -> &str { "gpp" }
+    fn file_extension(&self) -> &str { "cpp" }
+    fn default_template(&self) -> &str {
+        "#include <iostream>\n\nint main() {\n    std::cout << \"Hello from C++!\" << std::endl;\n    return 0;\n}\n"
     }
 }
 ```
 
-**UI:** if `truncated`, show banner:
-
-```
-Output truncated (limit: 1 MB). Increase limit in Settings.
-```
-
-### 6. Workspace file limit
-
-In `WorkspaceManager::write_file` and `create_file`:
+**Extended trait for compiled runtimes:**
 
 ```rust
-fn count_files(workspace: &Path) -> Result<usize, _> {
-    WalkDir::new(workspace).into_iter().filter(|e| e.is_file()).count()
+pub trait CompiledAdapter: RuntimeAdapter {
+    fn compile_command(&self, binary: &Path, source: &Path, output: &Path) -> Command;
+    fn output_binary_name(&self) -> &str { "runspace_out" }
+    fn compile_timeout_secs(&self) -> u64 { 15 }
+    fn run_timeout_secs(&self) -> u64 { 30 }
 }
 
-// Before create: if count >= settings.max_workspace_files { return Err(...) }
+impl GccAdapter {
+    fn compile_command(&self, gcc: &Path, source: &Path, output: &Path) -> Command {
+        let mut cmd = Command::new(gcc);
+        cmd.args(["-o", output.to_str().unwrap(), source.to_str().unwrap()]);
+        cmd.arg("-Wall");  // useful warnings in Errors tab
+        cmd
+    }
+}
 ```
 
-### 7. Audit log
+### 2. CompiledExecutionPipeline
 
-**File:** `~/.runspace/audit.log` (append-only, one JSON line per event)
-
-```json
-{"ts":"2026-06-09T14:30:00Z","event":"execution","runtime":"nodejs","entry":"main.js","exit":0,"duration_ms":45,"timed_out":false,"workspace_id":"a1b2c3d4"}
-{"ts":"2026-06-09T14:31:00Z","event":"execution","runtime":"python","entry":"main.py","exit":1,"duration_ms":120,"timed_out":false,"workspace_id":"a1b2c3d4"}
-```
-
-**Do not log:** code content (privacy).
-
-**API:**
+**Location:** `src-tauri/src/engine/compiled.rs`
 
 ```rust
-pub fn log_execution(record: AuditRecord) -> Result<(), AuditError>;
+pub struct CompiledExecutionResult {
+    pub compile_exit_code: Option<i32>,
+    pub compile_stderr: String,
+    pub run_result: Option<ExecutionResult>,
+    pub compile_failed: bool,
+}
+
+pub fn run_compiled(
+    engine: &ExecutionEngine,
+    app: AppHandle,
+    adapter: &dyn CompiledAdapter,
+    compiler_binary: &Path,
+    source_content: &str,
+    workspace: &Workspace,
+    env: HashMap<String, String>,
+) -> Result<CompiledExecutionResult, ExecutionError> {
+    // 1. Write source file
+    // 2. Compile phase with compile_timeout_secs
+    // 3. If compile fails → emit errors, return compile_failed=true
+    // 4. Run phase: execute ./runspace_out with run_timeout_secs
+    // 5. Cleanup: delete runspace_out (and .o if present)
+}
 ```
 
-**Optional UI:** Settings → View audit log (last 50 lines).
+**Artifact names:**
 
-### 8. Consent screen
+| File | Purpose |
+|------|---------|
+| `main.c` / `main.cpp` | Source |
+| `runspace_out` | Compiled binary (no extension) |
+| `runspace_out.dSYM` | macOS debug symbols (clean up too) |
 
-**First execution** (`consent_given === false`):
+### 3. Extended Tauri events
+
+| Event | When |
+|-------|------|
+| `execution-phase` | `{ phase: "compile" \| "run" }` |
+| `execution-output` | compile or run stdout/stderr |
+| `execution-finished` | `{ exit_code, timed_out, compile_failed }` |
+
+**UI:** show current phase in StatusBar: `Compiling...` → `Running...`
+
+### 4. Compilation error presentation
+
+**GCC example:**
 
 ```
-┌─────────────────────────────────────────────┐
-│  Execute code in Runspace?                  │
-│                                             │
-│  Code runs in an isolated folder on your    │
-│  machine using installed runtimes.          │
-│  Network is disabled by default.            │
-│                                             │
-│  Only run code you trust.                   │
-│                                             │
-│  [Learn more]  [Cancel]  [I understand]     │
-└─────────────────────────────────────────────┘
+main.c:3:5: error: expected ';' before 'return'
+    return 0;
+    ^
 ```
 
-- **Learn more:** open `SECURITY.md` on GitHub or in-app panel
-- **I understand:** `give_execution_consent()` + allow Run
+**Errors tab UI:**
 
-### 9. SECURITY.md
+- `[compile]` prefix on compile-phase stderr
+- `[runtime]` prefix on run-phase stderr
+- Optional syntax highlighting for `file:line:col: error:` lines
 
-**Location:** repository root
+**Light parser (optional):**
 
-**Contents:**
+```rust
+fn parse_gcc_error(line: &str) -> Option<(String, u32, u32, String)> {
+    // main.c:3:5: error: message
+}
+```
 
-1. What Runspace executes and what it does not guarantee
-2. Sandbox model (isolated directory)
-3. Network limitations in MVP
-4. Filtered environment variables
-5. How to report vulnerabilities
-6. User recommendations
+If parse succeeds, show clickable link to Monaco line (post-MVP nice-to-have; MVP shows text only).
 
-### 10. UI Settings — Security
+### 5. Monaco — C and C++
 
-**Location:** `src/components/settings/SecuritySettings.tsx`
+| runtime_id | Language | Default extension |
+|------------|----------|-------------------|
+| gcc | `c` | `main.c` |
+| gpp | `cpp` | `main.cpp` |
 
-| Setting | Control |
-|---------|---------|
-| Allow network | Toggle + warning |
-| Timeout | Number input (5–300s) |
-| Max output | Select: 256KB / 1MB / 5MB |
-| Max files | Number (10–100) |
+Add to `RUNTIME_LANGUAGES` and `RUNTIME_TEMPLATES`.
+
+### 6. Binary-specific security
+
+**Risks:**
+
+- Compiled binary can make arbitrary syscalls
+- User could compile code accessing outside sandbox
+
+**Mitigations (from Phase 1 `SecurityLayer`):**
+
+- cwd = workspace
+- Sanitized env
+- Binary only runnable from workspace
+- Delete binary after execution (prevent manual re-run)
+- No custom compile flags in MVP (`-o /tmp/evil`)
+
+**Forbidden flags:**
+
+```rust
+const FORBIDDEN_FLAGS: &[&str] = &["-o", "-save-temps", "-wrapper", "@"];
+// Only allow: -o runspace_out (hardcoded), -Wall, -std=c11/c++17
+```
+
+### 7. Multi-file C (limited)
+
+**MVP:** single-file only. If user has `helper.c`:
+
+- Do not auto-compile multiple sources
+- Document: "Multi-file C/C++ post-MVP"
+
+**Future phase:**
+
+```bash
+gcc -o output main.c helper.c
+```
+
+### 8. Settings — compile timeouts
+
+In `settings.json`:
+
+```json
+{
+  "compile_timeout_secs": 15,
+  "run_timeout_secs": 30
+}
+```
+
+Expose in Security Settings or runtime-specific settings.
 
 ---
 
@@ -279,14 +233,14 @@ pub fn log_execution(record: AuditRecord) -> Result<(), AuditError>;
 
 | File | Action |
 |------|--------|
-| `src-tauri/src/security/env.rs` | Extended sanitization |
-| `src-tauri/src/security/output_limiter.rs` | Output limit |
-| `src-tauri/src/security/audit.rs` | Audit log |
-| `src-tauri/src/settings/mod.rs` | Persistent settings |
-| `src/components/settings/SecuritySettings.tsx` | UI |
-| `src/components/dialogs/ConsentDialog.tsx` | Consent |
-| `SECURITY.md` | Documentation |
-| `src-tauri/src/engine/executor.rs` | Integrate limiter + audit |
+| `src-tauri/src/engine/adapters/gcc.rs` | GccAdapter |
+| `src-tauri/src/engine/adapters/gpp.rs` | GppAdapter |
+| `src-tauri/src/engine/compiled.rs` | Compile-run pipeline |
+| `src-tauri/src/engine/adapters/mod.rs` | CompiledAdapter trait |
+| `src-tauri/src/commands/execution.rs` | Compiled branch |
+| `src/core/templates/index.ts` | C/C++ templates |
+| `src/components/output/OutputPanel.tsx` | Compile/run phases |
+| `src/stores/executionStore.ts` | `phase` state |
 
 ---
 
@@ -296,46 +250,43 @@ Everything below must be checked before marking Phase 6 as done.
 
 ### Backend (Rust)
 
-- [ ] `settings.json` persisted with security defaults (`allow_network: false`, limits, consent)
-- [ ] Tauri commands: `get_settings`, `update_settings`, `give_execution_consent`
-- [ ] Extended env sanitization (`env.rs`): block prefixes, minimal PATH, safe TMPDIR
-- [ ] `validate_workspace_path` enforced on all file operations
-- [ ] `OutputLimiter` truncates stdout/stderr at configured max bytes
-- [ ] Workspace file count limit enforced on create
-- [ ] `audit.log` append-only JSON lines per execution (no code content)
-- [ ] Security policies integrated into `ExecutionEngine`
+- [ ] `GccAdapter` and `GppAdapter` implemented
+- [ ] `CompiledAdapter` trait with compile/run timeouts
+- [ ] `CompiledExecutionPipeline` in `compiled.rs`: compile → run → cleanup
+- [ ] `execution-phase` event emitted (`compile` | `run`)
+- [ ] Compile errors prefixed `[compile]`; runtime errors prefixed `[runtime]`
+- [ ] Forbidden compiler flags rejected; output path hardcoded to `runspace_out`
+- [ ] Binary and `.dSYM` cleaned up after every run (success or failure)
+- [ ] `compile_timeout_secs` and `run_timeout_secs` in settings
 
 ### Frontend
 
-- [ ] `SecuritySettings` panel: network toggle, timeout, max output, max files
-- [ ] `ConsentDialog` shown on first execution before Run is allowed
-- [ ] Truncation banner shown when output exceeds limit
-- [ ] Network toggle shows warning when enabled
-
-### Documentation
-
-- [ ] `SECURITY.md` at repo root: threat model, sandbox limits, network honesty, reporting
+- [ ] Monaco `c` and `cpp` modes wired for gcc/gpp runtimes
+- [ ] C/C++ templates in `RUNTIME_TEMPLATES`
+- [ ] `OutputPanel` / `StatusBar` show compile vs run phase
+- [ ] `executionStore` tracks `phase` state
 
 ### Verification
 
-- [ ] Node `fs.readFileSync('/etc/passwd')` fails or file not found
-- [ ] Python cannot read `~/.ssh/id_rsa` from sandbox
-- [ ] Output > 1 MB truncated with visible notice
-- [ ] File #51 in workspace rejected with error
-- [ ] `AWS_ACCESS_KEY_ID` not in child env (automated test)
-- [ ] Child PATH is minimal, not full user PATH
-- [ ] Every execution logged in `audit.log`
-- [ ] Consent dialog on first run; not shown after consent given
+- [ ] C: `printf("hello\n")` compiles and prints "hello"
+- [ ] C++: `std::cout` compiles and runs
+- [ ] C syntax error shows gcc message in Errors tab with `[compile]` prefix
+- [ ] Compilation >15s aborts with timeout
+- [ ] `runspace_out` not left on disk after run
+- [ ] StatusBar: "Compiling..." → "Running..."
+- [ ] Cannot inject `-o /etc/passwd` via user code or flags
 
 ### Tests
 
-- [ ] Rust unit: `sanitize_env`, `validate_workspace_path`, `OutputLimiter`
-- [ ] Rust integration: polluted parent env does not reach child
+- [ ] Rust unit: `compile_command` args, forbidden flags rejected
+- [ ] Rust integration: hello world C in temp dir (`#[ignore]` if no gcc)
+- [ ] Rust integration: compile error returns `compile_failed: true`
+- [ ] Manual: C++ iostream hello world
 
 ### Documentation & PR
 
 - [ ] `CHANGELOG.md` entry added for Phase 6
-- [ ] PR includes screenshot of consent dialog and security settings
+- [ ] PR includes screenshot of compile error in Errors tab
 - [ ] PR description lists what is explicitly out of scope
 - [ ] CI passes
 
@@ -345,23 +296,24 @@ Everything below must be checked before marking Phase 6 as done.
 
 | Type | What to test |
 |------|--------------|
-| Rust unit | `sanitize_env` blocks prefixes and names |
-| Rust unit | `validate_workspace_path` rejects `..` |
-| Rust unit | `OutputLimiter` truncates at limit |
-| Rust integration | Spawn node with polluted env; verify clean child |
-| Manual | Consent dialog on first execution |
-| Manual | Verify audit.log after several runs |
+| Rust unit | `compile_command` generates correct args |
+| Rust unit | Forbidden flags rejected |
+| Rust integration | Hello world C in temp dir |
+| Rust integration | Compile error returns compile_failed |
+| Manual | C++ with iostream |
+| Manual | Verify runspace_out not left on disk |
 
 ---
 
 ## Out of scope
 
-- Real network isolation (firewall, namespaces)
-- Seccomp / Landlock
-- Full macOS App Sandbox entitlement
-- Audit log encryption
-- Linux capability sandboxing for compilers
-- Malicious code detection / antivirus
+- Multi-file C/C++ projects
+- CMake, Makefile, meson
+- gdb/lldb debugging
+- Optimization flags (`-O2`, `-O3`)
+- External libraries (`-lmath` edge cases documented)
+- Cross-compilation
+- clang as gcc alternative
 
 ---
 
@@ -369,13 +321,13 @@ Everything below must be checked before marking Phase 6 as done.
 
 | Risk | Mitigation |
 |------|------------|
-| User believes network is truly blocked | Document in SECURITY.md and UI |
-| Minimal PATH breaks some runtimes | Allow override in advanced settings (post-MVP) |
-| Audit log grows indefinitely | Document manual rotation; auto-rotate post-MVP |
-| False positives in env block | Conservative list; log blocked vars in debug |
+| gcc not installed on macOS (Xcode CLI) | Detect in RuntimeManager; Xcode guide |
+| .dSYM not cleaned on macOS | Glob `runspace_out*` on cleanup |
+| Successful compile, segfault on run | Show exit code != 0; stderr if any |
+| User compiles `#include </etc/...>` | Fails at compile; not FS sandbox bypass |
 
 ---
 
 ## Phase deliverable
 
-Runspace with documented and applied security policies, ready for public release with clear expectations about what it protects and what it does not.
+Runspace runs C and C++ with a secure compile-run pipeline, readable compilation errors, and artifact cleanup. Completes the MVP runtime catalog.

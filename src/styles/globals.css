@@ -352,8 +352,13 @@ body {
   cursor: pointer;
 }
 
-.workspace-switcher__create:hover {
+.workspace-switcher__create:hover:not(:disabled) {
   background: #2a2a2a;
+}
+
+.workspace-switcher__create:disabled {
+  color: #6b6b6b;
+  cursor: default;
 }
 
 .context-menu {
@@ -1463,64 +1468,6 @@ body {
   50% {
     opacity: 0.6;
   }
-}
-
-.runtime-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.runtime-dialog__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-}
-
-.runtime-dialog__panel {
-  position: relative;
-  width: min(420px, calc(100vw - 32px));
-  padding: 20px;
-  background: #252526;
-  border: 1px solid #333;
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-}
-
-.runtime-dialog__title {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.runtime-dialog__message {
-  margin: 0 0 16px;
-  color: #ccc;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.runtime-dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.runtime-dialog__btn {
-  padding: 6px 12px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: #3c3c3c;
-  color: #fff;
-  cursor: pointer;
-}
-
-.runtime-dialog__btn--primary {
-  background: #0e639c;
-  border-color: #0e639c;
 }
 
 .app-shell--welcome {

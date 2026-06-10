@@ -1,7 +1,8 @@
-import type { ExecutionStatus } from "../../core/types/execution";
+import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
 
 interface StatusBarProps {
   status: ExecutionStatus;
+  phase: ExecutionPhase | null;
   exitCode: number | null;
   timedOut: boolean;
   lastRunDurationMs: number | null;
@@ -10,10 +11,17 @@ interface StatusBarProps {
 
 function statusLabel(
   status: ExecutionStatus,
+  phase: ExecutionPhase | null,
   exitCode: number | null,
   timedOut: boolean,
 ): string {
   if (status === "running") {
+    if (phase === "compile") {
+      return "Compiling...";
+    }
+    if (phase === "run") {
+      return "Running...";
+    }
     return "Running...";
   }
   if (timedOut || status === "timeout") {
@@ -36,6 +44,7 @@ function statusLabel(
 
 export function StatusBar({
   status,
+  phase,
   exitCode,
   timedOut,
   lastRunDurationMs,
@@ -44,7 +53,7 @@ export function StatusBar({
   return (
     <footer className="status-bar" data-testid="status-bar">
       <span className="status-bar__item" data-testid="status-bar-state">
-        {statusLabel(status, exitCode, timedOut)}
+        {statusLabel(status, phase, exitCode, timedOut)}
       </span>
       <span className="status-bar__separator">|</span>
       <span className="status-bar__item" data-testid="status-bar-environment">

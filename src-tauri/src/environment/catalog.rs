@@ -103,6 +103,26 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
             "Symfony",
             "https://symfony.com/download",
         ),
+        language_definition(
+            "gcc",
+            "GCC (C)",
+            "main.c",
+            "c",
+            "c",
+            "https://developer.apple.com/xcode/resources/",
+            "gcc_path",
+            "GCC binary",
+        ),
+        language_definition(
+            "gpp",
+            "G++ (C++)",
+            "main.cpp",
+            "cpp",
+            "cpp",
+            "https://developer.apple.com/xcode/resources/",
+            "gpp_path",
+            "G++ binary",
+        ),
     ]
 }
 
@@ -116,6 +136,8 @@ pub fn binary_field_key(environment_id: &str) -> Option<&'static str> {
         "php" | "laravel" | "symfony" => Some("php_path"),
         "python" => Some("python_path"),
         "ruby" => Some("ruby_path"),
+        "gcc" => Some("gcc_path"),
+        "gpp" => Some("gpp_path"),
         _ => None,
     }
 }

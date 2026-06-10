@@ -22,9 +22,15 @@ pub async fn list_available_environments(
 }
 
 #[tauri::command]
-pub async fn get_selected_environment(state: State<'_, SharedState>) -> Result<Environment, String> {
+pub async fn get_selected_environment(
+    state: State<'_, SharedState>,
+) -> Result<Option<Environment>, String> {
     let result = dispatch_invoke(&state, None, "get_selected_environment", json!({})).await?;
-    serde_json::from_value(result).map_err(|e| e.to_string())
+    if result.is_null() {
+        Ok(None)
+    } else {
+        serde_json::from_value(result).map_err(|e| e.to_string())
+    }
 }
 
 #[tauri::command]

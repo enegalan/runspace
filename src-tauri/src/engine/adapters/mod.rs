@@ -2,6 +2,8 @@
 mod integration;
 
 mod framework;
+mod gcc;
+mod gpp;
 mod laravel;
 mod node;
 mod php;
@@ -43,6 +45,19 @@ impl std::fmt::Display for AdapterError {
     }
 }
 
+pub trait CompiledAdapter: RuntimeAdapter {
+    fn compile_command(&self, compiler: &Path, source: &Path, output: &Path) -> Command;
+    fn output_binary_name(&self) -> &str {
+        "runspace_out"
+    }
+    fn compile_timeout_secs(&self) -> u64 {
+        15
+    }
+    fn run_timeout_secs(&self) -> u64 {
+        30
+    }
+}
+
 pub trait RuntimeAdapter: Send + Sync {
     fn runtime_id(&self) -> &str;
     fn file_extension(&self) -> &str;
@@ -70,8 +85,22 @@ pub fn get_adapter(environment_id: &str) -> Result<Box<dyn RuntimeAdapter>, Adap
         "ruby" => Ok(Box::new(ruby::RubyAdapter)),
         "laravel" => Ok(Box::new(laravel::LaravelAdapter)),
         "symfony" => Ok(Box::new(symfony::SymfonyAdapter)),
+        "gcc" => Ok(Box::new(gcc::GccAdapter)),
+        "gpp" => Ok(Box::new(gpp::GppAdapter)),
         _ => Err(AdapterError::Unsupported(environment_id.to_string())),
     }
+}
+
+pub fn get_compiled_adapter(environment_id: &str) -> Option<Box<dyn CompiledAdapter>> {
+    match environment_id {
+        "gcc" => Some(Box::new(gcc::GccAdapter)),
+        "gpp" => Some(Box::new(gpp::GppAdapter)),
+        _ => None,
+    }
+}
+
+pub fn is_compiled_environment(environment_id: &str) -> bool {
+    matches!(environment_id, "gcc" | "gpp")
 }
 
 pub fn script_command(binary: &Path, script: &Path) -> Command {
@@ -85,7 +114,9 @@ mod tests {
     use super::*;
 
     fn adapter_ids() -> Vec<&'static str> {
-        vec!["nodejs", "php", "python", "ruby", "laravel", "symfony"]
+        vec![
+            "nodejs", "php", "python", "ruby", "laravel", "symfony", "gcc", "gpp",
+        ]
     }
 
     #[test]
@@ -94,6 +125,9 @@ mod tests {
         let script = PathBuf::from("/tmp/workspace/main.txt");
 
         for id in adapter_ids() {
+            if is_compiled_environment(id) {
+                continue;
+            }
             let adapter = get_adapter(id).expect("adapter");
             let cmd = adapter.build_command(&binary, &script);
             let args: Vec<_> = cmd
@@ -114,6 +148,8 @@ mod tests {
             ("ruby", "main.rb"),
             ("laravel", "snippet.php"),
             ("symfony", "snippet.php"),
+            ("gcc", "main.c"),
+            ("gpp", "main.cpp"),
         ];
 
         for (id, expected) in expectations {

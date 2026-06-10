@@ -29,6 +29,49 @@ pub struct ExecutionRequest {
     pub cwd: PathBuf,
     pub timeout_secs: u64,
     pub env_vars: Vec<(String, String)>,
+    pub stderr_prefix: Option<String>,
+    pub emit_finished: bool,
+}
+
+impl ExecutionRequest {
+    pub fn with_defaults(
+        program: PathBuf,
+        args: Vec<String>,
+        cwd: PathBuf,
+        timeout_secs: u64,
+        env_vars: Vec<(String, String)>,
+    ) -> Self {
+        Self {
+            program,
+            args,
+            cwd,
+            timeout_secs,
+            env_vars,
+            stderr_prefix: None,
+            emit_finished: true,
+        }
+    }
+}
+
+fn prefix_stderr_lines(text: &str, prefix: &str) -> String {
+    if text.is_empty() {
+        return String::new();
+    }
+    let lines: Vec<String> = text
+        .lines()
+        .map(|line| {
+            if line.is_empty() {
+                String::new()
+            } else {
+                format!("[{prefix}] {line}")
+            }
+        })
+        .collect();
+    let mut result = lines.join("\n");
+    if text.ends_with('\n') {
+        result.push('\n');
+    }
+    result
 }
 
 #[allow(dead_code)]
@@ -126,14 +169,19 @@ impl ExecutionEngine {
 
         let stderr_emitter = emitter.clone();
         let stderr_acc_clone = Arc::clone(&stderr_acc);
+        let stderr_prefix = request.stderr_prefix.clone();
         let stderr_handle = std::thread::spawn(move || {
             let mut reader = BufReader::new(stderr);
             let mut buffer = String::new();
             if reader.read_to_string(&mut buffer).is_ok() && !buffer.is_empty() {
+                let emitted = match &stderr_prefix {
+                    Some(prefix) => prefix_stderr_lines(&buffer, prefix),
+                    None => buffer.clone(),
+                };
                 if let Ok(mut acc) = stderr_acc_clone.lock() {
-                    acc.push_str(&buffer);
+                    acc.push_str(&emitted);
                 }
-                stderr_emitter.emit_output("stderr", &buffer);
+                stderr_emitter.emit_output("stderr", &emitted);
             }
         });
 
@@ -178,7 +226,9 @@ impl ExecutionEngine {
         let _ = stdout_handle.join();
         let _ = stderr_handle.join();
 
-        emitter.emit_finished(exit_code, timed_out);
+        if request.emit_finished {
+            emitter.emit_finished(exit_code, timed_out, false);
+        }
 
         Ok(ExecutionResult {
             exit_code,
@@ -218,13 +268,13 @@ mod tests {
         let script_path = temp_dir.join("main.rb");
         std::fs::write(&script_path, "puts").expect("write script");
 
-        let request = ExecutionRequest {
-            program: ruby,
-            args: vec![script_path.to_string_lossy().to_string()],
-            cwd: temp_dir.clone(),
-            timeout_secs: 5,
-            env_vars: vec![],
-        };
+        let request = ExecutionRequest::with_defaults(
+            ruby,
+            vec![script_path.to_string_lossy().to_string()],
+            temp_dir.clone(),
+            5,
+            vec![],
+        );
 
         use crate::engine::{ExecutionEmitter, ExecutionEventBus};
 
@@ -257,13 +307,13 @@ mod tests {
         let script_path = temp_dir.join("test.js");
         std::fs::write(&script_path, "console.log(1);").expect("write script");
 
-        let request = ExecutionRequest {
-            program: node,
-            args: vec![script_path.to_string_lossy().to_string()],
-            cwd: temp_dir.clone(),
-            timeout_secs: 10,
-            env_vars: vec![],
-        };
+        let request = ExecutionRequest::with_defaults(
+            node,
+            vec![script_path.to_string_lossy().to_string()],
+            temp_dir.clone(),
+            10,
+            vec![],
+        );
 
         // Integration test without Tauri app handle — run command directly
         let mut cmd = Command::new(&request.program);
