@@ -1,7 +1,9 @@
-import { invoke } from "@tauri-apps/api/core";
 import { create } from "zustand";
+import { runspaceInvoke } from "../core/api/runspaceInvoke";
 
-const DEFAULT_CODE = 'console.log("Hello, Runspace!");';
+import { getRuntimeTemplate } from "../core/templates";
+
+const DEFAULT_CODE = getRuntimeTemplate("nodejs");
 const DEFAULT_LANGUAGE = "javascript";
 
 export interface SnippetData {
@@ -31,7 +33,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   loadFromDisk: async () => {
     try {
-      const data = await invoke<SnippetData>("read_snippet");
+      const data = await runspaceInvoke<SnippetData>("read_snippet");
       set({
         code: data.code || DEFAULT_CODE,
         language: data.language || DEFAULT_LANGUAGE,
@@ -49,6 +51,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       language,
       updated_at: new Date().toISOString(),
     };
-    await invoke("write_snippet", { data });
+    await runspaceInvoke("write_snippet", { data });
   },
 }));

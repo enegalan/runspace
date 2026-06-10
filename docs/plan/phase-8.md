@@ -444,7 +444,7 @@ Everything below must be checked before marking Phase 8 (and MVP v0.1.0) as done
 
 Ideas for next iteration (not in this phase):
 
-- Laravel/Symfony runtime (composer + `artisan serve`)
+- Laravel/Symfony sandbox snippets (internal skeleton, bootstrap wrapper, user `php_path` only)
 - Automatic runtime installers
 - Windows/Linux builds
 - Auto-updater

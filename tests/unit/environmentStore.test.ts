@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 
@@ -21,13 +21,13 @@ describe("environmentStore", () => {
       selectedId: "nodejs",
       loaded: false,
     });
-    vi.mocked(invoke).mockReset();
+    vi.mocked(runspaceInvoke).mockReset();
   });
 
   it("loads installed and available environments", async () => {
     const installed = [mockInstalledEnvironment("nodejs")];
     const available: typeof ENVIRONMENT_CATALOG = [];
-    vi.mocked(invoke).mockImplementation((cmd) => {
+    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
       if (cmd === "list_environments") {
         return Promise.resolve(installed);
       }
@@ -49,7 +49,7 @@ describe("environmentStore", () => {
   });
 
   it("refreshes installed and available lists", async () => {
-    vi.mocked(invoke).mockImplementation((cmd) => {
+    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }

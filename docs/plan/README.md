@@ -73,22 +73,7 @@ flowchart TB
 | Snippets | `~/.runspace/snippets/` |
 | Audit log | `~/.runspace/audit.log` |
 | Settings | `~/.runspace/settings.json` |
-
-## Phases
-
-| Phase | Document | Estimated duration | Main deliverable |
-|-------|----------|-------------------|------------------|
-| 0 | [phase-0.md](phase-0.md) | 3 days | Desktop shell + CI |
-| 1 | [phase-1.md](phase-1.md) | 5 days | Node.js execution in Rust |
-| 2 | [phase-2.md](phase-2.md) | 5 days | Monaco + output panel |
-| 3 | [phase-3.md](phase-3.md) | 5 days | Runtime Manager |
-| 4 | [phase-4.md](phase-4.md) | 7 days | PHP, Python, Ruby |
-| 5 | [phase-5.md](phase-5.md) | 5 days | Multi-file workspace |
-| 6 | [phase-6.md](phase-6.md) | 5 days | Hardened security |
-| 7 | [phase-7.md](phase-7.md) | 4 days | C/C++ |
-| 8 | [phase-8.md](phase-8.md) | 5 days | Release v0.1.0 |
-
-**Total estimated:** 6–8 weeks part-time.
+| Framework skeletons | `~/.runspace/frameworks/{laravel,symfony}/` |
 
 ## MVP scope vs post-MVP
 
@@ -96,7 +81,7 @@ flowchart TB
 
 - Functional desktop shell (macOS first)
 - Monaco editor with syntax highlighting
-- Sandbox execution: Node.js, PHP, Python, Ruby, C, C++
+- Sandbox execution: Node.js, PHP, Python, Ruby, Laravel/Symfony snippets, C, C++
 - Runtime detection on PATH
 - Basic file tree and persistent workspace
 - Reinforced minimum security
@@ -105,7 +90,7 @@ flowchart TB
 ### Out of MVP
 
 - Automatic runtime installers (nvm, pyenv, phpenv)
-- Laravel / Symfony (composer, server, `.env`)
+- Automatic framework skeleton provisioning without Composer on PATH
 - Integrated debugger
 - Interactive REPL
 - Plugins and extensions
@@ -145,4 +130,4 @@ flowchart TD
 | Snippet persistence | JSON in `~/.runspace/` | Phase 2 |
 | Primary platform | macOS | Phase 0 |
 | Network in sandbox | Off by default | Phase 6 |
-| Laravel/Symfony | Post-MVP | v0.2+ |
+| Laravel/Symfony (snippet sandbox) | Phase 4 | v0.1.0 |

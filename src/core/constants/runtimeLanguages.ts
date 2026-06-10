@@ -1,0 +1,1 @@
+export { getMonacoLanguage } from "../templates";

@@ -38,4 +38,10 @@ export interface ValidationResult {
   errors: string[];
 }
 
-export type EnvironmentId = "nodejs";
+export type EnvironmentId =
+  | "nodejs"
+  | "php"
+  | "python"
+  | "ruby"
+  | "laravel"
+  | "symfony";

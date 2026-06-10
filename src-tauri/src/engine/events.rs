@@ -1,0 +1,63 @@
+use std::sync::{Arc, Mutex};
+
+use serde::Serialize;
+use tokio::sync::broadcast;
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "event")]
+pub enum ExecutionEvent {
+    Started {
+        pid: u32,
+    },
+    Output {
+        stream: String,
+        chunk: String,
+    },
+    Finished {
+        exit_code: Option<i32>,
+        timed_out: bool,
+    },
+}
+
+#[derive(Clone)]
+pub struct ExecutionEventBus {
+    sender: broadcast::Sender<ExecutionEvent>,
+    replay: Arc<Mutex<Vec<ExecutionEvent>>>,
+}
+
+impl ExecutionEventBus {
+    pub fn new() -> Self {
+        let (sender, _) = broadcast::channel(512);
+        Self {
+            sender,
+            replay: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    pub fn publish(&self, event: ExecutionEvent) {
+        if let Ok(mut replay) = self.replay.lock() {
+            if matches!(event, ExecutionEvent::Started { .. }) {
+                replay.clear();
+            }
+            replay.push(event.clone());
+        }
+        let _ = self.sender.send(event);
+    }
+
+    pub fn replay_snapshot(&self) -> Vec<ExecutionEvent> {
+        self.replay
+            .lock()
+            .map(|replay| replay.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn subscribe(&self) -> broadcast::Receiver<ExecutionEvent> {
+        self.sender.subscribe()
+    }
+}
+
+impl Default for ExecutionEventBus {
+    fn default() -> Self {
+        Self::new()
+    }
+}

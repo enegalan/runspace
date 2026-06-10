@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Phase 4: Multi-runtime and framework sandbox
+
+- `RuntimeAdapter` pattern with Node, PHP, Python, Ruby, Laravel, and Symfony adapters
+- Environment catalog extended with PHP, Python, Ruby, Laravel, and Symfony
+- `execute_code` uses adapters for entry files, PHP normalization, and framework bootstrap wrappers
+- Internal framework skeletons at `~/.runspace/frameworks/` with optional Composer provisioning
+- Monaco language and default templates switch when changing environment
+- `RuntimeChangeDialog` confirms before replacing custom code on environment switch
+- Tauri command `get_runtime_template` for backend template lookup
+
 ### Phase 3: Environment Manager
 
 - Installable environments: only added runtimes appear in the selector and settings

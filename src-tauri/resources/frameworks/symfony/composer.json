@@ -1,0 +1,14 @@
+{
+  "name": "runspace/symfony-sandbox",
+  "description": "Internal Symfony sandbox skeleton for Runspace",
+  "type": "project",
+  "require": {
+    "php": "^8.2",
+    "symfony/string": "^7.0"
+  },
+  "config": {
+    "sort-packages": true,
+    "preferred-install": "dist"
+  },
+  "minimum-stability": "stable"
+}

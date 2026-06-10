@@ -1,14 +1,17 @@
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use crate::engine::ExecutionEngine;
+use crate::engine::{ExecutionEngine, ExecutionEventBus};
 use crate::environment::EnvironmentManager;
 use crate::workspace::{Workspace, WorkspaceManager};
+
+pub type SharedState = Arc<AppState>;
 
 pub struct AppState {
     pub workspace_manager: Mutex<WorkspaceManager>,
     pub environment_manager: Mutex<EnvironmentManager>,
     pub execution_engine: ExecutionEngine,
+    pub execution_events: ExecutionEventBus,
     pub active_workspace: Mutex<Option<Workspace>>,
 }
 
@@ -27,6 +30,7 @@ impl AppState {
             workspace_manager: Mutex::new(workspace_manager),
             environment_manager: Mutex::new(environment_manager),
             execution_engine: ExecutionEngine::new(),
+            execution_events: ExecutionEventBus::new(),
             active_workspace: Mutex::new(None),
         })
     }

@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "identifier": "com.enegalan.runspace",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run dev:prepare && npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"

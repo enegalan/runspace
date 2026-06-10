@@ -526,7 +526,7 @@ mod tests {
 
         let mut manager = EnvironmentManager::new(config_path).unwrap();
         assert_eq!(manager.list_installed().len(), 1);
-        assert!(manager.list_available().is_empty());
+        assert_eq!(manager.list_available().len(), 5);
 
         let err = manager.install("unknown").unwrap_err();
         assert!(err.to_string().contains("not found"));

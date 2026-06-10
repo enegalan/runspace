@@ -1,11 +1,10 @@
-use std::io::{BufRead, BufReader};
+use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use serde::Serialize;
-use tauri::{AppHandle, Emitter};
+use super::emitter::ExecutionEmitter;
 
 #[derive(Debug)]
 pub enum ExecutionError {
@@ -24,31 +23,15 @@ impl std::fmt::Display for ExecutionError {
     }
 }
 
-#[derive(Clone, Serialize)]
-struct OutputEvent {
-    stream: String,
-    chunk: String,
-}
-
-#[derive(Clone, Serialize)]
-struct StartedEvent {
-    pid: u32,
-}
-
-#[derive(Clone, Serialize)]
-struct FinishedEvent {
-    exit_code: Option<i32>,
-    timed_out: bool,
-}
-
 pub struct ExecutionRequest {
-    pub binary: PathBuf,
-    pub script_path: PathBuf,
+    pub program: PathBuf,
+    pub args: Vec<String>,
     pub cwd: PathBuf,
     pub timeout_secs: u64,
     pub env_vars: Vec<(String, String)>,
 }
 
+#[allow(dead_code)]
 pub struct ExecutionResult {
     pub exit_code: Option<i32>,
     pub timed_out: bool,
@@ -84,14 +67,17 @@ impl ExecutionEngine {
 
     pub fn run(
         &self,
-        app: AppHandle,
+        emitter: &ExecutionEmitter,
         request: ExecutionRequest,
     ) -> Result<ExecutionResult, ExecutionError> {
         let _ = self.kill();
 
-        let mut cmd = Command::new(&request.binary);
-        cmd.arg(&request.script_path)
-            .current_dir(&request.cwd)
+        let mut cmd = Command::new(&request.program);
+        for arg in &request.args {
+            cmd.arg(arg);
+        }
+        cmd.current_dir(&request.cwd)
+            .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
@@ -104,7 +90,7 @@ impl ExecutionEngine {
             .map_err(|e| ExecutionError::SpawnFailed(e.to_string()))?;
 
         let pid = child.id();
-        let _ = app.emit("execution-started", StartedEvent { pid });
+        emitter.emit_started(pid);
 
         let stdout = child
             .stdout
@@ -125,51 +111,29 @@ impl ExecutionEngine {
         let stdout_acc = Arc::new(Mutex::new(String::new()));
         let stderr_acc = Arc::new(Mutex::new(String::new()));
 
-        let app_stdout = app.clone();
+        let stdout_emitter = emitter.clone();
         let stdout_acc_clone = Arc::clone(&stdout_acc);
         let stdout_handle = std::thread::spawn(move || {
-            let reader = BufReader::new(stdout);
-            for line in reader.lines() {
-                match line {
-                    Ok(line) => {
-                        let chunk = format!("{line}\n");
-                        if let Ok(mut acc) = stdout_acc_clone.lock() {
-                            acc.push_str(&chunk);
-                        }
-                        let _ = app_stdout.emit(
-                            "execution-output",
-                            OutputEvent {
-                                stream: "stdout".to_string(),
-                                chunk,
-                            },
-                        );
-                    }
-                    Err(_) => break,
+            let mut reader = BufReader::new(stdout);
+            let mut buffer = String::new();
+            if reader.read_to_string(&mut buffer).is_ok() && !buffer.is_empty() {
+                if let Ok(mut acc) = stdout_acc_clone.lock() {
+                    acc.push_str(&buffer);
                 }
+                stdout_emitter.emit_output("stdout", &buffer);
             }
         });
 
-        let app_stderr = app.clone();
+        let stderr_emitter = emitter.clone();
         let stderr_acc_clone = Arc::clone(&stderr_acc);
         let stderr_handle = std::thread::spawn(move || {
-            let reader = BufReader::new(stderr);
-            for line in reader.lines() {
-                match line {
-                    Ok(line) => {
-                        let chunk = format!("{line}\n");
-                        if let Ok(mut acc) = stderr_acc_clone.lock() {
-                            acc.push_str(&chunk);
-                        }
-                        let _ = app_stderr.emit(
-                            "execution-output",
-                            OutputEvent {
-                                stream: "stderr".to_string(),
-                                chunk,
-                            },
-                        );
-                    }
-                    Err(_) => break,
+            let mut reader = BufReader::new(stderr);
+            let mut buffer = String::new();
+            if reader.read_to_string(&mut buffer).is_ok() && !buffer.is_empty() {
+                if let Ok(mut acc) = stderr_acc_clone.lock() {
+                    acc.push_str(&buffer);
                 }
+                stderr_emitter.emit_output("stderr", &buffer);
             }
         });
 
@@ -214,13 +178,7 @@ impl ExecutionEngine {
         let _ = stdout_handle.join();
         let _ = stderr_handle.join();
 
-        let _ = app.emit(
-            "execution-finished",
-            FinishedEvent {
-                exit_code,
-                timed_out,
-            },
-        );
+        emitter.emit_finished(exit_code, timed_out);
 
         Ok(ExecutionResult {
             exit_code,
@@ -237,16 +195,47 @@ mod tests {
     use std::path::PathBuf;
 
     fn node_binary() -> Option<PathBuf> {
-        if let Ok(path) = which::which("node") {
-            return Some(path);
-        }
-        for candidate in ["/opt/homebrew/bin/node", "/usr/local/bin/node"] {
-            let path = PathBuf::from(candidate);
-            if path.is_file() {
-                return Some(path);
-            }
-        }
-        None
+        which::which("node").ok()
+    }
+
+    #[test]
+    fn spawn_ruby_puts_via_engine() {
+        let Some(ruby) = which::which("ruby").ok() else {
+            eprintln!("skipping: ruby not found on PATH");
+            return;
+        };
+
+        let engine = ExecutionEngine::new();
+        let temp_dir = std::env::temp_dir().join(format!(
+            "runspace-ruby-test-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&temp_dir).expect("temp dir");
+
+        let script_path = temp_dir.join("main.rb");
+        std::fs::write(&script_path, "puts").expect("write script");
+
+        let request = ExecutionRequest {
+            program: ruby,
+            args: vec![script_path.to_string_lossy().to_string()],
+            cwd: temp_dir.clone(),
+            timeout_secs: 5,
+            env_vars: vec![],
+        };
+
+        use crate::engine::{ExecutionEmitter, ExecutionEventBus};
+
+        let bus = ExecutionEventBus::new();
+        let emitter = ExecutionEmitter::bus_only(bus);
+        let result = engine.run(&emitter, request).expect("ruby run");
+
+        assert!(!result.timed_out, "ruby puts timed out");
+        assert_eq!(result.exit_code, Some(0));
+
+        let _ = std::fs::remove_dir_all(&temp_dir);
     }
 
     #[test]
@@ -269,17 +258,19 @@ mod tests {
         std::fs::write(&script_path, "console.log(1);").expect("write script");
 
         let request = ExecutionRequest {
-            binary: node,
-            script_path,
+            program: node,
+            args: vec![script_path.to_string_lossy().to_string()],
             cwd: temp_dir.clone(),
             timeout_secs: 10,
             env_vars: vec![],
         };
 
         // Integration test without Tauri app handle — run command directly
-        let mut cmd = Command::new(&request.binary);
-        cmd.arg(&request.script_path)
-            .current_dir(&request.cwd)
+        let mut cmd = Command::new(&request.program);
+        for arg in &request.args {
+            cmd.arg(arg);
+        }
+        cmd.current_dir(&request.cwd)
             .stdout(Stdio::piped());
 
         let output = cmd.output().expect("node output");

@@ -14,9 +14,11 @@
 
 ## Goal
 
-Show a fixed catalog of all supported environments (runtimes and frameworks). The user chooses which one to use and configures it explicitly — binary paths, project paths where needed, and per-environment variables. Generalize `ExecutionEngine` so it no longer depends on a hardcoded binary or implicit PATH detection.
+Show a fixed catalog of all supported environments (runtimes and frameworks). The user chooses which one to use and configures it explicitly — binary paths and per-environment variables. Generalize `ExecutionEngine` so it no longer depends on a hardcoded binary or implicit PATH detection.
 
 **Design principle:** Runspace does not decide what is installed. It lists every supported environment; the user configures what they need and selects what they want to run.
+
+**Framework principle:** Framework environments (Laravel, Symfony) are **sandbox snippets**, not attachments to the user's existing projects. The user only provides a PHP binary; Runspace owns the minimal internal skeleton and bootstrap (see [Framework sandbox model](#framework-sandbox-model)).
 
 ---
 
@@ -45,10 +47,10 @@ The catalog is **built into the app** and always shown in the selector and setti
 | `ruby` | Ruby | language | `main.rb` | `ruby_path` — path to `ruby` binary |
 | `gcc` | GCC (C) | language | `main.c` | `gcc_path` — path to `gcc` binary |
 | `gpp` | G++ (C++) | language | `main.cpp` | `gpp_path` — path to `g++` binary |
-| `laravel` | Laravel | framework | — | `php_path`, `project_path` — PHP binary and Laravel project root |
-| `symfony` | Symfony | framework | — | `php_path`, `project_path` — PHP binary and Symfony project root |
+| `laravel` | Laravel | framework | `snippet.php` | `php_path` — PHP binary (skeleton bootstrapped internally by Runspace) |
+| `symfony` | Symfony | framework | `snippet.php` | `php_path` — PHP binary (skeleton bootstrapped internally by Runspace) |
 
-In this phase only **Node.js** must be end-to-end executable. The rest appears in the catalog with its configuration form; full execution for interpreted languages comes in Phase 4, compiled in Phase 7, and Laravel/Symfony in a later release.
+In this phase only **Node.js** must be end-to-end executable. The rest appears in the catalog with its configuration form; full execution for interpreted languages comes in Phase 4, compiled in Phase 7, and framework sandbox execution in a later release (see Phase 4 — [Framework sandbox](phase-4.md#framework-sandbox-post-phase-4)).
 
 Each catalog entry also includes metadata used by later phases: `monaco_language`, `file_extension`, `install_guide_url`.
 
@@ -67,9 +69,31 @@ Each catalog entry also includes metadata used by later phases: `monaco_language
 | `gcc` | `gcc_path` | GCC binary | file | yes |
 | `gpp` | `gpp_path` | G++ binary | file | yes |
 | `laravel` | `php_path` | PHP binary | file | yes |
-| `laravel` | `project_path` | Laravel project root | directory | yes |
+| `laravel` | `composer_path` | Composer binary (skeleton install/update) | file | no |
 | `symfony` | `php_path` | PHP binary | file | yes |
-| `symfony` | `project_path` | Symfony project root | directory | yes |
+| `symfony` | `composer_path` | Composer binary (skeleton install/update) | file | no |
+
+### Framework sandbox model
+
+Frameworks use the same **snippet-in-sandbox** flow as plain PHP/Python/Ruby. The user does not create or link an external Laravel/Symfony project.
+
+| Concern | Owner |
+|---------|--------|
+| Code visible in Monaco | User (snippet body only) |
+| Minimal app skeleton + `vendor/` | Runspace (`~/.runspace/frameworks/{laravel\|symfony}/`) |
+| Bootstrap wrapper that loads the framework | Runspace (fixed script, not user-editable) |
+| PHP binary | User (`php_path`) |
+| First-time skeleton provisioning | Runspace (optional `composer_path` for `composer install` on internal skeleton) |
+
+**Execution flow (later phase):**
+
+1. Write user snippet to workspace (`snippet.php`)
+2. Runspace generates a wrapper that `require`s the internal bootstrap, then inlines the snippet
+3. Execute `php wrapper.php` with the user's `php_path` and framework `env_vars`
+
+**In scope for framework snippets (later):** facades/helpers, collections, simple container/service usage, in-memory or workspace-local SQLite for basic Eloquent/Doctrine trials.
+
+**Out of scope for framework snippets:** HTTP server (`artisan serve`, `symfony server`), routing/middleware against real requests, pointing at the user's production project tree, arbitrary `composer require` per run.
 
 ### Environment variables (per environment)
 
@@ -247,7 +271,7 @@ impl EnvironmentManager {
     "laravel": {
       "paths": {
         "php_path": "/opt/homebrew/bin/php",
-        "project_path": "/Users/me/projects/my-app"
+        "composer_path": "/opt/homebrew/bin/composer"
       },
       "env_vars": {
         "APP_ENV": "local"
@@ -314,7 +338,7 @@ pub async fn execute_code(
 5. Determine entry file (`main.js`, `main.php`, etc.)
 6. Write code and execute with corresponding adapter (only Node.js functional in this phase)
 
-`ResolvedEnvironment` carries: `id`, `binary_path`, `env_vars`, `extra_paths` (e.g. `project_path` for frameworks), `file_extension`.
+`ResolvedEnvironment` carries: `id`, `binary_path`, `env_vars`, `extra_paths` (e.g. internal framework skeleton root for Laravel/Symfony adapters), `file_extension`.
 
 ### 5. UI — Toolbar selector
 
@@ -363,9 +387,9 @@ Environments
 ▶ GCC (C)                                    [Not configured]
 ▶ G++ (C++)                                  [Not configured]
 ▶ Laravel                                    [Not configured]
-    (requires PHP binary + project root)
+    (requires PHP binary; sandbox skeleton managed by Runspace)
 ▶ Symfony                                    [Not configured]
-    (requires PHP binary + project root)
+    (requires PHP binary; sandbox skeleton managed by Runspace)
 ```
 
 **Actions per environment:**
@@ -478,11 +502,11 @@ Everything below must be checked before marking Phase 3 as done.
 - Automatic PATH detection or hiding environments based on what is installed (startup auto-detect fills paths only; does not hide environments)
 - PHP/Python/Ruby execution (Phase 4)
 - GCC/G++ execution (Phase 7)
-- Laravel/Symfony execution (`artisan serve`, `symfony server`, composer)
+- Framework sandbox execution (internal bootstrap + snippet wrapper; see Phase 4)
 - Automatic runtime installation
 - Multiple profiles per environment (e.g. two Node versions side by side)
 - Global env vars shared across all environments (only per-environment in this phase)
-- `.env` file import for Laravel/Symfony (manual key/value editor only)
+- `.env` file import for framework skeletons (manual key/value editor only; defaults ship with internal skeleton)
 
 ---
 
@@ -492,7 +516,7 @@ Everything below must be checked before marking Phase 3 as done.
 |------|------------|
 | User does not know where binaries live | Install guide links; Browse dialog; Test feedback |
 | Inconsistent version strings | Tolerant parser; show raw first line on failure |
-| Framework envs shown before execution exists | Clear "configuration only" badge; Run blocked until Phase 4+ |
+| Framework envs shown before execution exists | Clear "configuration only" badge; Run blocked until framework sandbox phase |
 | Env vars with sensitive values in plain JSON | Document local-only storage; encryption post-MVP |
 | Empty env var keys saved by mistake | Client + server validation on save |
 
@@ -500,4 +524,4 @@ Everything below must be checked before marking Phase 3 as done.
 
 ## Phase deliverable
 
-Environment management decoupled from the execution engine: installable runtimes, user-driven configuration (paths + env vars), startup auto-detect, and validation on demand. Node.js end-to-end. Foundation for multi-runtime execution in Phase 4 and framework support in a later release.
+Environment management decoupled from the execution engine: installable runtimes, user-driven configuration (paths + env vars), startup auto-detect, and validation on demand. Node.js end-to-end. Foundation for multi-runtime execution in Phase 4 and framework sandbox snippets in a later release.

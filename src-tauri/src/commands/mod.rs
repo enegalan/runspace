@@ -7,5 +7,5 @@ pub use environment::{
     list_environments, set_environment_env_vars, set_environment_paths, set_selected_environment,
     uninstall_environment, validate_environment,
 };
-pub use execution::{execute_code, kill_process};
+pub use execution::{execute_code, get_runtime_template, kill_process};
 pub use snippet::{read_snippet, write_snippet};

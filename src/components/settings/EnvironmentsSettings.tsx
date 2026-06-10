@@ -1,7 +1,7 @@
-import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
+import { pickNativePath } from "../../core/api/pickNativePath";
+import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import type {
   ConfigFieldType,
   Environment,
@@ -45,12 +45,13 @@ function EnvironmentCard({ environment, canUninstall }: EnvironmentCardProps) {
   const { definition, configured, version } = environment;
 
   const browsePath = async (fieldType: ConfigFieldType, key: string) => {
-    const selected = await open({
-      multiple: false,
-      directory: fieldType === "directory_path",
-    });
-    if (typeof selected === "string") {
-      setPaths((prev) => ({ ...prev, [key]: selected }));
+    try {
+      const selected = await pickNativePath(fieldType === "directory_path");
+      if (selected) {
+        setPaths((prev) => ({ ...prev, [key]: selected }));
+      }
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : String(err));
     }
   };
 
@@ -64,11 +65,11 @@ function EnvironmentCard({ environment, canUninstall }: EnvironmentCardProps) {
     setSaving(true);
     setMessage(null);
     try {
-      await invoke("set_environment_paths", {
+      await runspaceInvoke("set_environment_paths", {
         environmentId: definition.id,
         paths,
       });
-      await invoke("set_environment_env_vars", {
+      await runspaceInvoke("set_environment_env_vars", {
         environmentId: definition.id,
         envVars: rowsToEnvVars(envRows),
       });
@@ -86,7 +87,7 @@ function EnvironmentCard({ environment, canUninstall }: EnvironmentCardProps) {
     setMessage(null);
     setTestResult(null);
     try {
-      const result = await invoke<ValidationResult>("validate_environment", {
+      const result = await runspaceInvoke<ValidationResult>("validate_environment", {
         environmentId: definition.id,
       });
       setTestResult(result);

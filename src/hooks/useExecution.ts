@@ -1,7 +1,9 @@
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect } from "react";
+import { subscribeExecutionEvents } from "../core/api/executionEvents";
+import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { DEFAULT_ENVIRONMENT_ID } from "../core/constants/environmentCatalog";
+import { isTauri } from "../core/platform/isTauri";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
@@ -31,48 +33,58 @@ export function useExecution() {
   } = useExecutionStore();
 
   useEffect(() => {
-    let cancelled = false;
-    const unlisteners: Array<() => void> = [];
+    if (isTauri()) {
+      let cancelled = false;
+      const unlisteners: Array<() => void> = [];
 
-    const register = (unlisten: () => void) => {
-      if (cancelled) {
-        unlisten();
-        return;
-      }
-      unlisteners.push(unlisten);
-    };
+      const register = (unlisten: () => void) => {
+        if (cancelled) {
+          unlisten();
+          return;
+        }
+        unlisteners.push(unlisten);
+      };
 
-    const setup = async () => {
-      const outputUnlisten = await listen<ExecutionOutputEvent>(
-        "execution-output",
-        (event) => {
-          appendOutput(event.payload.stream, event.payload.chunk);
-        },
-      );
-      register(outputUnlisten);
+      const setup = async () => {
+        const outputUnlisten = await listen<ExecutionOutputEvent>(
+          "execution-output",
+          (event) => {
+            appendOutput(event.payload.stream, event.payload.chunk);
+          },
+        );
+        register(outputUnlisten);
 
-      const finishedUnlisten = await listen<ExecutionFinishedEvent>(
-        "execution-finished",
-        (event) => {
-          setFinished(event.payload.exit_code, event.payload.timed_out);
-        },
-      );
-      register(finishedUnlisten);
+        const finishedUnlisten = await listen<ExecutionFinishedEvent>(
+          "execution-finished",
+          (event) => {
+            setFinished(event.payload.exit_code, event.payload.timed_out);
+          },
+        );
+        register(finishedUnlisten);
 
-      const startedUnlisten = await listen("execution-started", () => {
-        setStarted();
-      });
-      register(startedUnlisten);
-    };
+        const startedUnlisten = await listen("execution-started", () => {
+          setStarted();
+        });
+        register(startedUnlisten);
+      };
 
-    void setup();
+      void setup();
 
-    return () => {
-      cancelled = true;
-      for (const unlisten of unlisteners) {
-        unlisten();
-      }
-    };
+      return () => {
+        cancelled = true;
+        for (const unlisten of unlisteners) {
+          unlisten();
+        }
+      };
+    }
+
+    return subscribeExecutionEvents({
+      onStarted: setStarted,
+      onOutput: appendOutput,
+      onFinished: (payload) => {
+        setFinished(payload.exit_code, payload.timed_out);
+      },
+    });
   }, [appendOutput, setFinished, setStarted]);
 
   const run = useCallback(async (code: string, options?: ExecutionOptions) => {
@@ -82,7 +94,7 @@ export function useExecution() {
     const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
 
     try {
-      await invoke("execute_code", { code, timeoutSecs, environmentId });
+      await runspaceInvoke("execute_code", { code, timeoutSecs, environmentId });
       void useEditorStore.getState().saveToDisk();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -91,7 +103,7 @@ export function useExecution() {
 
   const stop = useCallback(async () => {
     try {
-      await invoke("kill_process");
+      await runspaceInvoke("kill_process");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }

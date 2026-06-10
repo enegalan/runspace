@@ -1,6 +1,8 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useMemo, useState } from "react";
+import { waitForBackendReady } from "../../core/api/fetchBackend";
 import { useExecution } from "../../hooks/useExecution";
+import { isTauri } from "../../core/platform/isTauri";
 import { useEditorStore } from "../../stores/editorStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { OutputPanel } from "../output/OutputPanel";
@@ -22,6 +24,7 @@ export function AppShell() {
   const loadEnvironments = useEnvironmentStore((state) => state.load);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [backendReady, setBackendReady] = useState(isTauri());
 
   const {
     stdout,
@@ -48,11 +51,38 @@ export function AppShell() {
     : undefined;
 
   useEffect(() => {
-    void loadFromDisk();
-    void loadEnvironments();
-  }, [loadFromDisk, loadEnvironments]);
+    let cancelled = false;
+
+    void waitForBackendReady()
+      .then(() => {
+        if (!cancelled) {
+          setBackendReady(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendReady(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
+    if (!backendReady) {
+      return;
+    }
+    void loadFromDisk();
+    void loadEnvironments();
+  }, [backendReady, loadFromDisk, loadEnvironments]);
+
+  useEffect(() => {
+    if (!isTauri()) {
+      return;
+    }
+
     let unlisten: (() => void) | undefined;
 
     void getCurrentWindow()
@@ -68,10 +98,12 @@ export function AppShell() {
     };
   }, [saveToDisk]);
 
-  if (!loaded || !envLoaded) {
+  if (!backendReady || !loaded || !envLoaded) {
     return (
       <div className="app-shell app-shell--loading" data-testid="app-shell">
-        <div className="app-shell__loading">Loading...</div>
+        <div className="app-shell__loading">
+          {!backendReady && !isTauri() ? "Starting backend..." : "Loading..."}
+        </div>
       </div>
     );
   }

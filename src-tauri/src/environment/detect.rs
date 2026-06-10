@@ -1,11 +1,28 @@
 use std::path::{Path, PathBuf};
 
-use super::catalog::binary_field_key;
-
 struct BinaryProbe {
     command_names: &'static [&'static str],
-    fallback_paths: &'static [&'static str],
 }
+
+const NODE_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["node"],
+};
+
+const PHP_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["php"],
+};
+
+const PYTHON_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["python3", "python"],
+};
+
+const RUBY_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["ruby"],
+};
+
+const COMPOSER_PROBE: BinaryProbe = BinaryProbe {
+    command_names: &["composer"],
+};
 
 fn probe_binary(probe: &BinaryProbe) -> Option<PathBuf> {
     for name in probe.command_names {
@@ -13,13 +30,6 @@ fn probe_binary(probe: &BinaryProbe) -> Option<PathBuf> {
             if path.is_file() && is_executable(&path) {
                 return Some(path);
             }
-        }
-    }
-
-    for candidate in probe.fallback_paths {
-        let path = PathBuf::from(candidate);
-        if path.is_file() && is_executable(&path) {
-            return Some(path);
         }
     }
 
@@ -39,46 +49,55 @@ fn is_executable(path: &Path) -> bool {
     path.is_file()
 }
 
-fn probe_for_field(environment_id: &str, field_key: &str) -> Option<PathBuf> {
-    let expected_key = binary_field_key(environment_id)?;
-    if expected_key != field_key {
-        return None;
-    }
-
-    let probe = match environment_id {
-        "nodejs" => BinaryProbe {
-            command_names: &["node"],
-            fallback_paths: &[
-                "/opt/homebrew/bin/node",
-                "/usr/local/bin/node",
-                "/usr/bin/node",
-            ],
-        },
+fn probe_for_field(field_key: &str) -> Option<PathBuf> {
+    let probe = match field_key {
+        "node_path" => &NODE_PROBE,
+        "php_path" => &PHP_PROBE,
+        "python_path" => &PYTHON_PROBE,
+        "ruby_path" => &RUBY_PROBE,
+        "composer_path" => &COMPOSER_PROBE,
         _ => return None,
     };
 
-    probe_binary(&probe)
+    probe_binary(probe)
 }
 
 pub fn detect_missing_binary_paths(
     environment_id: &str,
     paths: &std::collections::HashMap<String, String>,
 ) -> std::collections::HashMap<String, String> {
+    use super::catalog::{binary_field_key, get_definition};
+
     let mut detected = std::collections::HashMap::new();
-    let Some(field_key) = binary_field_key(environment_id) else {
+    let Some(definition) = get_definition(environment_id) else {
         return detected;
     };
 
-    let already_set = paths
-        .get(field_key)
-        .map(|v| !v.trim().is_empty())
-        .unwrap_or(false);
-    if already_set {
-        return detected;
-    }
+    for field in &definition.config_fields {
+        if field.field_type != super::types::ConfigFieldType::FilePath {
+            continue;
+        }
 
-    if let Some(path) = probe_for_field(environment_id, field_key) {
-        detected.insert(field_key.to_string(), path.to_string_lossy().to_string());
+        let already_set = paths
+            .get(&field.key)
+            .map(|v| !v.trim().is_empty())
+            .unwrap_or(false);
+        if already_set {
+            continue;
+        }
+
+        if field.key == "composer_path" {
+            if let Some(path) = probe_for_field(&field.key) {
+                detected.insert(field.key.clone(), path.to_string_lossy().to_string());
+            }
+            continue;
+        }
+
+        if Some(field.key.as_str()) == binary_field_key(environment_id) {
+            if let Some(path) = probe_for_field(&field.key) {
+                detected.insert(field.key.clone(), path.to_string_lossy().to_string());
+            }
+        }
     }
 
     detected

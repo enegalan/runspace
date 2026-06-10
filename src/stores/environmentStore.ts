@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { create } from "zustand";
+import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { DEFAULT_ENVIRONMENT_ID } from "../core/constants/environmentCatalog";
 import type {
   Environment,
@@ -26,38 +26,42 @@ export const useEnvironmentStore = create<EnvironmentStore>((set, get) => ({
   loaded: false,
 
   load: async () => {
-    const [environments, available, selected] = await Promise.all([
-      invoke<Environment[]>("list_environments"),
-      invoke<EnvironmentDefinition[]>("list_available_environments"),
-      invoke<Environment>("get_selected_environment"),
-    ]);
-    set({
-      environments,
-      available,
-      selectedId: selected.definition.id as EnvironmentId,
-      loaded: true,
-    });
+    try {
+      const [environments, available, selected] = await Promise.all([
+        runspaceInvoke<Environment[]>("list_environments"),
+        runspaceInvoke<EnvironmentDefinition[]>("list_available_environments"),
+        runspaceInvoke<Environment>("get_selected_environment"),
+      ]);
+      set({
+        environments,
+        available,
+        selectedId: selected.definition.id as EnvironmentId,
+        loaded: true,
+      });
+    } catch {
+      set({ loaded: true });
+    }
   },
 
   select: async (id) => {
-    await invoke("set_selected_environment", { environmentId: id });
+    await runspaceInvoke("set_selected_environment", { environmentId: id });
     set({ selectedId: id });
     await get().refresh();
   },
 
   install: async (id) => {
-    await invoke("install_environment", { environmentId: id });
+    await runspaceInvoke("install_environment", { environmentId: id });
     await get().refresh();
-    const selected = await invoke<Environment>("get_selected_environment");
+    const selected = await runspaceInvoke<Environment>("get_selected_environment");
     set({ selectedId: selected.definition.id as EnvironmentId });
   },
 
   uninstall: async (id) => {
-    await invoke("uninstall_environment", { environmentId: id });
+    await runspaceInvoke("uninstall_environment", { environmentId: id });
     const [environments, available, selected] = await Promise.all([
-      invoke<Environment[]>("list_environments"),
-      invoke<EnvironmentDefinition[]>("list_available_environments"),
-      invoke<Environment>("get_selected_environment"),
+      runspaceInvoke<Environment[]>("list_environments"),
+      runspaceInvoke<EnvironmentDefinition[]>("list_available_environments"),
+      runspaceInvoke<Environment>("get_selected_environment"),
     ]);
     set({
       environments,
@@ -68,8 +72,8 @@ export const useEnvironmentStore = create<EnvironmentStore>((set, get) => ({
 
   refresh: async () => {
     const [environments, available] = await Promise.all([
-      invoke<Environment[]>("list_environments"),
-      invoke<EnvironmentDefinition[]>("list_available_environments"),
+      runspaceInvoke<Environment[]>("list_environments"),
+      runspaceInvoke<EnvironmentDefinition[]>("list_available_environments"),
     ]);
     set({ environments, available });
   },
