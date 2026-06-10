@@ -9,7 +9,6 @@ import type {
   ExecutionOptions,
   ExecutionOutputEvent,
 } from "../core/types/execution";
-import { useEditorStore } from "../stores/editorStore";
 import { useExecutionStore } from "../stores/executionStore";
 
 const DEFAULT_TIMEOUT_SECS = 30;
@@ -87,15 +86,19 @@ export function useExecution() {
     });
   }, [appendOutput, setFinished, setStarted]);
 
-  const run = useCallback(async (code: string, options?: ExecutionOptions) => {
+  const run = useCallback(async (options?: ExecutionOptions) => {
     setRunning();
 
     const environmentId = options?.environmentId ?? DEFAULT_ENVIRONMENT_ID;
     const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
+    const entryFile = options?.entryFile;
 
     try {
-      await runspaceInvoke("execute_code", { code, timeoutSecs, environmentId });
-      void useEditorStore.getState().saveToDisk();
+      await runspaceInvoke("execute_code", {
+        environmentId,
+        timeoutSecs,
+        entryFile,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }

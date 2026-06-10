@@ -35,7 +35,7 @@ async function pollBackendReady(): Promise<void> {
 }
 
 export function waitForBackendReady(): Promise<void> {
-  if (isTauri()) {
+  if (isTauri() && !import.meta.env.DEV) {
     return Promise.resolve();
   }
 

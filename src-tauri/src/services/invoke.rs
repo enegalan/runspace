@@ -11,9 +11,11 @@ use crate::state::SharedState;
 
 #[derive(Debug, Deserialize)]
 struct ExecuteArgs {
-    code: String,
+    code: Option<String>,
     #[serde(rename = "environmentId")]
     environment_id: Option<String>,
+    #[serde(rename = "entryFile")]
+    entry_file: Option<String>,
     #[serde(rename = "timeoutSecs")]
     timeout_secs: Option<u64>,
 }
@@ -169,6 +171,7 @@ pub async fn dispatch_invoke(
                     app,
                     args.code,
                     args.environment_id,
+                    args.entry_file,
                     args.timeout_secs,
                 )?;
             } else {
@@ -176,9 +179,418 @@ pub async fn dispatch_invoke(
                     state,
                     args.code,
                     args.environment_id,
+                    args.entry_file,
                     args.timeout_secs,
                 )?;
             }
+            Ok(Value::Null)
+        }
+        "list_workspaces" => {
+            let runtime_id = args
+                .get("runtimeId")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            Ok(json!(
+                manager
+                    .list_workspaces_for_runtime(runtime_id.as_deref())
+                    .map_err(|e| e.to_string())?
+            ))
+        }
+        "open_workspace" => {
+            let id: String = args
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing workspace id")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let workspace = manager.open_workspace(&id).map_err(|e| e.to_string())?;
+            let info = manager.workspace_info(&workspace).map_err(|e| e.to_string())?;
+            {
+                let mut active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                *active = Some(workspace);
+            }
+            Ok(json!(info))
+        }
+        "create_workspace" => {
+            let name = args
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Untitled")
+                .to_string();
+            let runtime_id = args
+                .get("runtimeId")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing runtimeId")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let workspace = manager
+                .create_named_workspace(&name, &runtime_id)
+                .map_err(|e| e.to_string())?;
+            let info = manager.workspace_info(&workspace).map_err(|e| e.to_string())?;
+            {
+                let mut active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                *active = Some(workspace);
+            }
+            Ok(json!(info))
+        }
+        "get_active_workspace" => {
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            match active.as_ref() {
+                Some(workspace) => {
+                    let info = manager.workspace_info(workspace).map_err(|e| e.to_string())?;
+                    Ok(json!(info))
+                }
+                None => Ok(Value::Null),
+            }
+        }
+        "initialize_workspace" => {
+            let runtime_id = args
+                .get("runtimeId")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing runtimeId")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let session = manager.load_session().map_err(|e| e.to_string())?;
+            let (workspace, info) = manager
+                .initialize_active_workspace(&runtime_id, &session)
+                .map_err(|e| e.to_string())?;
+            {
+                let mut active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                *active = Some(workspace);
+            }
+            Ok(json!(info))
+        }
+        "list_files" => {
+            let relative_path = args
+                .get("relativePath")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            let files = manager
+                .list_files(workspace, relative_path.as_deref())
+                .map_err(|e| e.to_string())?;
+            Ok(json!(files))
+        }
+        "read_file" => {
+            let path = args
+                .get("path")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing path")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            let content = manager
+                .read_file(workspace, &path)
+                .map_err(|e| e.to_string())?;
+            Ok(json!(content))
+        }
+        "write_file" => {
+            let path = args
+                .get("path")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing path")?
+                .to_string();
+            let content = args
+                .get("content")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing content")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            manager
+                .write_file(workspace, &path, &content)
+                .map_err(|e| e.to_string())?;
+            Ok(Value::Null)
+        }
+        "delete_file" => {
+            let path = args
+                .get("path")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing path")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            manager
+                .delete_file(workspace, &path)
+                .map_err(|e| e.to_string())?;
+            Ok(Value::Null)
+        }
+        "rename_file" => {
+            let old_path = args
+                .get("oldPath")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing oldPath")?
+                .to_string();
+            let new_path = args
+                .get("newPath")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing newPath")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            manager
+                .rename_file(workspace, &old_path, &new_path)
+                .map_err(|e| e.to_string())?;
+            Ok(Value::Null)
+        }
+        "create_directory" => {
+            let path = args
+                .get("path")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing path")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            manager
+                .create_directory(workspace, &path)
+                .map_err(|e| e.to_string())?;
+            Ok(Value::Null)
+        }
+        "import_external" => {
+            let source_paths = args
+                .get("sourcePaths")
+                .and_then(|v| v.as_array())
+                .ok_or("Missing sourcePaths")?
+                .iter()
+                .filter_map(|value| value.as_str().map(|path| path.to_string()))
+                .collect::<Vec<_>>();
+            if source_paths.is_empty() {
+                return Err("Missing sourcePaths".to_string());
+            }
+            let target_dir = args
+                .get("targetDir")
+                .and_then(|v| v.as_str())
+                .map(|value| value.to_string());
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            let imported = manager
+                .import_external(workspace, &source_paths, target_dir.as_deref())
+                .map_err(|e| e.to_string())?;
+            Ok(json!(imported))
+        }
+        "read_session" => {
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            Ok(json!(manager.load_session().map_err(|e| e.to_string())?))
+        }
+        "delete_workspace" => {
+            let id = args
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing workspace id")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            manager
+                .delete_workspace(&id)
+                .map_err(|e| e.to_string())?;
+            let mut session = manager.load_session().map_err(|e| e.to_string())?;
+            manager
+                .purge_workspace_from_session(&mut session, &id)
+                .map_err(|e| e.to_string())?;
+            {
+                let mut active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                if active.as_ref().is_some_and(|current| current.id == id) {
+                    *active = None;
+                }
+            }
+            Ok(Value::Null)
+        }
+        "rename_workspace" => {
+            let id = args
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing workspace id")?
+                .to_string();
+            let name = args
+                .get("name")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing project name")?
+                .to_string();
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let workspace = manager.open_workspace(&id).map_err(|e| e.to_string())?;
+            let trimmed = name.trim();
+            if trimmed.is_empty() {
+                return Err("Project name cannot be empty".to_string());
+            }
+            let mut manifest = manager
+                .read_manifest(&workspace)
+                .map_err(|e| e.to_string())?;
+            manifest.name = trimmed.to_string();
+            manifest.updated_at = chrono::Utc::now().to_rfc3339();
+            manager
+                .write_manifest(&workspace, &manifest)
+                .map_err(|e| e.to_string())?;
+            let info = manager
+                .workspace_info(&workspace)
+                .map_err(|e| e.to_string())?;
+            {
+                let mut active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                if active.as_ref().is_some_and(|current| current.id == id) {
+                    *active = Some(workspace);
+                }
+            }
+            Ok(json!(info))
+        }
+        "update_manifest" => {
+            let name = args.get("name").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let entry_file = args
+                .get("entryFile")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let workspace = {
+                let active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                active
+                    .clone()
+                    .ok_or_else(|| "No active workspace".to_string())?
+            };
+            let mut manifest = manager
+                .read_manifest(&workspace)
+                .map_err(|e| e.to_string())?;
+            if let Some(next_name) = name {
+                let trimmed = next_name.trim();
+                if trimmed.is_empty() {
+                    return Err("Project name cannot be empty".to_string());
+                }
+                manifest.name = trimmed.to_string();
+            }
+            if let Some(next_entry) = entry_file {
+                manifest.entry_file = next_entry;
+            }
+            manifest.updated_at = chrono::Utc::now().to_rfc3339();
+            manager
+                .write_manifest(&workspace, &manifest)
+                .map_err(|e| e.to_string())?;
+            let info = manager
+                .workspace_info(&workspace)
+                .map_err(|e| e.to_string())?;
+            Ok(json!(info))
+        }
+        "write_session" => {
+            let payload = args
+                .get("session")
+                .cloned()
+                .unwrap_or(args);
+            let session: crate::workspace::SessionData = serde_json::from_value(payload)
+                .map_err(|e| format!("Invalid write_session args: {e}"))?;
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            manager.save_session(&session).map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
         "kill_process" => {

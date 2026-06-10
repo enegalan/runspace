@@ -1,0 +1,22 @@
+export interface RuntimePresentation {
+  label: string;
+  accent: string;
+}
+
+const RUNTIME_PRESENTATION: Record<string, RuntimePresentation> = {
+  nodejs: { label: "Node.js", accent: "#3c873a" },
+  php: { label: "PHP", accent: "#8892bf" },
+  python: { label: "Python", accent: "#3776ab" },
+  ruby: { label: "Ruby", accent: "#cc342d" },
+  laravel: { label: "Laravel", accent: "#ff2d20" },
+  symfony: { label: "Symfony", accent: "#000000" },
+};
+
+export function getRuntimePresentation(runtimeId: string): RuntimePresentation {
+  return (
+    RUNTIME_PRESENTATION[runtimeId] ?? {
+      label: runtimeId,
+      accent: "#0e639c",
+    }
+  );
+}
