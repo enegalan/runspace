@@ -1,5 +1,10 @@
 import { useState } from "react";
 import {
+  DROP_TARGET_ATTR,
+  hasExternalFileDrag,
+  importDroppedExternalFiles,
+} from "../../core/workspace/externalFileDrop";
+import {
   canMoveToRoot,
   clearFileDragData,
   getActiveDragPayload,
@@ -21,7 +26,8 @@ interface SidebarMenuState {
 }
 
 export function FileTree() {
-  const workspaceId = useWorkspaceStore((state) => state.workspace?.id ?? "");
+  const workspace = useWorkspaceStore((state) => state.workspace);
+  const workspaceId = workspace?.id ?? "";
   const rootFiles = useWorkspaceStore((state) => state.rootFiles);
   const refreshFiles = useWorkspaceStore((state) => state.refreshFiles);
   const moveFile = useWorkspaceStore((state) => state.moveFile);
@@ -41,7 +47,18 @@ export function FileTree() {
   };
 
   const handleBodyDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isDirectBodyTarget(event) || !hasFileDrag(event.dataTransfer.types)) {
+    if (!isDirectBodyTarget(event) || !workspace) {
+      return;
+    }
+
+    if (hasExternalFileDrag(event.dataTransfer)) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      setRootDropTarget(true);
+      return;
+    }
+
+    if (!hasFileDrag(event.dataTransfer.types)) {
       return;
     }
     const payload = getActiveDragPayload();
@@ -65,6 +82,12 @@ export function FileTree() {
     }
     event.preventDefault();
     setRootDropTarget(false);
+
+    if (hasExternalFileDrag(event.dataTransfer)) {
+      void importDroppedExternalFiles(event.dataTransfer, "");
+      return;
+    }
+
     const payload = readFileDragData(event.dataTransfer);
     clearFileDragData();
     if (!payload || !canMoveToRoot(payload.path)) {
@@ -74,6 +97,9 @@ export function FileTree() {
   };
 
   const openSidebarMenu = (event: React.MouseEvent) => {
+    if (!workspace) {
+      return;
+    }
     event.preventDefault();
     setSidebarMenu({ x: event.clientX, y: event.clientY });
   };
@@ -115,6 +141,7 @@ export function FileTree() {
             onClick={() => void createAndOpenFile()}
             title="New file"
             aria-label="New file"
+            disabled={!workspace}
           >
             +
           </button>
@@ -124,6 +151,7 @@ export function FileTree() {
             onClick={() => void handleNewFolder()}
             title="New folder"
             aria-label="New folder"
+            disabled={!workspace}
           >
             📁
           </button>
@@ -133,6 +161,7 @@ export function FileTree() {
             onClick={() => void refreshFiles()}
             title="Refresh"
             aria-label="Refresh"
+            disabled={!workspace}
           >
             ↻
           </button>
@@ -141,14 +170,21 @@ export function FileTree() {
 
       <div
         className={`file-tree__body${rootDropTarget ? " file-tree__body--drop-target" : ""}`}
+        {...{ [DROP_TARGET_ATTR]: "" }}
         onContextMenu={openSidebarMenu}
         onDragOver={handleBodyDragOver}
         onDragLeave={handleBodyDragLeave}
         onDrop={handleBodyDrop}
         role="presentation"
       >
-        {rootFiles.length === 0 ? (
-          <p className="file-tree__empty">No files yet — right-click for actions</p>
+        {!workspace ? (
+          <p className="file-tree__empty">
+            No projects yet — open the project menu and choose + New project.
+          </p>
+        ) : rootFiles.length === 0 ? (
+          <p className="file-tree__empty">
+            No files yet — drag files here or right-click for actions
+          </p>
         ) : (
           rootFiles.map((entry) => (
             <FileTreeItem

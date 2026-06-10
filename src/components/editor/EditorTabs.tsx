@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
+import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 function tabLabel(path: string): string {
   const parts = path.split("/");
@@ -8,6 +9,7 @@ function tabLabel(path: string): string {
 }
 
 export function EditorTabs() {
+  const hasWorkspace = useWorkspaceStore((state) => state.workspace !== null);
   const openFiles = useEditorTabsStore((state) => state.openFiles);
   const activePath = useEditorTabsStore((state) => state.activePath);
   const setActive = useEditorTabsStore((state) => state.setActive);
@@ -87,8 +89,9 @@ export function EditorTabs() {
         type="button"
         className="editor-tabs__new"
         onClick={() => void createAndOpenFile()}
-        title="New file"
+        title={hasWorkspace ? "New file" : "Create a project first"}
         aria-label="New file"
+        disabled={!hasWorkspace}
       >
         +
       </button>

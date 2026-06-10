@@ -1,6 +1,11 @@
 import { create } from "zustand";
+import {
+  isOnboardingComplete,
+  markOnboardingComplete,
+} from "../core/onboarding/onboardingState";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { activateRuntime } from "../core/workspace/activateRuntime";
+import { readFileAsText } from "../core/workspace/externalFileDrop";
 import { movedPath, parentDir } from "../core/workspace/fileTreeDrag";
 import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
 import { requireProjectName } from "../core/workspace/promptProjectName";
@@ -15,7 +20,10 @@ interface WorkspaceStore {
   expandedDirs: Set<string>;
   filesRevision: number;
   loaded: boolean;
+  onboardingRequired: boolean;
+  onboardingComplete: boolean;
   initialize: (runtimeId: string) => Promise<void>;
+  finishOnboarding: (runtimeId: string, projectName: string) => Promise<void>;
   switchEnvironment: (runtimeId: string) => Promise<boolean>;
   switchWorkspace: (id: string) => Promise<void>;
   loadWorkspaces: (runtimeId: string) => Promise<void>;
@@ -29,6 +37,10 @@ interface WorkspaceStore {
   deleteFile: (path: string) => Promise<void>;
   renameFile: (oldPath: string, newPath: string) => Promise<void>;
   moveFile: (sourcePath: string, targetDir: string) => Promise<void>;
+  importExternalFiles: (
+    sources: string[] | File[],
+    targetDir?: string,
+  ) => Promise<string[]>;
   toggleDir: (path: string) => void;
   expandDir: (path: string) => void;
 }
@@ -37,6 +49,27 @@ async function syncIfNeeded(workspace: WorkspaceInfo | null): Promise<void> {
   if (workspace) {
     await syncActiveWorkspace(workspace);
   }
+}
+
+function applyNoActiveWorkspaceState(
+  set: (
+    partial:
+      | Partial<WorkspaceStore>
+      | ((state: WorkspaceStore) => Partial<WorkspaceStore>),
+  ) => void,
+  get: () => WorkspaceStore,
+): void {
+  useEditorTabsStore.getState().clearTabs();
+  set({
+    workspace: null,
+    workspaces: [],
+    rootFiles: [],
+    expandedDirs: new Set<string>(),
+    filesRevision: get().filesRevision + 1,
+    onboardingComplete: true,
+    onboardingRequired: false,
+    loaded: true,
+  });
 }
 
 async function activateWorkspace(
@@ -66,13 +99,42 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   expandedDirs: new Set<string>(),
   filesRevision: 0,
   loaded: false,
+  onboardingRequired: false,
+  onboardingComplete: false,
 
   initialize: async (runtimeId) => {
-    const workspace = await activateRuntime(runtimeId, {
-      promptLabel: "Name for your first project",
-    });
+    const allWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {});
+    const onboardingComplete = get().onboardingComplete || isOnboardingComplete();
+
+    if (allWorkspaces.length === 0) {
+      set({
+        workspace: null,
+        workspaces: [],
+        rootFiles: [],
+        expandedDirs: new Set<string>(),
+        onboardingComplete,
+        onboardingRequired: !onboardingComplete,
+        loaded: true,
+      });
+      return;
+    }
+
+    set({ onboardingComplete: true, onboardingRequired: false });
+    await markOnboardingComplete();
+
+    const workspace = await activateRuntime(runtimeId);
     if (!workspace) {
-      set({ workspace: null, workspaces: [], rootFiles: [], loaded: true });
+      set({
+        workspace: null,
+        workspaces: [],
+        rootFiles: [],
+        expandedDirs: new Set<string>(),
+        filesRevision: get().filesRevision + 1,
+        onboardingComplete: true,
+        onboardingRequired: false,
+        loaded: true,
+      });
+      await get().loadWorkspaces(runtimeId);
       return;
     }
 
@@ -81,6 +143,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       rootFiles: [],
       expandedDirs: new Set<string>(),
       filesRevision: get().filesRevision + 1,
+      onboardingComplete: true,
+      onboardingRequired: false,
       loaded: true,
     });
     await get().loadWorkspaces(runtimeId);
@@ -90,6 +154,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     await useEditorTabsStore
       .getState()
       .restoreForWorkspace(session, runtimeId, workspace.id);
+  },
+
+  finishOnboarding: async (runtimeId, projectName) => {
+    await get().createProject(runtimeId, projectName);
   },
 
   switchEnvironment: async (runtimeId) => {
@@ -102,6 +170,13 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
     const workspace = await activateRuntime(runtimeId);
     if (!workspace) {
+      set({
+        workspace: null,
+        rootFiles: [],
+        expandedDirs: new Set<string>(),
+        filesRevision: get().filesRevision + 1,
+      });
+      await get().loadWorkspaces(runtimeId);
       return false;
     }
 
@@ -172,6 +247,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     await useEditorTabsStore
       .getState()
       .persistForEnvironment(runtimeId, workspace.id);
+
+    set({ onboardingComplete: true, onboardingRequired: false });
+    void markOnboardingComplete();
   },
 
   renameProject: async (workspaceId, name) => {
@@ -200,46 +278,29 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
     const isActive = current.id === workspaceId;
     if (isActive) {
-      await useEditorTabsStore
-        .getState()
-        .persistForEnvironment(runtimeId, workspaceId);
+      try {
+        await useEditorTabsStore
+          .getState()
+          .persistForEnvironment(runtimeId, workspaceId);
+      } catch (error) {
+        console.error("Failed to persist workspace session before delete:", error);
+      }
     }
 
     await runspaceInvoke("delete_workspace", { id: workspaceId });
 
-    const remaining = get().workspaces.filter((item) => item.id !== workspaceId);
-    if (remaining.length === 0) {
-      useEditorTabsStore.getState().clearTabs();
-      const workspace = await activateRuntime(runtimeId, {
-        promptLabel: "Name for the new project",
-      });
-      if (!workspace) {
-        set({
-          workspace: null,
-          workspaces: [],
-          expandedDirs: new Set<string>(),
-          rootFiles: [],
-          filesRevision: get().filesRevision + 1,
-        });
-        return;
-      }
-      set({
-        workspace,
-        expandedDirs: new Set<string>(),
-        rootFiles: [],
-        filesRevision: get().filesRevision + 1,
-      });
-      await get().loadWorkspaces(runtimeId);
-      await get().refreshFiles();
-      const session = await runspaceInvoke<SessionData>("read_session");
-      await useEditorTabsStore
-        .getState()
-        .restoreForWorkspace(session, runtimeId, workspace.id);
-      return;
-    }
+    const runtimeWorkspaces =
+      (await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {
+        runtimeId,
+      })) ?? [];
 
     if (isActive) {
-      await get().switchWorkspace(remaining[0].id);
+      if (runtimeWorkspaces.length === 0) {
+        applyNoActiveWorkspaceState(set, get);
+        await markOnboardingComplete();
+        return;
+      }
+      await get().switchWorkspace(runtimeWorkspaces[0].id);
       return;
     }
 
@@ -247,6 +308,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   },
 
   refreshFiles: async () => {
+    if (!get().workspace) {
+      set({ rootFiles: [], filesRevision: get().filesRevision + 1 });
+      return;
+    }
     await syncIfNeeded(get().workspace);
     const files = await runspaceInvoke<FileEntry[]>("list_files", {});
     set({
@@ -312,6 +377,38 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
     await get().renameFile(sourcePath, newPath);
     useEditorTabsStore.getState().renameOpenFile(sourcePath, newPath);
+  },
+
+  importExternalFiles: async (sources, targetDir = "") => {
+    if (!get().workspace) {
+      return [];
+    }
+    await syncIfNeeded(get().workspace);
+
+    let imported: string[] = [];
+    if (typeof sources[0] === "string") {
+      imported =
+        (await runspaceInvoke<string[]>("import_external", {
+          sourcePaths: sources,
+          targetDir: targetDir || undefined,
+        })) ?? [];
+    } else {
+      for (const file of sources as File[]) {
+        const content = await readFileAsText(file);
+        const relativePath = targetDir ? `${targetDir}/${file.name}` : file.name;
+        if (await workspaceEntryExists(relativePath)) {
+          throw new Error(`"${relativePath}" already exists.`);
+        }
+        await runspaceInvoke("write_file", { path: relativePath, content });
+        imported.push(relativePath);
+      }
+    }
+
+    if (targetDir) {
+      get().expandDir(targetDir);
+    }
+    await get().refreshFiles();
+    return imported;
   },
 
   toggleDir: (path) => {

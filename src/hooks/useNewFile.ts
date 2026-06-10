@@ -5,9 +5,9 @@ import { useEnvironmentStore } from "../stores/environmentStore";
 import { useWorkspaceStore } from "../stores/workspaceStore";
 
 export function useNewFile() {
-  const runtimeId =
-    useWorkspaceStore((state) => state.workspace?.runtime_id) ??
-    useEnvironmentStore((state) => state.selectedId);
+  const workspaceRuntimeId = useWorkspaceStore((state) => state.workspace?.runtime_id);
+  const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
+  const runtimeId = workspaceRuntimeId ?? selectedRuntimeId;
   const rootFiles = useWorkspaceStore((state) => state.rootFiles);
   const createFile = useWorkspaceStore((state) => state.createFile);
   const openFile = useEditorTabsStore((state) => state.openFile);

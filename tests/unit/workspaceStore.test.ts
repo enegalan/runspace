@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { markOnboardingComplete } from "../../src/core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
@@ -20,6 +21,8 @@ describe("workspaceStore", () => {
       expandedDirs: new Set(),
       filesRevision: 0,
       loaded: false,
+      onboardingRequired: false,
+      onboardingComplete: false,
     });
     useEditorTabsStore.setState({
       openFiles: [],
@@ -31,12 +34,15 @@ describe("workspaceStore", () => {
   it("initializes workspace and loads files", async () => {
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce([mockWorkspace])
+      .mockResolvedValueOnce({ environments: {}, last_runtime_id: "nodejs" })
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce([mockWorkspace])
       .mockResolvedValueOnce(mockWorkspace)
       .mockResolvedValueOnce(mockWorkspace)
       .mockResolvedValueOnce([mockWorkspace])
       .mockResolvedValueOnce(mockWorkspace)
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce({ environments: {} });
+      .mockResolvedValueOnce({ environments: {}, last_runtime_id: "nodejs" });
 
     await useWorkspaceStore.getState().initialize("nodejs");
 
@@ -44,6 +50,29 @@ describe("workspaceStore", () => {
     expect(state.workspace).toEqual(mockWorkspace);
     expect(state.loaded).toBe(true);
     expect(state.rootFiles).toHaveLength(0);
+  });
+
+  it("imports external files into the active workspace", async () => {
+    useWorkspaceStore.setState({ workspace: mockWorkspace, loaded: true });
+    vi.mocked(runspaceInvoke)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce(["utils.js"])
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([
+        { name: "utils.js", path: "utils.js", is_directory: false },
+      ]);
+
+    const imported = await useWorkspaceStore
+      .getState()
+      .importExternalFiles(["/tmp/utils.js"], "lib");
+
+    expect(runspaceInvoke).toHaveBeenCalledWith("import_external", {
+      sourcePaths: ["/tmp/utils.js"],
+      targetDir: "lib",
+    });
+    expect(imported).toEqual(["utils.js"]);
+    expect(useWorkspaceStore.getState().rootFiles).toHaveLength(1);
+    expect(useWorkspaceStore.getState().expandedDirs.has("lib")).toBe(true);
   });
 
   it("creates a file and refreshes the tree", async () => {
@@ -65,5 +94,51 @@ describe("workspaceStore", () => {
       content: "module.exports = {};",
     });
     expect(useWorkspaceStore.getState().rootFiles).toHaveLength(2);
+  });
+
+  it("clears active workspace and keeps onboarding complete after deleting the last project", async () => {
+    markOnboardingComplete();
+    useWorkspaceStore.setState({
+      workspace: mockWorkspace,
+      workspaces: [mockWorkspace],
+      loaded: true,
+      onboardingComplete: true,
+      onboardingRequired: false,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.js",
+          content: "console.log(1);",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "main.js",
+      loaded: true,
+    });
+
+    vi.mocked(runspaceInvoke)
+      .mockResolvedValueOnce({ environments: {}, last_runtime_id: "nodejs" })
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({
+        environments: {},
+        last_runtime_id: "nodejs",
+        onboarding_complete: true,
+      });
+
+    await useWorkspaceStore.getState().deleteProject(mockWorkspace.id);
+
+    const state = useWorkspaceStore.getState();
+    expect(state.workspace).toBeNull();
+    expect(state.workspaces).toEqual([]);
+    expect(state.loaded).toBe(true);
+    expect(state.onboardingComplete).toBe(true);
+    expect(state.onboardingRequired).toBe(false);
+    expect(useEditorTabsStore.getState().openFiles).toEqual([]);
+    expect(useEditorTabsStore.getState().activePath).toBeNull();
   });
 });

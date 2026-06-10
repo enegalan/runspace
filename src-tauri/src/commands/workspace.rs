@@ -146,6 +146,19 @@ pub fn rename_file(
 }
 
 #[tauri::command]
+pub fn import_external(
+    state: State<'_, SharedState>,
+    source_paths: Vec<String>,
+    target_dir: Option<String>,
+) -> Result<Vec<String>, String> {
+    let manager = lock_workspace_manager(&state)?;
+    let workspace = require_active_workspace(&state)?;
+    manager
+        .import_external(&workspace, &source_paths, target_dir.as_deref())
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub fn create_directory(state: State<'_, SharedState>, path: String) -> Result<(), String> {
     let manager = lock_workspace_manager(&state)?;
     let workspace = require_active_workspace(&state)?;

@@ -98,7 +98,15 @@ export function WorkspaceSwitcher() {
       return;
     }
     setOpen(false);
-    await deleteProject(item.id);
+    setProjectMenu(null);
+    try {
+      await deleteProject(item.id);
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to delete project";
+      await askConfirm(message, { confirmLabel: "OK" });
+    }
   };
 
   return (
@@ -111,12 +119,12 @@ export function WorkspaceSwitcher() {
         type="button"
         className="workspace-switcher__trigger"
         onClick={() => setOpen((prev) => !prev)}
-        title={workspace?.name ?? "Project"}
+        title={workspace?.name ?? "Create project..."}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="workspace-switcher__label">
-          {workspace?.name ?? "Project"}
+          {workspace?.name ?? "Create project..."}
         </span>
         <span className="workspace-switcher__chevron" aria-hidden="true">
           ▾

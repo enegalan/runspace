@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Onboarding
+
+- Welcome screen on first launch when no projects exist (intro, concepts, and first-project setup)
+- Setup step: project name, primary runtime with path configuration, and optional additional environments
+- Completion stored in session (`onboarding_complete`) and localStorage; returning users skip welcome and use the main shell
+
 ### Phase 5: Workspace file management
 
 - Extended `WorkspaceManager` with workspace listing, manifest (`runspace.json`), file CRUD, and session persistence
@@ -19,6 +25,7 @@
 - Environment indicator in the sidebar with runtime-colored gradient background
 - Dev desktop app uses the HTTP invoke API for parity with the web UI; production Tauri uses native invoke with normalized args
 - Drag-and-drop in the file tree: move files into folders, move nested files to workspace root via empty sidebar space, and open files by dropping on the editor
+- Import files and folders by dragging them from the computer into the active workspace
 - Accidental drops on the same file or parent folder are ignored (no unintended moves)
 - Active workspace synced before file operations so each environment shows only its own project files
 - New folder prompt starts with an empty name (no default)

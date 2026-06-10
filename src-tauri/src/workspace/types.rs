@@ -53,6 +53,8 @@ pub struct SessionData {
     pub open_files: Vec<String>,
     #[serde(default)]
     pub active_file: Option<String>,
+    #[serde(default)]
+    pub onboarding_complete: bool,
 }
 
 impl SessionData {

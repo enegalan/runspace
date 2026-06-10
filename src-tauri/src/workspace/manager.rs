@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use chrono::Utc;
 use uuid::Uuid;
@@ -446,6 +446,120 @@ impl WorkspaceManager {
         Ok(())
     }
 
+    pub fn import_external(
+        &self,
+        workspace: &Workspace,
+        source_paths: &[String],
+        target_dir: Option<&str>,
+    ) -> Result<Vec<String>, WorkspaceError> {
+        let target_dir = target_dir.unwrap_or("");
+        Self::resolve_relative_path(target_dir)?;
+
+        let mut imported = Vec::new();
+        for source_path in source_paths {
+            let source = Path::new(source_path);
+            if !source.exists() {
+                return Err(WorkspaceError::NotFound(source_path.clone()));
+            }
+            let relative = Self::copy_external_entry(workspace, source, target_dir)?;
+            imported.push(relative);
+        }
+        Ok(imported)
+    }
+
+    fn copy_external_entry(
+        workspace: &Workspace,
+        source: &Path,
+        target_dir: &str,
+    ) -> Result<String, WorkspaceError> {
+        let file_name = source
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| {
+                WorkspaceError::InvalidPath("Invalid source file name".to_string())
+            })?;
+
+        if file_name == MANIFEST_FILENAME {
+            return Err(WorkspaceError::InvalidPath(
+                "Cannot import runspace.json".to_string(),
+            ));
+        }
+
+        let relative = Self::unique_import_path(workspace, target_dir, file_name)?;
+        let dest = Self::resolve_in_workspace(workspace, &relative)?;
+
+        if source.is_dir() {
+            Self::copy_dir_recursive(source, &dest)?;
+        } else {
+            if let Some(parent) = dest.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::copy(source, &dest)?;
+        }
+
+        Ok(relative)
+    }
+
+    fn unique_import_path(
+        workspace: &Workspace,
+        target_dir: &str,
+        name: &str,
+    ) -> Result<String, WorkspaceError> {
+        let initial = if target_dir.is_empty() {
+            name.to_string()
+        } else {
+            format!("{target_dir}/{name}")
+        };
+
+        if !Self::import_path_exists(workspace, &initial)? {
+            return Ok(initial);
+        }
+
+        let path = Path::new(name);
+        let stem = path
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .unwrap_or(name);
+        let extension = path.extension().and_then(|value| value.to_str());
+
+        for index in 1..10_000 {
+            let candidate_name = if let Some(ext) = extension {
+                format!("{stem} ({index}).{ext}")
+            } else {
+                format!("{stem} ({index})")
+            };
+            let relative = if target_dir.is_empty() {
+                candidate_name
+            } else {
+                format!("{target_dir}/{candidate_name}")
+            };
+            if !Self::import_path_exists(workspace, &relative)? {
+                return Ok(relative);
+            }
+        }
+
+        Err(WorkspaceError::AlreadyExists(name.to_string()))
+    }
+
+    fn import_path_exists(workspace: &Workspace, relative: &str) -> Result<bool, WorkspaceError> {
+        let path = Self::resolve_in_workspace(workspace, relative)?;
+        Ok(path.exists())
+    }
+
+    fn copy_dir_recursive(source: &Path, target: &Path) -> Result<(), WorkspaceError> {
+        fs::create_dir_all(target)?;
+        for entry in fs::read_dir(source)? {
+            let entry = entry?;
+            let dest = target.join(entry.file_name());
+            if entry.file_type()?.is_dir() {
+                Self::copy_dir_recursive(&entry.path(), &dest)?;
+            } else {
+                fs::copy(entry.path(), dest)?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn load_session(&self) -> Result<SessionData, WorkspaceError> {
         let path = self.session_path();
         if !path.exists() {
@@ -608,6 +722,64 @@ mod tests {
     }
 
     #[test]
+    fn import_external_copies_file_into_workspace() {
+        let (manager, _temp) = temp_manager();
+        let workspace = manager
+            .create_named_workspace("Import test", "nodejs")
+            .expect("workspace");
+        let source = env::temp_dir().join(format!(
+            "runspace-import-source-{}",
+            uuid::Uuid::new_v4()
+        ));
+        fs::write(&source, "console.log('imported');").expect("source file");
+
+        let imported = manager
+            .import_external(&workspace, &[source.display().to_string()], None)
+            .expect("import");
+
+        assert_eq!(imported, vec![source.file_name().unwrap().to_str().unwrap()]);
+        let dest = workspace.path.join(imported[0].as_str());
+        assert!(dest.is_file());
+        assert_eq!(
+            fs::read_to_string(dest).expect("read imported"),
+            "console.log('imported');"
+        );
+
+        let _ = fs::remove_file(source);
+    }
+
+    #[test]
+    fn import_external_uses_unique_name_when_target_exists() {
+        let (manager, _temp) = temp_manager();
+        let workspace = manager
+            .create_named_workspace("Import conflict", "nodejs")
+            .expect("workspace");
+        manager
+            .write_file(&workspace, "notes.txt", "existing")
+            .expect("existing file");
+
+        let source_dir = env::temp_dir().join(format!(
+            "runspace-import-conflict-{}",
+            uuid::Uuid::new_v4()
+        ));
+        fs::create_dir_all(&source_dir).expect("source dir");
+        let source = source_dir.join("notes.txt");
+        fs::write(&source, "incoming").expect("source file");
+
+        let imported = manager
+            .import_external(&workspace, &[source.display().to_string()], None)
+            .expect("import");
+
+        assert_eq!(imported, vec!["notes (1).txt"]);
+        assert_eq!(
+            fs::read_to_string(workspace.path.join("notes (1).txt")).expect("read imported"),
+            "incoming"
+        );
+
+        let _ = fs::remove_dir_all(source_dir);
+    }
+
+    #[test]
     fn session_roundtrip() {
         use std::collections::HashMap;
 
@@ -634,6 +806,7 @@ mod tests {
             last_workspace_id: None,
             open_files: Vec::new(),
             active_file: None,
+            onboarding_complete: false,
         };
         manager.save_session(&session).expect("save");
         let loaded = manager.load_session().expect("load");

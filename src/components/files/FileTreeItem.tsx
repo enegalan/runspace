@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { fileIconClass } from "../../core/languageFromExtension";
 import type { FileEntry } from "../../core/types/workspace";
 import {
+  DROP_TARGET_ATTR,
+  hasExternalFileDrag,
+  importDroppedExternalFiles,
+} from "../../core/workspace/externalFileDrop";
+import {
   clearFileDragData,
   getActiveDragPayload,
   hasFileDrag,
@@ -88,6 +93,18 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   };
 
   const handleDragOver = (event: React.DragEvent) => {
+    if (hasExternalFileDrag(event.dataTransfer)) {
+      if (!entry.is_directory) {
+        event.stopPropagation();
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      event.dataTransfer.dropEffect = "copy";
+      setDropTarget(true);
+      return;
+    }
+
     if (!hasFileDrag(event.dataTransfer.types)) {
       return;
     }
@@ -117,17 +134,21 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   };
 
   const handleDrop = (event: React.DragEvent) => {
-    const payload = readFileDragData(event.dataTransfer);
-    if (!payload) {
-      return;
-    }
-
     event.preventDefault();
     event.stopPropagation();
     setDropTarget(false);
-    clearFileDragData();
 
-    if (!entry.is_directory || isInvalidMove(payload.path, entry.path)) {
+    if (hasExternalFileDrag(event.dataTransfer)) {
+      if (!entry.is_directory) {
+        return;
+      }
+      void importDroppedExternalFiles(event.dataTransfer, entry.path);
+      return;
+    }
+
+    const payload = readFileDragData(event.dataTransfer);
+    clearFileDragData();
+    if (!payload || !entry.is_directory || isInvalidMove(payload.path, entry.path)) {
       return;
     }
 
@@ -216,6 +237,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
           dropTarget ? " file-tree__row--drop-target" : ""
         }`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
+        {...(entry.is_directory ? { [DROP_TARGET_ATTR]: entry.path } : {})}
         onContextMenu={handleContextMenu}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

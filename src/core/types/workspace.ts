@@ -27,6 +27,7 @@ export interface SessionData {
   last_workspace_id?: string | null;
   open_files?: string[];
   active_file?: string | null;
+  onboarding_complete?: boolean;
 }
 
 export interface OpenFile {

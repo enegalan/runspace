@@ -430,6 +430,37 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
+        "import_external" => {
+            let source_paths = args
+                .get("sourcePaths")
+                .and_then(|v| v.as_array())
+                .ok_or("Missing sourcePaths")?
+                .iter()
+                .filter_map(|value| value.as_str().map(|path| path.to_string()))
+                .collect::<Vec<_>>();
+            if source_paths.is_empty() {
+                return Err("Missing sourcePaths".to_string());
+            }
+            let target_dir = args
+                .get("targetDir")
+                .and_then(|v| v.as_str())
+                .map(|value| value.to_string());
+            let manager = state
+                .workspace_manager
+                .lock()
+                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
+            let active = state
+                .active_workspace
+                .lock()
+                .map_err(|_| "Active workspace lock poisoned".to_string())?;
+            let workspace = active
+                .as_ref()
+                .ok_or_else(|| "No active workspace".to_string())?;
+            let imported = manager
+                .import_external(workspace, &source_paths, target_dir.as_deref())
+                .map_err(|e| e.to_string())?;
+            Ok(json!(imported))
+        }
         "read_session" => {
             let manager = state
                 .workspace_manager

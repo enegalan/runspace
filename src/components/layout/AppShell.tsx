@@ -1,11 +1,16 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
+import {
+  isOnboardingComplete,
+  syncOnboardingFromSession,
+} from "../../core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { flushSessionState } from "../../core/workspace/flushSession";
 import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
 import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
+import { useExternalFileDrop } from "../../hooks/useExternalFileDrop";
 import { isTauri } from "../../core/platform/isTauri";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
@@ -17,10 +22,17 @@ import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { Toolbar } from "./Toolbar";
 import { AppDialogs } from "../ui/AppDialogs";
+import { WelcomeScreen } from "../welcome/WelcomeScreen";
 
 export function AppShell() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const workspaceLoaded = useWorkspaceStore((state) => state.loaded);
+  const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
+  const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
+  const bootstrapStarted = useRef(false);
+  const hasEnteredMainShell = useRef(
+    useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
+  );
 
   const tabsLoaded = useEditorTabsStore((state) => state.loaded);
   const activePath = useEditorTabsStore((state) => state.activePath);
@@ -33,6 +45,8 @@ export function AppShell() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
+
+  useExternalFileDrop();
 
   const {
     stdout,
@@ -53,10 +67,12 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled = !selectedEnvironment?.configured;
-  const runDisabledReason = runDisabled
-    ? "Configure in Settings → Environments"
-    : undefined;
+  const runDisabled = !workspace || !selectedEnvironment?.configured;
+  const runDisabledReason = !workspace
+    ? "Create a project to run code"
+    : !selectedEnvironment?.configured
+      ? "Configure in Settings → Environments"
+      : undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -79,9 +95,16 @@ export function AppShell() {
   }, []);
 
   useEffect(() => {
-    if (!backendReady) {
+    if (workspace !== null || onboardingComplete || isOnboardingComplete()) {
+      hasEnteredMainShell.current = true;
+    }
+  }, [workspace, onboardingComplete]);
+
+  useEffect(() => {
+    if (!backendReady || bootstrapStarted.current) {
       return;
     }
+    bootstrapStarted.current = true;
 
     let cancelled = false;
 
@@ -93,6 +116,13 @@ export function AppShell() {
         }
 
         const session = await runspaceInvoke<SessionData>("read_session");
+        const onboardingComplete = syncOnboardingFromSession(session);
+        useWorkspaceStore.setState({
+          onboardingComplete,
+          onboardingRequired: onboardingComplete
+            ? false
+            : useWorkspaceStore.getState().onboardingRequired,
+        });
         const storedRuntimeId = session.last_runtime_id;
         const selectedId = useEnvironmentStore.getState().selectedId;
         const runtimeId = (storedRuntimeId ?? selectedId) as EnvironmentId;
@@ -189,6 +219,22 @@ export function AppShell() {
         <div className="app-shell__loading">
           {!backendReady && !isTauri() ? "Starting backend..." : "Loading..."}
         </div>
+        <AppDialogs />
+      </div>
+    );
+  }
+
+  const showWelcome =
+    onboardingRequired &&
+    !onboardingComplete &&
+    !isOnboardingComplete() &&
+    !hasEnteredMainShell.current;
+
+  if (showWelcome) {
+    return (
+      <div className="app-shell app-shell--welcome" data-testid="app-shell">
+        <WelcomeScreen />
+        <AppDialogs />
       </div>
     );
   }
