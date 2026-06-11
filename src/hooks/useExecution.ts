@@ -3,6 +3,7 @@ import { useCallback, useEffect } from "react";
 import { shouldUseHttpApi } from "../core/api/backendTransport";
 import { subscribeExecutionEvents } from "../core/api/executionEvents";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
+import { DEFAULT_APP_SETTINGS } from "../core/constants/settingsDefaults";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
@@ -10,8 +11,7 @@ import type {
   ExecutionPhaseEvent,
 } from "../core/types/execution";
 import { useExecutionStore } from "../stores/executionStore";
-
-const DEFAULT_TIMEOUT_SECS = 30;
+import { getAppSettings } from "../stores/settingsStore";
 
 export function useExecution() {
   const {
@@ -102,20 +102,25 @@ export function useExecution() {
   }, [appendOutput, setFinished, setPhase, setStarted]);
 
   const run = useCallback(async (options?: ExecutionOptions) => {
-    setRunning();
+    const executionSettings = getAppSettings().execution;
+    setRunning({ preserveOutput: !executionSettings.autoClearOutput });
 
     const environmentId = options?.environmentId;
     if (!environmentId) {
       setError("No environment selected. Add one in Settings → Environments.");
       return;
     }
-    const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
+    const timeoutSecs =
+      options?.timeoutSecs ?? executionSettings.runTimeoutSecs ?? DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
+    const compileTimeoutSecs =
+      options?.compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
     const entryFile = options?.entryFile;
 
     try {
       await runspaceInvoke("execute_code", {
         environmentId,
         timeoutSecs,
+        compileTimeoutSecs,
         entryFile,
       });
     } catch (err) {

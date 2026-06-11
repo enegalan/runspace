@@ -5,6 +5,7 @@ mod environment;
 mod http;
 mod security;
 mod services;
+mod settings;
 mod state;
 #[cfg(test)]
 mod test_home_lock;
@@ -15,10 +16,9 @@ use commands::{
     get_active_workspace,
     get_runtime_template, get_selected_environment, import_external, initialize_workspace,
     install_environment, kill_process, list_available_environments, list_environments, list_files,
-    list_workspaces, open_workspace, read_file, read_session, read_snippet, rename_file,
-    rename_workspace,
-    set_environment_env_vars,
-    set_environment_paths, set_selected_environment, uninstall_environment, update_manifest,
+    list_workspaces, open_workspace, read_file, read_session, read_settings, read_snippet,
+    rename_file, rename_workspace, set_environment_env_vars, set_environment_paths,
+    set_selected_environment, uninstall_environment, update_manifest, update_settings,
     validate_environment, write_file, write_session, write_snippet,
 };
 use std::sync::{Arc, Mutex};
@@ -154,6 +154,8 @@ pub fn run() {
             set_environment_paths,
             set_environment_env_vars,
             validate_environment,
+            read_settings,
+            update_settings,
             list_workspaces,
             open_workspace,
             create_workspace,

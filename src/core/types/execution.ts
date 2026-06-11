@@ -14,6 +14,7 @@ export type ExecutionPhase = "compile" | "run";
 export interface ExecutionOptions {
   environmentId?: EnvironmentId;
   timeoutSecs?: number;
+  compileTimeoutSecs?: number;
   entryFile?: string;
 }
 

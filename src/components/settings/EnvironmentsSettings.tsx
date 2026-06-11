@@ -18,6 +18,7 @@ import {
   rowsToEnvVars,
   validateEnvVarRows,
 } from "./EnvVarsEditor";
+import { SettingsPageHeader } from "./SettingsUi";
 
 const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
   language: "Language",
@@ -303,15 +304,17 @@ export function EnvironmentsSettings() {
   const available = useEnvironmentStore((state) => state.available);
 
   return (
-    <div className="environments-settings" data-testid="environments-settings">
-      <h2 className="environments-settings__title">Environments</h2>
-      <p className="environments-settings__description">
-        Configure binary paths and environment variables. Paths are auto-detected on startup
-        when possible.
-      </p>
+    <div className="settings-page environments-settings" data-testid="environments-settings">
+      <SettingsPageHeader
+        title="Environments"
+        description="Configure binary paths and environment variables. Paths are auto-detected on startup when possible."
+      />
 
-      <section className="environments-settings__section">
-        <h3 className="environments-settings__section-title">Installed</h3>
+      <section className="settings-card environments-settings__section">
+        <div className="settings-card__header">
+          <h3 className="settings-card__title">Installed</h3>
+        </div>
+        <div className="settings-card__body">
         {environments.length === 0 ? (
           <p className="environments-settings__empty" data-testid="environments-empty">
             No environments installed. Add one from the list below.
@@ -323,15 +326,23 @@ export function EnvironmentsSettings() {
             ))}
           </div>
         )}
+        </div>
       </section>
 
       {available.length > 0 && (
-        <section className="environments-settings__section">
-          <h3 className="environments-settings__section-title">Available</h3>
+        <section className="settings-card environments-settings__section">
+          <div className="settings-card__header">
+            <h3 className="settings-card__title">Available</h3>
+            <p className="settings-card__description">
+              Add runtimes and frameworks to the toolbar selector.
+            </p>
+          </div>
+          <div className="settings-card__body">
           <div className="environments-settings__available">
             {available.map((definition) => (
               <AvailableEnvironmentRow key={definition.id} definition={definition} />
             ))}
+          </div>
           </div>
         </section>
       )}

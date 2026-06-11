@@ -17,13 +17,15 @@ describe("activateRuntime", () => {
   it("opens an existing workspace without creating one", async () => {
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce([mockWorkspace])
-      .mockResolvedValueOnce(mockWorkspace);
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce(undefined);
 
     const workspace = await activateRuntime("php");
 
     expect(workspace).toEqual(mockWorkspace);
     expect(runspaceInvoke).toHaveBeenCalledWith("initialize_workspace", {
       runtimeId: "php",
+      useSession: true,
     });
   });
 

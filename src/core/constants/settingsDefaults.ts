@@ -1,0 +1,96 @@
+import {
+  OUTPUT_WIDTH_DEFAULT,
+  OUTPUT_WIDTH_MAX,
+  OUTPUT_WIDTH_MIN,
+  SIDEBAR_WIDTH_DEFAULT,
+  SIDEBAR_WIDTH_MAX,
+  SIDEBAR_WIDTH_MIN,
+} from "../layout/panelLayout";
+import type { AppSettings, AppSettingsPatch } from "../types/settings";
+
+export const EDITOR_FONT_OPTIONS = [
+  { label: "JetBrains Mono", value: "JetBrains Mono" },
+  { label: "SF Mono", value: "SF Mono" },
+  { label: "Menlo", value: "Menlo" },
+  { label: "Fira Code", value: "Fira Code" },
+  { label: "Consolas", value: "Consolas" },
+  { label: "System", value: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+] as const;
+
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  appearance: {
+    theme: "dark",
+    uiDensity: "comfortable",
+    editorFontSize: 13,
+    editorFontFamily: "JetBrains Mono",
+  },
+  editor: {
+    tabSize: 2,
+    wordWrap: true,
+    minimap: false,
+    scrollBeyondLastLine: false,
+    insertSpaces: true,
+  },
+  execution: {
+    runTimeoutSecs: 30,
+    compileTimeoutSecs: 15,
+    autoClearOutput: true,
+    autoScrollOutput: true,
+  },
+  layout: {
+    sidebarWidth: SIDEBAR_WIDTH_DEFAULT,
+    outputWidth: OUTPUT_WIDTH_DEFAULT,
+    sidebarVisible: true,
+    outputVisible: true,
+    restoreLastWorkspace: true,
+    confirmCloseUnsavedTab: true,
+  },
+};
+
+export function normalizeAppSettings(settings: AppSettings): AppSettings {
+  return {
+    appearance: {
+      ...settings.appearance,
+      editorFontSize: Math.min(24, Math.max(10, settings.appearance.editorFontSize)),
+    },
+    editor: {
+      ...settings.editor,
+      tabSize: settings.editor.tabSize === 4 ? 4 : settings.editor.tabSize === 8 ? 8 : 2,
+    },
+    execution: {
+      ...settings.execution,
+      runTimeoutSecs: Math.min(300, Math.max(5, settings.execution.runTimeoutSecs)),
+      compileTimeoutSecs: Math.min(120, Math.max(5, settings.execution.compileTimeoutSecs)),
+    },
+    layout: {
+      ...settings.layout,
+      sidebarWidth: Math.min(
+        SIDEBAR_WIDTH_MAX,
+        Math.max(SIDEBAR_WIDTH_MIN, settings.layout.sidebarWidth),
+      ),
+      outputWidth: Math.min(
+        OUTPUT_WIDTH_MAX,
+        Math.max(OUTPUT_WIDTH_MIN, settings.layout.outputWidth),
+      ),
+    },
+  };
+}
+
+export function mergeAppSettings(
+  current: AppSettings,
+  patch: AppSettingsPatch,
+): AppSettings {
+  return normalizeAppSettings({
+    appearance: { ...current.appearance, ...patch.appearance },
+    editor: { ...current.editor, ...patch.editor },
+    execution: { ...current.execution, ...patch.execution },
+    layout: { ...current.layout, ...patch.layout },
+  });
+}
+
+export function editorFontFamilyCss(family: string): string {
+  if (family.includes(",")) {
+    return family;
+  }
+  return `"${family}", ui-monospace, SFMono-Regular, Menlo, monospace`;
+}

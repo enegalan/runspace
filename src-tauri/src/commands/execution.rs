@@ -19,6 +19,7 @@ pub async fn execute_code(
     environment_id: Option<String>,
     entry_file: Option<String>,
     timeout_secs: Option<u64>,
+    compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     dispatch_invoke(
         &state,
@@ -29,6 +30,7 @@ pub async fn execute_code(
             "environmentId": environment_id,
             "entryFile": entry_file,
             "timeoutSecs": timeout_secs,
+            "compileTimeoutSecs": compile_timeout_secs,
         }),
     )
     .await?;

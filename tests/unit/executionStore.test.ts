@@ -84,4 +84,16 @@ describe("executionStore", () => {
     expect(state.status).toBe("idle");
     expect(state.stdout).toBe("");
   });
+
+  it("preserves output when requested", () => {
+    const store = useExecutionStore.getState();
+    store.setRunning();
+    store.appendOutput("stdout", "keep me");
+    store.setFinished(0, false);
+    store.setRunning({ preserveOutput: true });
+
+    const state = useExecutionStore.getState();
+    expect(state.status).toBe("running");
+    expect(state.stdout).toBe("keep me");
+  });
 });

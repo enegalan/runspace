@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+
   /* Surfaces */
   --rs-bg-base: #1e1e1e;
   --rs-bg-elevated: #2b2d31;
@@ -75,4 +77,51 @@
   --rs-editor-tabs-height: 42px;
   --rs-editor-tabs-tab-height: 32px;
   --rs-editor-tabs-tab-active-height: 37px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --rs-bg-base: #f2f3f5;
+  --rs-bg-elevated: #ffffff;
+  --rs-bg-overlay: #e3e5e8;
+  --rs-bg-subtle: #ebedef;
+  --rs-bg-hover: #dee0e3;
+
+  --rs-editor-bg: #ffffff;
+
+  --rs-border-subtle: rgb(218 220 224);
+  --rs-border-strong: rgba(0, 0, 0, 0.12);
+
+  --rs-text-primary: #060607;
+  --rs-text-secondary: #4e5058;
+  --rs-text-muted: #80848e;
+  --rs-text-link: #006ce7;
+
+  --rs-accent: #5865f2;
+  --rs-accent-hover: #4752c4;
+  --rs-accent-muted: rgba(88, 101, 242, 0.12);
+
+  --rs-success: #248046;
+  --rs-warning: #c47c00;
+  --rs-error: #da373c;
+  --rs-info: #006ce7;
+
+  --rs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --rs-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --rs-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.14);
+}
+
+[data-density="compact"] {
+  --rs-space-1: 3px;
+  --rs-space-2: 6px;
+  --rs-space-3: 9px;
+  --rs-space-4: 12px;
+  --rs-space-5: 16px;
+  --rs-space-6: 18px;
+  --rs-space-8: 24px;
+
+  --rs-editor-tabs-height: 36px;
+  --rs-editor-tabs-tab-height: 28px;
+  --rs-editor-tabs-tab-active-height: 32px;
 }

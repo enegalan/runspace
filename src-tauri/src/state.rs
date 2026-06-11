@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::engine::{ExecutionEngine, ExecutionEventBus};
 use crate::environment::EnvironmentManager;
+use crate::settings::SettingsManager;
 use crate::workspace::{Workspace, WorkspaceManager};
 
 pub type SharedState = Arc<AppState>;
@@ -10,6 +11,7 @@ pub type SharedState = Arc<AppState>;
 pub struct AppState {
     pub workspace_manager: Mutex<WorkspaceManager>,
     pub environment_manager: Mutex<EnvironmentManager>,
+    pub settings_manager: Mutex<SettingsManager>,
     pub execution_engine: ExecutionEngine,
     pub execution_events: ExecutionEventBus,
     pub active_workspace: Mutex<Option<Workspace>>,
@@ -22,13 +24,18 @@ impl AppState {
 
         let home = std::env::var("HOME")
             .map_err(|_| "Could not resolve home directory".to_string())?;
-        let config_path = PathBuf::from(home).join(".runspace").join("environments.json");
-        let environment_manager = EnvironmentManager::new(config_path)
+        let runspace_dir = PathBuf::from(&home).join(".runspace");
+        let environments_path = runspace_dir.join("environments.json");
+        let settings_path = runspace_dir.join("settings.json");
+        let environment_manager = EnvironmentManager::new(environments_path)
             .map_err(|e| format!("Environment manager init failed: {e}"))?;
+        let settings_manager = SettingsManager::new(settings_path)
+            .map_err(|e| format!("Settings manager init failed: {e}"))?;
 
         Ok(Self {
             workspace_manager: Mutex::new(workspace_manager),
             environment_manager: Mutex::new(environment_manager),
+            settings_manager: Mutex::new(settings_manager),
             execution_engine: ExecutionEngine::new(),
             execution_events: ExecutionEventBus::new(),
             active_workspace: Mutex::new(None),

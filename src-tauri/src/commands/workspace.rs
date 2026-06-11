@@ -262,11 +262,12 @@ pub fn update_manifest(
 pub fn initialize_workspace(
     state: State<'_, SharedState>,
     runtime_id: String,
+    use_session: Option<bool>,
 ) -> Result<WorkspaceInfo, String> {
     let manager = lock_workspace_manager(&state)?;
     let session = manager.load_session().map_err(|e| e.to_string())?;
     let (workspace, info) = manager
-        .initialize_active_workspace(&runtime_id, &session)
+        .initialize_active_workspace(&runtime_id, &session, use_session.unwrap_or(true))
         .map_err(|e| e.to_string())?;
     {
         let mut active = lock_active_workspace(&state)?;

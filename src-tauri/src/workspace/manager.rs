@@ -300,15 +300,22 @@ impl WorkspaceManager {
         &self,
         runtime_id: &str,
         session: &SessionData,
+        use_session: bool,
     ) -> Result<(Workspace, WorkspaceInfo), WorkspaceError> {
-        let env_session = session.environment_session(runtime_id);
+        if use_session {
+            let env_session = session.environment_session(runtime_id);
 
-        if let Some(id) = env_session.workspace_id.as_ref() {
-            if let Ok(workspace) = self.open_workspace(id) {
-                if let Ok(Some(info)) = self.workspace_matches_runtime(&workspace, runtime_id) {
-                    return Ok((workspace, info));
+            if let Some(id) = env_session.workspace_id.as_ref() {
+                if let Ok(workspace) = self.open_workspace(id) {
+                    if let Ok(Some(info)) = self.workspace_matches_runtime(&workspace, runtime_id) {
+                        return Ok((workspace, info));
+                    }
                 }
             }
+        } else {
+            return Err(WorkspaceError::NotFound(format!(
+                "Workspace restore disabled for runtime: {runtime_id}"
+            )));
         }
 
         for info in self.list_workspaces_for_runtime(Some(runtime_id))? {

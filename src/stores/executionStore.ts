@@ -15,7 +15,7 @@ export interface ExecutionState {
   lastRunDurationMs: number | null;
   appendOutput: (stream: "stdout" | "stderr", chunk: string) => void;
   reset: () => void;
-  setRunning: () => void;
+  setRunning: (options?: { preserveOutput?: boolean }) => void;
   setStarted: () => void;
   setPhase: (phase: ExecutionPhase) => void;
   setFinished: (
@@ -70,10 +70,11 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     set({ ...initialState, lastRunDurationMs });
   },
 
-  setRunning: () => {
-    set({
-      stdout: "",
-      stderr: "",
+  setRunning: (options) => {
+    const preserveOutput = options?.preserveOutput ?? false;
+    set((state) => ({
+      stdout: preserveOutput ? state.stdout : "",
+      stderr: preserveOutput ? state.stderr : "",
       exitCode: null,
       timedOut: false,
       compileFailed: false,
@@ -82,7 +83,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       status: "running",
       startedAt: Date.now(),
       durationMs: null,
-    });
+    }));
   },
 
   setStarted: () => {

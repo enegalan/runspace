@@ -10,6 +10,7 @@
     "allow-execution",
     "allow-snippet",
     "allow-environment",
+    "allow-settings",
     "dialog:default",
     "opener:default"
   ]

@@ -22,6 +22,7 @@ pub fn start_execution(
     environment_id: Option<String>,
     entry_file: Option<String>,
     timeout_secs: Option<u64>,
+    compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let resolved = {
         let manager = state
@@ -46,15 +47,23 @@ pub fn start_execution(
     let environment_id = resolved.id.clone();
     let adapter = get_adapter(&environment_id).map_err(|e| e.to_string())?;
     let is_compiled = is_compiled_environment(&environment_id);
-    let timeout = if is_compiled {
-        timeout_secs.unwrap_or_else(|| {
-            get_compiled_adapter(&environment_id)
-                .map(|adapter| adapter.run_timeout_secs())
-                .unwrap_or(30)
-        })
-    } else {
-        timeout_secs.unwrap_or(30)
+
+    let settings = {
+        let manager = state
+            .settings_manager
+            .lock()
+            .map_err(|_| "Settings manager lock poisoned".to_string())?;
+        manager.get().execution.clone()
     };
+
+    let timeout = if is_compiled {
+        timeout_secs.unwrap_or(settings.run_timeout_secs)
+    } else {
+        timeout_secs.unwrap_or(settings.run_timeout_secs)
+    };
+
+    let compile_timeout = compile_timeout_secs
+        .unwrap_or(settings.compile_timeout_secs);
     let binary = PathBuf::from(&resolved.binary_path);
 
     let _ = state.execution_engine.kill();
@@ -166,6 +175,7 @@ pub fn start_execution(
                 &prepared.workspace_path,
                 prepared.env_vars,
                 timeout,
+                compile_timeout,
             ) {
                 eprintln!("Compiled execution failed: {error}");
                 emitter.emit_output("stderr", &format!("[compile] {error}\n"));
@@ -205,6 +215,7 @@ pub fn start_execution_tauri(
     environment_id: Option<String>,
     entry_file: Option<String>,
     timeout_secs: Option<u64>,
+    compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let emitter = ExecutionEmitter::tauri(app, state.execution_events.clone());
     start_execution(
@@ -214,6 +225,7 @@ pub fn start_execution_tauri(
         environment_id,
         entry_file,
         timeout_secs,
+        compile_timeout_secs,
     )
 }
 
@@ -223,6 +235,7 @@ pub fn start_execution_http(
     environment_id: Option<String>,
     entry_file: Option<String>,
     timeout_secs: Option<u64>,
+    compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
     let emitter = ExecutionEmitter::bus_only(state.execution_events.clone());
     start_execution(
@@ -232,5 +245,6 @@ pub fn start_execution_http(
         environment_id,
         entry_file,
         timeout_secs,
+        compile_timeout_secs,
     )
 }

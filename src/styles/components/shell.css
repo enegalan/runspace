@@ -78,6 +78,34 @@
   grid-row: 2;
 }
 
+.main-row--desktop.main-row--sidebar-hidden {
+  grid-template-columns: 48px 1fr auto;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .sidebar-titlebar-zone {
+  display: none;
+}
+
+.main-row--desktop.main-row--output-hidden {
+  grid-template-columns: 48px auto 1fr;
+}
+
+.main-row--desktop.main-row--sidebar-hidden.main-row--output-hidden {
+  grid-template-columns: 48px 1fr;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .editor-column {
+  grid-column: 2;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .output-shell {
+  grid-column: 3;
+}
+
+.main-row:not(.main-row--desktop) {
+  flex-wrap: nowrap;
+}
+
 .editor-column {
   display: flex;
   flex-direction: column;

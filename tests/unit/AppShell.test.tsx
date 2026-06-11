@@ -5,6 +5,8 @@ import { AppShell } from "../../src/components/layout/AppShell";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useSettingsStore } from "../../src/stores/settingsStore";
+import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
@@ -52,8 +54,15 @@ describe("AppShell", () => {
       selectedId: "nodejs",
       loaded: false,
     });
+    useSettingsStore.setState({
+      settings: DEFAULT_APP_SETTINGS,
+      loaded: false,
+    });
 
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs")]);
       }
@@ -115,6 +124,9 @@ describe("AppShell", () => {
   it("shows welcome onboarding when no projects exist", async () => {
     vi.mocked(runspaceInvoke).mockReset();
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }
@@ -151,6 +163,9 @@ describe("AppShell", () => {
 
     vi.mocked(runspaceInvoke).mockReset();
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }
@@ -202,6 +217,9 @@ describe("AppShell", () => {
     });
 
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }

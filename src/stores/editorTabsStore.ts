@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { useDialogStore } from "./dialogStore";
+import { getAppSettings } from "./settingsStore";
 import { languageFromExtension } from "../core/languageFromExtension";
 import type { OpenFile, SessionData } from "../core/types/workspace";
 import { reorderByIndex } from "../core/editor/tabReorder";
@@ -67,7 +68,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     if (!file) {
       return true;
     }
-    if (file.dirty && !force) {
+    if (file.dirty && !force && getAppSettings().layout.confirmCloseUnsavedTab) {
       const name = basename(path);
       const confirmed = await useDialogStore.getState().askConfirm(
         `"${name}" has unsaved changes. Close without saving?`,

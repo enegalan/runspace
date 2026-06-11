@@ -20,6 +20,7 @@ interface OutputPanelProps {
   width: number;
   onWidthChange: (width: number) => void;
   onClear: () => void;
+  autoScrollEnabled: boolean;
 }
 
 export function OutputPanel({
@@ -32,6 +33,7 @@ export function OutputPanel({
   width,
   onWidthChange,
   onClear,
+  autoScrollEnabled,
 }: OutputPanelProps) {
   const isRunning = status === "running";
   const hasContent =
@@ -94,6 +96,7 @@ export function OutputPanel({
               timedOut={timedOut}
               isRunning={isRunning}
               phase={phase}
+              autoScrollEnabled={autoScrollEnabled}
             />
           ) : (
             <p className="output-panel__placeholder">

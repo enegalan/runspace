@@ -5,7 +5,6 @@ interface AppShortcutHandlers {
   onStop?: () => void;
   onSave?: () => void;
   onNewWorkspace?: () => void;
-  onToggleOutput?: () => void;
   onOpenSettings?: () => void;
   isRunning?: boolean;
   runDisabled?: boolean;
@@ -16,7 +15,6 @@ export function useAppShortcuts({
   onStop,
   onSave,
   onNewWorkspace,
-  onToggleOutput,
   onOpenSettings,
   isRunning = false,
   runDisabled = false,
@@ -54,12 +52,6 @@ export function useAppShortcuts({
         return;
       }
 
-      if (key === "j" && onToggleOutput) {
-        event.preventDefault();
-        onToggleOutput();
-        return;
-      }
-
       if (key === "," && onOpenSettings) {
         event.preventDefault();
         onOpenSettings();
@@ -73,7 +65,6 @@ export function useAppShortcuts({
     onStop,
     onSave,
     onNewWorkspace,
-    onToggleOutput,
     onOpenSettings,
     isRunning,
     runDisabled,

@@ -27,6 +27,17 @@
 
 ## [Unreleased]
 
+### General Settings
+
+- General tab in Settings with sidebar navigation and card-based sections
+- Persistent app preferences in `~/.runspace/settings.json` via Rust `SettingsManager` and `read_settings` / `update_settings` commands
+- **Appearance:** dark, light, and system theme; comfortable/compact UI density; editor font size and family
+- **Editor:** tab size, word wrap, minimap, scroll beyond last line, and insert spaces wired to Monaco
+- **Execution:** configurable run and compile timeouts; auto-clear output on run; auto-scroll output
+- **Layout:** sidebar/output width and visibility; restore last workspace on launch; confirm before closing unsaved tabs
+- Keyboard shortcuts reference embedded in General settings
+- Light theme token palette and `color-scheme` for native form controls in dark/light mode
+
 ### Phase 6: C/C++ (compiled languages)
 
 - `GccAdapter` and `GppAdapter` with compile-then-run pipeline
@@ -86,7 +97,7 @@
 - `EnvironmentManager` with load/save to `~/.runspace/environments.json`
 - On-demand path validation and version probe via Test action
 - `execute_code` refactored to accept `environment_id` with resolved paths and env vars (Node.js end-to-end)
-- Settings panel (gear icon) with expandable environment cards, Browse, Save, Test, and env vars editor
+- Settings panel (gear icon) with General and Environments tabs; expandable environment cards, Browse, Save, Test, and env vars editor
 - Toolbar environment selector grouped by category with configured/not configured badges
 - Run blocked with tooltip when selected environment is not configured
 

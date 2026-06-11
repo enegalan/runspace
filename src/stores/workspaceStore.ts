@@ -10,6 +10,7 @@ import { movedPath, parentDir } from "../core/workspace/fileTreeDrag";
 import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
 import { requireProjectName } from "../core/workspace/promptProjectName";
 import { syncActiveWorkspace } from "../core/workspace/syncActiveWorkspace";
+import { getAppSettings } from "./settingsStore";
 import type { FileEntry, SessionData, WorkspaceInfo } from "../core/types/workspace";
 import { useEditorTabsStore } from "./editorTabsStore";
 
@@ -136,7 +137,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     set({ onboardingComplete: true, onboardingRequired: false });
     await markOnboardingComplete();
 
-    const workspace = await activateRuntime(runtimeId);
+    const workspace = await activateRuntime(
+      runtimeId,
+      getAppSettings().layout.restoreLastWorkspace,
+    );
     if (!workspace) {
       set({
         workspace: null,

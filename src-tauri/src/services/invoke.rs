@@ -18,6 +18,8 @@ struct ExecuteArgs {
     entry_file: Option<String>,
     #[serde(rename = "timeoutSecs")]
     timeout_secs: Option<u64>,
+    #[serde(rename = "compileTimeoutSecs")]
+    compile_timeout_secs: Option<u64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -142,6 +144,23 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(json!(result))
         }
+        "read_settings" => {
+            let manager = state
+                .settings_manager
+                .lock()
+                .map_err(|_| "Settings manager lock poisoned".to_string())?;
+            Ok(json!(manager.get().clone()))
+        }
+        "update_settings" => {
+            let mut manager = state
+                .settings_manager
+                .lock()
+                .map_err(|_| "Settings manager lock poisoned".to_string())?;
+            let updated = manager
+                .update(args)
+                .map_err(|e| e.to_string())?;
+            Ok(json!(updated))
+        }
         "read_snippet" => Ok(json!(read_snippet()?)),
         "write_snippet" => {
             let args: WriteSnippetArgs = serde_json::from_value(args)
@@ -166,6 +185,7 @@ pub async fn dispatch_invoke(
                     args.environment_id,
                     args.entry_file,
                     args.timeout_secs,
+                    args.compile_timeout_secs,
                 )?;
             } else {
                 start_execution_http(
@@ -174,6 +194,7 @@ pub async fn dispatch_invoke(
                     args.environment_id,
                     args.entry_file,
                     args.timeout_secs,
+                    args.compile_timeout_secs,
                 )?;
             }
             Ok(Value::Null)
@@ -265,13 +286,17 @@ pub async fn dispatch_invoke(
                 .and_then(|v| v.as_str())
                 .ok_or("Missing runtimeId")?
                 .to_string();
+            let use_session = args
+                .get("useSession")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true);
             let manager = state
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
             let session = manager.load_session().map_err(|e| e.to_string())?;
             let (workspace, info) = manager
-                .initialize_active_workspace(&runtime_id, &session)
+                .initialize_active_workspace(&runtime_id, &session, use_session)
                 .map_err(|e| e.to_string())?;
             {
                 let mut active = state

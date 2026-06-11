@@ -15,14 +15,18 @@ import { useExternalFileDrop } from "../../hooks/useExternalFileDrop";
 import { useAppShortcuts } from "../../hooks/useAppShortcuts";
 import { useMenuActions } from "../../hooks/useMenuActions";
 import {
-  OUTPUT_WIDTH_DEFAULT,
-  SIDEBAR_WIDTH_DEFAULT,
+  clampPanelSize,
+  OUTPUT_WIDTH_MAX,
+  OUTPUT_WIDTH_MIN,
+  SIDEBAR_WIDTH_MAX,
+  SIDEBAR_WIDTH_MIN,
 } from "../../core/layout/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
 import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome";
 import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { AboutDialog } from "../about/AboutDialog";
 import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
@@ -55,12 +59,15 @@ export function AppShell() {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const envLoaded = useEnvironmentStore((state) => state.loaded);
   const loadEnvironments = useEnvironmentStore((state) => state.load);
+  const settingsLoaded = useSettingsStore((state) => state.loaded);
+  const loadSettings = useSettingsStore((state) => state.load);
+  const layoutSettings = useSettingsStore((state) => state.settings.layout);
+  const executionSettings = useSettingsStore((state) => state.settings.execution);
+  const updateSettings = useSettingsStore((state) => state.update);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_WIDTH_DEFAULT);
-  const [outputWidth, setOutputWidth] = useState(OUTPUT_WIDTH_DEFAULT);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   useExternalFileDrop();
@@ -134,7 +141,7 @@ export function AppShell() {
 
     const bootstrap = async () => {
       try {
-        await loadEnvironments();
+        await Promise.all([loadSettings(), loadEnvironments()]);
         if (cancelled) {
           return;
         }
@@ -193,7 +200,7 @@ export function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [backendReady, loadEnvironments, selectEnvironment]);
+  }, [backendReady, loadEnvironments, loadSettings, selectEnvironment]);
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -239,9 +246,33 @@ export function AppShell() {
       await run({
         environmentId: selectedId,
         entryFile: activePath,
+        timeoutSecs: executionSettings.runTimeoutSecs,
+        compileTimeoutSecs: executionSettings.compileTimeoutSecs,
       });
     })();
-  }, [selectedId, workspace, activePath, run]);
+  }, [selectedId, workspace, activePath, run, executionSettings]);
+
+  const handleSidebarWidthChange = useCallback(
+    (width: number) => {
+      void updateSettings({
+        layout: {
+          sidebarWidth: clampPanelSize(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleOutputWidthChange = useCallback(
+    (width: number) => {
+      void updateSettings({
+        layout: {
+          outputWidth: clampPanelSize(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
 
   const handleSave = useCallback(() => {
     void useEditorTabsStore.getState().saveActiveFile();
@@ -316,7 +347,7 @@ export function AppShell() {
     runDisabled,
   });
 
-  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
+  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded || !settingsLoaded) {
     return (
       <div className="app-shell app-shell--loading" data-testid="app-shell">
         <div className="app-shell__loading">
@@ -345,16 +376,25 @@ export function AppShell() {
     );
   }
 
+  const mainRowClass = [
+    "main-row",
+    isTauri() ? "main-row--desktop" : "",
+    !layoutSettings.sidebarVisible ? "main-row--sidebar-hidden" : "",
+    !layoutSettings.outputVisible ? "main-row--output-hidden" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
       className={`app-shell${appShellDesktopClass()}`}
       data-testid="app-shell"
     >
-      <div className={`main-row${isTauri() ? " main-row--desktop" : ""}`}>
+      <div className={mainRowClass}>
         {isTauri() && isMacOS() && (
           <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
         )}
-        {isTauri() && (
+        {isTauri() && layoutSettings.sidebarVisible && (
           <div className="sidebar-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
         )}
         <ActivityBar
@@ -365,7 +405,12 @@ export function AppShell() {
           onStop={stop}
           onOpenSettings={() => setSettingsOpen(true)}
         />
-        <Sidebar width={sidebarWidth} onWidthChange={setSidebarWidth} />
+        {layoutSettings.sidebarVisible && (
+          <Sidebar
+            width={layoutSettings.sidebarWidth}
+            onWidthChange={handleSidebarWidthChange}
+          />
+        )}
         <div className="editor-column">
           {workspace && <EditorTabs inTitlebar={isTauri()} />}
           {!workspace && isTauri() && (
@@ -373,17 +418,20 @@ export function AppShell() {
           )}
           <EditorArea onRun={handleRun} onSave={handleSave} />
         </div>
-        <OutputPanel
-          stdout={stdout}
-          stderr={stderr}
-          status={status}
-          phase={phase}
-          timedOut={timedOut}
-          error={error}
-          width={outputWidth}
-          onWidthChange={setOutputWidth}
-          onClear={clear}
-        />
+        {layoutSettings.outputVisible && (
+          <OutputPanel
+            stdout={stdout}
+            stderr={stderr}
+            status={status}
+            phase={phase}
+            timedOut={timedOut}
+            error={error}
+            width={layoutSettings.outputWidth}
+            onWidthChange={handleOutputWidthChange}
+            onClear={clear}
+            autoScrollEnabled={executionSettings.autoScrollOutput}
+          />
+        )}
       </div>
       <StatusBar
         status={status}

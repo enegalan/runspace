@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { IconButton } from "../ui/IconButton";
-import { Kbd } from "../ui/Kbd";
-import { IconClose } from "../ui/icons";
+import { IconClose, IconPlay, IconSettings } from "../ui/icons";
 import { EnvironmentsSettings } from "./EnvironmentsSettings";
+import { GeneralSettings } from "./GeneralSettings";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -10,6 +10,15 @@ interface SettingsPanelProps {
 }
 
 type SettingsTab = "general" | "environments";
+
+const NAV_ITEMS: {
+  id: SettingsTab;
+  label: string;
+  icon: typeof IconSettings;
+}[] = [
+  { id: "general", label: "General", icon: IconSettings },
+  { id: "environments", label: "Environments", icon: IconPlay },
+];
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const [tab, setTab] = useState<SettingsTab>("general");
@@ -22,47 +31,38 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     <div className="settings-overlay" data-testid="settings-panel">
       <div className="settings-overlay__backdrop" onClick={onClose} aria-hidden="true" />
       <div className="settings-panel" role="dialog" aria-label="Settings">
-        <header className="settings-panel__header">
-          <h1 className="settings-panel__title">Settings</h1>
-          <IconButton label="Close settings" onClick={onClose}>
-            <IconClose size={18} />
-          </IconButton>
-        </header>
-        <nav className="settings-panel__nav" aria-label="Settings sections">
-          <button
-            type="button"
-            className={`settings-panel__nav-item${
-              tab === "general" ? " settings-panel__nav-item--active" : ""
-            }`}
-            onClick={() => setTab("general")}
-          >
-            General
-          </button>
-          <button
-            type="button"
-            className={`settings-panel__nav-item${
-              tab === "environments" ? " settings-panel__nav-item--active" : ""
-            }`}
-            onClick={() => setTab("environments")}
-          >
-            Environments
-          </button>
-        </nav>
-        <div className="settings-panel__body">
-          {tab === "general" && (
-            <div className="settings-general">
-              <h2 className="settings-general__title">General</h2>
-              <p className="settings-general__description">
-                Runspace v0.1.0 — desktop sandbox for multiple runtimes. Open settings anytime
-                with <Kbd>Cmd+,</Kbd> on macOS.
-              </p>
-              <p className="settings-general__coming-soon">
-                More general options — appearance, editor preferences, and keyboard shortcuts —
-                will be added here in a future release.
-              </p>
-            </div>
-          )}
-          {tab === "environments" && <EnvironmentsSettings />}
+        <aside className="settings-panel__sidebar">
+          <div className="settings-panel__sidebar-header">
+            <h1 className="settings-panel__title">Settings</h1>
+          </div>
+          <nav className="settings-panel__nav" aria-label="Settings sections">
+            {NAV_ITEMS.map(({ id, label, icon: NavIcon }) => (
+              <button
+                key={id}
+                type="button"
+                className={`settings-panel__nav-item${
+                  tab === id ? " settings-panel__nav-item--active" : ""
+                }`}
+                onClick={() => setTab(id)}
+              >
+                <NavIcon size={16} className="settings-panel__nav-icon" />
+                {label}
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="settings-panel__main">
+          <header className="settings-panel__toolbar">
+            <span className="settings-panel__toolbar-spacer" aria-hidden="true" />
+            <IconButton label="Close settings" onClick={onClose}>
+              <IconClose size={18} />
+            </IconButton>
+          </header>
+          <div className="settings-panel__body">
+            {tab === "general" && <GeneralSettings />}
+            {tab === "environments" && <EnvironmentsSettings />}
+          </div>
         </div>
       </div>
     </div>
