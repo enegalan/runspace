@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNewFile } from "../../hooks/useNewFile";
+import { useTabDragReorder } from "../../hooks/useTabDragReorder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { IconClose, IconDot, IconPlus } from "../ui/icons";
@@ -18,9 +19,23 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   const openFiles = useEditorTabsStore((state) => state.openFiles);
   const activePath = useEditorTabsStore((state) => state.activePath);
   const setActive = useEditorTabsStore((state) => state.setActive);
+  const reorderTabs = useEditorTabsStore((state) => state.reorderTabs);
   const closeFile = useEditorTabsStore((state) => state.closeFile);
   const { createAndOpenFile } = useNewFile();
   const listRef = useRef<HTMLDivElement>(null);
+
+  const handleReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      reorderTabs(fromIndex, toIndex);
+    },
+    [reorderTabs],
+  );
+
+  const { dragState, onTabPointerDown, shouldSuppressClick } = useTabDragReorder({
+    listRef,
+    tabCount: openFiles.length,
+    onReorder: handleReorder,
+  });
 
   const handleWheel = (event: React.WheelEvent) => {
     if (!listRef.current) {
@@ -51,24 +66,36 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
       data-testid="editor-tabs"
     >
       <div
-        className={`editor-tabs__list${inTitlebar ? " editor-tabs__list--titlebar" : ""}`}
+        className={`editor-tabs__list${inTitlebar ? " editor-tabs__list--titlebar" : ""}${dragState ? " editor-tabs__list--dragging" : ""}`}
         ref={listRef}
         onWheel={handleWheel}
         role="tablist"
       >
-        {openFiles.map((file) => {
+        {openFiles.map((file, index) => {
           const isActive = file.path === activePath;
+          const isDragging = dragState?.dragIndex === index;
+          const offsetX = dragState?.offsets[index] ?? 0;
+          const tabStyle =
+            offsetX !== 0 ? { transform: `translateX(${offsetX}px)` } : undefined;
           return (
             <div
               key={file.path}
-              className={`editor-tabs__tab${isActive ? " editor-tabs__tab--active" : ""}`}
+              className={`editor-tabs__tab${isActive ? " editor-tabs__tab--active" : ""}${isDragging ? " editor-tabs__tab--dragging" : ""}`}
               role="tab"
               aria-selected={isActive}
+              data-tab-index={index}
+              style={tabStyle}
+              onPointerDown={(event) => onTabPointerDown(event, index)}
             >
               <button
                 type="button"
                 className="editor-tabs__tab-button"
-                onClick={() => setActive(file.path)}
+                onClick={() => {
+                  if (shouldSuppressClick()) {
+                    return;
+                  }
+                  setActive(file.path);
+                }}
                 title={file.path}
               >
                 {file.dirty && (
@@ -79,6 +106,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
               <button
                 type="button"
                 className="editor-tabs__close"
+                onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation();
                   void closeFile(file.path);

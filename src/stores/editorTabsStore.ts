@@ -3,6 +3,7 @@ import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { useDialogStore } from "./dialogStore";
 import { languageFromExtension } from "../core/languageFromExtension";
 import type { OpenFile, SessionData } from "../core/types/workspace";
+import { reorderByIndex } from "../core/editor/tabReorder";
 import {
   getEnvironmentSession,
   uniquePaths,
@@ -15,6 +16,7 @@ interface EditorTabsStore {
   openFile: (path: string) => Promise<void>;
   closeFile: (path: string, force?: boolean) => Promise<boolean>;
   setActive: (path: string) => void;
+  reorderTabs: (fromIndex: number, toIndex: number) => void;
   updateContent: (path: string, content: string) => void;
   saveFile: (path: string) => Promise<void>;
   saveActiveFile: () => Promise<void>;
@@ -91,6 +93,14 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     if (get().openFiles.some((file) => file.path === path)) {
       set({ activePath: path });
     }
+  },
+
+  reorderTabs: (fromIndex, toIndex) => {
+    const openFiles = reorderByIndex(get().openFiles, fromIndex, toIndex);
+    if (openFiles === get().openFiles) {
+      return;
+    }
+    set({ openFiles });
   },
 
   updateContent: (path, content) => {

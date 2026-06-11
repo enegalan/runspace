@@ -117,4 +117,40 @@ describe("editorTabsStore", () => {
     expect(useEditorTabsStore.getState().openFiles).toHaveLength(1);
     expect(useEditorTabsStore.getState().activePath).toBe("main.js");
   });
+
+  it("reorders open tabs", () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "a.js",
+          content: "a",
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "b.js",
+          content: "b",
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "c.js",
+          content: "c",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "b.js",
+    });
+
+    useEditorTabsStore.getState().reorderTabs(0, 2);
+
+    const state = useEditorTabsStore.getState();
+    expect(state.openFiles.map((file) => file.path)).toEqual([
+      "b.js",
+      "c.js",
+      "a.js",
+    ]);
+    expect(state.activePath).toBe("b.js");
+  });
 });
