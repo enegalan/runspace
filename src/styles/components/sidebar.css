@@ -6,6 +6,8 @@
   border-radius: 0 8px 8px 0;
   background: var(--rs-bg-elevated);
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .sidebar .panel {
@@ -104,6 +106,7 @@
   font-family: inherit;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   transition: border-color var(--rs-duration-fast) var(--rs-ease);
 }
 

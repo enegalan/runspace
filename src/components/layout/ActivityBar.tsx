@@ -1,4 +1,5 @@
 import type { ExecutionStatus } from "../../core/types/execution";
+import { isTauri } from "../../core/platform/isTauri";
 import { IconButton } from "../ui/IconButton";
 import { IconPlay, IconSettings, IconStop } from "../ui/icons";
 
@@ -54,6 +55,9 @@ export function ActivityBar({
           <IconStop size={20} />
         </IconButton>
       </div>
+      {isTauri() && (
+        <div className="activity-bar__drag-fill" data-tauri-drag-region aria-hidden="true" />
+      )}
       <div className="activity-bar__bottom">
         <IconButton
           label="Settings"

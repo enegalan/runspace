@@ -6,10 +6,8 @@ import {
 import { isTauri } from "../../core/platform/isTauri";
 import { usePointerDragResize } from "../../hooks/usePointerDragResize";
 import { ResizeHandle } from "../layout/ResizeHandle";
-import { Button } from "../ui/Button";
 import { IconButton } from "../ui/IconButton";
-import { IconCopy } from "../ui/icons";
-import { OutputStatus } from "./OutputStatus";
+import { IconClear, IconCopy } from "../ui/icons";
 import { OutputStream } from "./OutputStream";
 
 interface OutputPanelProps {
@@ -72,16 +70,14 @@ export function OutputPanel({
         >
           <h2 className="output-panel__title">Output</h2>
           <div className="output-panel__actions">
-            <OutputStatus status={status} />
-            <Button
-              variant="ghost"
-              size="sm"
+            <IconButton
+              label="Clear output"
               onClick={onClear}
               disabled={!hasContent}
               data-testid="clear-button"
             >
-              Clear
-            </Button>
+              <IconClear size={16} />
+            </IconButton>
             {hasContent && (
               <IconButton label="Copy all output" onClick={() => void handleCopyAll()}>
                 <IconCopy size={16} />

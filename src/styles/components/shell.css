@@ -122,6 +122,8 @@
   background: var(--rs-bg-base);
   color: var(--rs-text-muted);
   font-size: var(--rs-font-size-xs);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .status-bar__separator {

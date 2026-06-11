@@ -3,6 +3,7 @@ export {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
+  IconClear,
   IconClose,
   IconCopy,
   IconDot,

@@ -51,6 +51,7 @@
 - Multiple projects per environment; workspace switcher with right-click rename and delete
 - File tree sidebar with expand/collapse, context menus, create file/folder, rename, delete, and refresh
 - Editor tabs in the toolbar with dirty indicator, close confirmation, and `Cmd+S` save
+- Drag-and-drop tab reordering in the tab strip (Chrome-style live preview; order persisted per workspace in session)
 - `execute_code` reads entry file from workspace disk (auto-save before Run)
 - Session restored on launch (`~/.runspace/session.json`): last environment, workspace, open tabs, and active file per runtime
 - No default file on editor open; empty editor until the user opens or creates a file

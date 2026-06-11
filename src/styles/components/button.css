@@ -125,10 +125,6 @@
   color: var(--rs-text-secondary);
 }
 
-.icon-btn:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
 .icon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
