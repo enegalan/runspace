@@ -62,7 +62,7 @@ export function ActivityBar({
           onClick={onOpenSettings}
           data-testid="settings-button"
         >
-          <IconSettings size={22} />
+          <IconSettings size={16} />
         </IconButton>
       </div>
     </nav>
