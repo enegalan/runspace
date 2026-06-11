@@ -17,8 +17,10 @@ export function AppDialogs() {
   const promptTitleId = useId();
   const confirmMessageId = useId();
 
+  const promptKey = prompt?.key ?? null;
+
   useEffect(() => {
-    if (!prompt) {
+    if (promptKey === null) {
       return;
     }
 
@@ -31,6 +33,16 @@ export function AppDialogs() {
       input.select();
     });
 
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [promptKey]);
+
+  useEffect(() => {
+    if (promptKey === null) {
+      return;
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -39,11 +51,8 @@ export function AppDialogs() {
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [prompt, cancelPrompt]);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [promptKey, cancelPrompt]);
 
   useEffect(() => {
     if (!confirm) {

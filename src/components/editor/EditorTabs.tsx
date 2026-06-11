@@ -49,14 +49,12 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
     <div
       className={`editor-tabs${inTitlebar ? " editor-tabs--titlebar" : ""}`}
       data-testid="editor-tabs"
-      {...(inTitlebar ? { "data-tauri-drag-region": true } : {})}
     >
       <div
         className={`editor-tabs__list${inTitlebar ? " editor-tabs__list--titlebar" : ""}`}
         ref={listRef}
         onWheel={handleWheel}
         role="tablist"
-        {...(inTitlebar ? { "data-tauri-drag-region": true } : {})}
       >
         {openFiles.map((file) => {
           const isActive = file.path === activePath;

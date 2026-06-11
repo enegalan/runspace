@@ -43,12 +43,22 @@
   grid-template-rows: 35px 1fr;
 }
 
+.app-shell--desktop.app-shell--macos,
+.main-row--desktop {
+  pointer-events: none;
+}
+
+.app-shell--desktop.app-shell--macos > *,
+.main-row--desktop > * {
+  pointer-events: auto;
+}
+
 .main-row--desktop .traffic-light-zone {
   grid-column: 1;
   grid-row: 1;
   z-index: 5;
   width: var(--rs-titlebar-drag-inset-left);
-  -webkit-app-region: drag;
+  pointer-events: none;
 }
 
 .main-row--desktop .sidebar-titlebar-zone {
@@ -87,6 +97,10 @@
 .main-row--desktop .editor-titlebar-zone {
   grid-row: 1;
   -webkit-app-region: drag;
+}
+
+.app-shell--windows .editor-titlebar-zone {
+  padding-right: var(--rs-titlebar-drag-inset-right);
 }
 
 .main-row--desktop .editor-area {

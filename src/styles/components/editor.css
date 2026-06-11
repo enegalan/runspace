@@ -11,6 +11,10 @@
   isolation: isolate;
 }
 
+.app-shell--windows .editor-tabs--titlebar {
+  padding-right: var(--rs-titlebar-drag-inset-right);
+}
+
 .editor-tabs--titlebar {
   -webkit-app-region: drag;
 }

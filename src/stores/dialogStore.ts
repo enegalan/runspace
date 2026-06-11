@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 interface PromptState {
+  key: number;
   title: string;
   value: string;
   placeholder?: string;
@@ -39,6 +40,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
     new Promise((resolve) => {
       set({
         prompt: {
+          key: Date.now(),
           title,
           value: options?.initialValue ?? "",
           placeholder: options?.placeholder,
