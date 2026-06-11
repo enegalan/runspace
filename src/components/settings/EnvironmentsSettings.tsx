@@ -11,6 +11,7 @@ import type {
   ValidationResult,
 } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { IconCheck, IconChevronDown, IconChevronRight } from "../ui/icons";
 import {
   EnvVarsEditor,
   envVarsToRows,
@@ -129,13 +130,20 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
         aria-expanded={expanded}
       >
         <span className="env-card__chevron" aria-hidden="true">
-          {expanded ? "▼" : "▶"}
+          {expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
         </span>
         <span className="env-card__name">{definition.name}</span>
         <span
           className={`env-card__status${configured ? " env-card__status--configured" : ""}`}
         >
-          {configured ? "Configured ✓" : "Not configured"}
+          {configured ? (
+            <>
+              <IconCheck size={12} />
+              Configured
+            </>
+          ) : (
+            "Not configured"
+          )}
         </span>
       </button>
 

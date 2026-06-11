@@ -11,6 +11,7 @@ import type {
   EnvironmentCategory,
   EnvironmentId,
 } from "../../core/types/environment";
+import { Button } from "../ui/Button";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
@@ -188,7 +189,6 @@ export function WelcomeScreen() {
       <div className="welcome-screen__frame">
         <header className="welcome-screen__header">
           <div className="welcome-screen__brand">
-            <span className="welcome-screen__logo" aria-hidden="true" />
             <span className="welcome-screen__brand-name">Runspace</span>
           </div>
           <div className="welcome-screen__progress" aria-label="Onboarding progress">
@@ -216,13 +216,13 @@ export function WelcomeScreen() {
               <li>Editor, files, and output in one flow.</li>
             </ul>
             <div className="welcome-screen__actions">
-              <button
-                type="button"
-                className="btn btn--primary welcome-screen__btn"
+              <Button
+                variant="primary"
+                className="welcome-screen__btn"
                 onClick={() => setStep("concepts")}
               >
                 Get started
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -242,20 +242,16 @@ export function WelcomeScreen() {
               ))}
             </div>
             <div className="welcome-screen__actions">
-              <button
-                type="button"
-                className="btn welcome-screen__btn"
-                onClick={() => setStep("intro")}
-              >
+              <Button className="welcome-screen__btn" onClick={() => setStep("intro")}>
                 Back
-              </button>
-              <button
-                type="button"
-                className="btn btn--primary welcome-screen__btn"
+              </Button>
+              <Button
+                variant="primary"
+                className="welcome-screen__btn"
                 onClick={() => setStep("setup")}
               >
                 Create my first project
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -384,8 +380,7 @@ export function WelcomeScreen() {
             <div className="welcome-screen__section">
               <h2 className="welcome-screen__section-title">Also add runtimes</h2>
               <p className="welcome-screen__section-hint">
-                Optional. Install additional environments now so they are ready in the toolbar
-                later.
+                Optional. Install additional environments now so they are ready to select later.
               </p>
               <div className="welcome-screen__extras">
                 {ENVIRONMENT_CATALOG.filter(
@@ -435,22 +430,21 @@ export function WelcomeScreen() {
             {error && <p className="welcome-screen__error">{error}</p>}
 
             <div className="welcome-screen__actions">
-              <button
-                type="button"
-                className="btn welcome-screen__btn"
+              <Button
+                className="welcome-screen__btn"
                 onClick={() => setStep("concepts")}
                 disabled={submitting}
               >
                 Back
-              </button>
-              <button
-                type="button"
-                className="btn btn--primary welcome-screen__btn"
+              </Button>
+              <Button
+                variant="primary"
+                className="welcome-screen__btn"
                 onClick={() => void handleCreateProject()}
                 disabled={submitting}
               >
                 {submitting ? "Creating..." : "Open project"}
-              </button>
+              </Button>
             </div>
           </section>
         )}

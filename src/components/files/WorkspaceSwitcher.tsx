@@ -5,6 +5,7 @@ import { useDialogStore } from "../../stores/dialogStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
+import { IconChevronDown, IconPlus } from "../ui/icons";
 
 interface ProjectMenuState {
   x: number;
@@ -25,8 +26,15 @@ export function WorkspaceSwitcher() {
   const askConfirm = useDialogStore((state) => state.askConfirm);
 
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [projectMenu, setProjectMenu] = useState<ProjectMenuState | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const filteredWorkspaces = search.trim()
+    ? workspaces.filter((item) =>
+        item.name.toLowerCase().includes(search.trim().toLowerCase()),
+      )
+    : workspaces;
 
   useEffect(() => {
     if (!runtimeId) {
@@ -125,16 +133,26 @@ export function WorkspaceSwitcher() {
         <span className="workspace-switcher__label">
           {workspace?.name ?? "Create project..."}
         </span>
-        <span className="workspace-switcher__chevron" aria-hidden="true">
-          ▾
-        </span>
+        <IconChevronDown size={14} className="workspace-switcher__chevron" />
       </button>
 
       {open && (
         <div className="workspace-switcher__menu" role="listbox">
+          {workspaces.length > 3 && (
+            <div className="workspace-switcher__search">
+              <input
+                type="search"
+                className="workspace-switcher__search-input"
+                placeholder="Filter projects..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
           <div className="workspace-switcher__heading">Projects</div>
           <ul className="workspace-switcher__list">
-            {workspaces.map((item) => (
+            {filteredWorkspaces.map((item) => (
               <li
                 key={item.id}
                 className="workspace-switcher__item"
@@ -176,7 +194,8 @@ export function WorkspaceSwitcher() {
             disabled={!runtimeId}
             title={!runtimeId ? "Add an environment in Settings" : undefined}
           >
-            + New project
+            <IconPlus size={14} />
+            <span>New project</span>
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { fileIconClass } from "../../core/languageFromExtension";
+import { IconChevronDown, IconChevronRight } from "../ui/icons";
+import { FileIcon } from "./FileIcon";
 import type { FileEntry } from "../../core/types/workspace";
 import {
   DROP_TARGET_ATTR,
@@ -250,7 +251,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
             onClick={() => toggleDir(entry.path)}
             aria-label={expanded ? "Collapse" : "Expand"}
           >
-            {expanded ? "▾" : "▸"}
+            {expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
           </button>
         ) : (
           <span className="file-tree__chevron file-tree__chevron--spacer" />
@@ -283,10 +284,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
             onClick={handleOpen}
             title={entry.path}
           >
-            <span
-              className={`file-tree__icon ${entry.is_directory ? "file-tree__icon--folder" : fileIconClass(entry.path)}`}
-              aria-hidden="true"
-            />
+            <FileIcon path={entry.path} isDirectory={entry.is_directory} />
             <span className="file-tree__name">{entry.name}</span>
           </button>
         )}

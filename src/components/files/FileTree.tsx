@@ -16,8 +16,10 @@ import { useDialogStore } from "../../stores/dialogStore";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
+import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
 import { FileTreeItem } from "./FileTreeItem";
 import { EnvironmentIndicator } from "../environment/EnvironmentIndicator";
+import { EnvironmentPickerDialog } from "../environment/EnvironmentPickerDialog";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 interface SidebarMenuState {
@@ -37,6 +39,7 @@ export function FileTree() {
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
   const [rootDropTarget, setRootDropTarget] = useState(false);
+  const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -131,7 +134,11 @@ export function FileTree() {
 
   return (
     <div className="file-tree" data-testid="file-tree">
-      <EnvironmentIndicator />
+      <EnvironmentIndicator onOpenPicker={() => setEnvironmentPickerOpen(true)} />
+      <EnvironmentPickerDialog
+        open={environmentPickerOpen}
+        onClose={() => setEnvironmentPickerOpen(false)}
+      />
       <div className="file-tree__header">
         <WorkspaceSwitcher />
         <div className="file-tree__actions">
@@ -143,7 +150,7 @@ export function FileTree() {
             aria-label="New file"
             disabled={!workspace}
           >
-            +
+            <IconFilePlus size={18} />
           </button>
           <button
             type="button"
@@ -153,7 +160,7 @@ export function FileTree() {
             aria-label="New folder"
             disabled={!workspace}
           >
-            📁
+            <IconFolderPlus size={18} />
           </button>
           <button
             type="button"
@@ -163,7 +170,7 @@ export function FileTree() {
             aria-label="Refresh"
             disabled={!workspace}
           >
-            ↻
+            <IconRefresh size={18} />
           </button>
         </div>
       </div>
@@ -179,7 +186,7 @@ export function FileTree() {
       >
         {!workspace ? (
           <p className="file-tree__empty">
-            No projects yet — open the project menu and choose + New project.
+            No projects yet — open the project menu and create a new project.
           </p>
         ) : rootFiles.length === 0 ? (
           <p className="file-tree__empty">

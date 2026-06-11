@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.0] - 2026-06-11
+
+### Added
+
+- Desktop app with Monaco editor
+- Runtimes: Node.js, PHP, Python, Ruby, C, C++
+- Runtime detection and configuration
+- Workspace file management
+- Onboarding welcome flow
+- Workspace sandbox (isolated cwd, sanitized env)
+- Design system with Inter and JetBrains Mono typography
+- Shared UI primitives (Button, Badge, Input, Panel, Kbd)
+- About dialog and keyboard shortcuts reference
+- macOS application menu (File, Edit, Run, View, Help)
+- Global shortcuts: sidebar/output toggle, new workspace, settings
+- GitHub release workflow for tagged builds
+
+### Changed
+
+- Full UI redesign with modern dark-first design language
+- App shell: unified toolbar, pill tabs, elevated status bar
+- File tree uses SVG icons instead of emoji
+- Settings panel with slide-over navigation
+- macOS title bar overlay integration
+
 ## [Unreleased]
 
 ### Phase 6: C/C++ (compiled languages)

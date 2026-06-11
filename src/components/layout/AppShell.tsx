@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
 import {
   isOnboardingComplete,
@@ -7,20 +7,31 @@ import {
 } from "../../core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { flushSessionState } from "../../core/workspace/flushSession";
+import { requireProjectName } from "../../core/workspace/promptProjectName";
 import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
 import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
 import { useExternalFileDrop } from "../../hooks/useExternalFileDrop";
+import { useAppShortcuts } from "../../hooks/useAppShortcuts";
+import { useMenuActions } from "../../hooks/useMenuActions";
+import {
+  OUTPUT_WIDTH_DEFAULT,
+  SIDEBAR_WIDTH_DEFAULT,
+} from "../../core/layout/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
+import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome";
+import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
+import { AboutDialog } from "../about/AboutDialog";
+import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
 import { OutputPanel } from "../output/OutputPanel";
 import { SettingsPanel } from "../settings/SettingsPanel";
+import { ActivityBar } from "./ActivityBar";
 import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
-import { Toolbar } from "./Toolbar";
 import { AppDialogs } from "../ui/AppDialogs";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 
@@ -29,6 +40,7 @@ export function AppShell() {
   const workspaceLoaded = useWorkspaceStore((state) => state.loaded);
   const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
   const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
+  const createProject = useWorkspaceStore((state) => state.createProject);
   const bootstrapStarted = useRef(false);
   const hasEnteredMainShell = useRef(
     useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
@@ -36,6 +48,7 @@ export function AppShell() {
 
   const tabsLoaded = useEditorTabsStore((state) => state.loaded);
   const activePath = useEditorTabsStore((state) => state.activePath);
+  const closeFile = useEditorTabsStore((state) => state.closeFile);
   const selectEnvironment = useEnvironmentStore((state) => state.select);
 
   const environments = useEnvironmentStore((state) => state.environments);
@@ -44,6 +57,10 @@ export function AppShell() {
   const loadEnvironments = useEnvironmentStore((state) => state.load);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_WIDTH_DEFAULT);
+  const [outputWidth, setOutputWidth] = useState(OUTPUT_WIDTH_DEFAULT);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   useExternalFileDrop();
@@ -56,7 +73,6 @@ export function AppShell() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     run,
     stop,
@@ -68,14 +84,19 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled = !workspace || !selectedEnvironment?.configured;
+  const runDisabled =
+    !workspace || !selectedEnvironment?.configured || !activePath;
   const runDisabledReason = !workspace
     ? "Create a project to run code"
     : !selectedEnvironment
       ? "Add an environment in Settings"
       : !selectedEnvironment.configured
         ? "Configure in Settings → Environments"
-        : undefined;
+        : !activePath
+          ? "Open a file to run"
+          : undefined;
+
+  const isRunning = status === "running";
 
   useEffect(() => {
     let cancelled = false;
@@ -208,8 +229,8 @@ export function AppShell() {
     };
   }, []);
 
-  const handleRun = () => {
-    if (!selectedId || !workspace) {
+  const handleRun = useCallback(() => {
+    if (!selectedId || !workspace || !activePath) {
       return;
     }
 
@@ -217,14 +238,83 @@ export function AppShell() {
       await useEditorTabsStore.getState().saveActiveFile();
       await run({
         environmentId: selectedId,
-        entryFile: activePath ?? workspace?.entry_file,
+        entryFile: activePath,
       });
     })();
-  };
+  }, [selectedId, workspace, activePath, run]);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     void useEditorTabsStore.getState().saveActiveFile();
-  };
+  }, []);
+
+  const handleNewWorkspace = useCallback(async () => {
+    if (!selectedId) {
+      return;
+    }
+    const projectName = await requireProjectName("Name for the new project");
+    if (projectName) {
+      await createProject(selectedId, projectName);
+    }
+  }, [selectedId, createProject]);
+
+  const handleMenuAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case "new_workspace":
+          void handleNewWorkspace();
+          break;
+        case "save":
+          handleSave();
+          break;
+        case "close_tab":
+          if (activePath) {
+            void closeFile(activePath);
+          }
+          break;
+        case "run":
+          if (!runDisabled) {
+            handleRun();
+          }
+          break;
+        case "stop":
+          stop();
+          break;
+        case "clear_output":
+          clear();
+          break;
+        case "keyboard_shortcuts":
+          setShortcutsOpen(true);
+          break;
+        case "about":
+          setAboutOpen(true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      handleNewWorkspace,
+      handleSave,
+      activePath,
+      closeFile,
+      handleRun,
+      runDisabled,
+      stop,
+      clear,
+    ],
+  );
+
+  useMenuActions({ onAction: handleMenuAction });
+
+  useAppShortcuts({
+    onRun: handleRun,
+    onStop: stop,
+    onSave: handleSave,
+    onNewWorkspace: () => void handleNewWorkspace(),
+    onOpenSettings: () => setSettingsOpen(true),
+    isRunning,
+    runDisabled,
+  });
 
   if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
     return (
@@ -245,7 +335,10 @@ export function AppShell() {
 
   if (showWelcome) {
     return (
-      <div className="app-shell app-shell--welcome" data-testid="app-shell">
+      <div
+        className={`app-shell app-shell--welcome${appShellDesktopClass()}`}
+        data-testid="app-shell"
+      >
         <WelcomeScreen />
         <AppDialogs />
       </div>
@@ -253,28 +346,43 @@ export function AppShell() {
   }
 
   return (
-    <div className="app-shell" data-testid="app-shell">
-      <Toolbar
-        status={status}
-        runDisabled={runDisabled}
-        runDisabledReason={runDisabledReason}
-        onRun={handleRun}
-        onStop={stop}
-        onClear={clear}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
-      <div className="main-row">
-        <Sidebar />
-        <EditorArea onRun={handleRun} onSave={handleSave} />
+    <div
+      className={`app-shell${appShellDesktopClass()}`}
+      data-testid="app-shell"
+    >
+      <div className={`main-row${isTauri() ? " main-row--desktop" : ""}`}>
+        {isTauri() && isMacOS() && (
+          <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
+        )}
+        {isTauri() && (
+          <div className="sidebar-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
+        )}
+        <ActivityBar
+          status={status}
+          runDisabled={runDisabled}
+          runDisabledReason={runDisabledReason}
+          onRun={handleRun}
+          onStop={stop}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+        <Sidebar width={sidebarWidth} onWidthChange={setSidebarWidth} />
+        <div className="editor-column">
+          {workspace && <EditorTabs inTitlebar={isTauri()} />}
+          {!workspace && isTauri() && (
+            <div className="editor-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
+          )}
+          <EditorArea onRun={handleRun} onSave={handleSave} />
+        </div>
         <OutputPanel
           stdout={stdout}
           stderr={stderr}
           status={status}
           phase={phase}
-          exitCode={exitCode}
           timedOut={timedOut}
           error={error}
-          durationMs={durationMs}
+          width={outputWidth}
+          onWidthChange={setOutputWidth}
+          onClear={clear}
         />
       </div>
       <StatusBar
@@ -286,6 +394,11 @@ export function AppShell() {
         environmentName={selectedEnvironment?.definition.name ?? "—"}
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
       <AppDialogs />
     </div>
   );

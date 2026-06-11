@@ -2,13 +2,18 @@ import { useEffect, useRef } from "react";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
+import { IconClose, IconDot, IconPlus } from "../ui/icons";
 
 function tabLabel(path: string): string {
   const parts = path.split("/");
   return parts[parts.length - 1] ?? path;
 }
 
-export function EditorTabs() {
+interface EditorTabsProps {
+  inTitlebar?: boolean;
+}
+
+export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   const hasWorkspace = useWorkspaceStore((state) => state.workspace !== null);
   const openFiles = useEditorTabsStore((state) => state.openFiles);
   const activePath = useEditorTabsStore((state) => state.activePath);
@@ -41,12 +46,17 @@ export function EditorTabs() {
   }, [activePath, closeFile]);
 
   return (
-    <div className="editor-tabs" data-testid="editor-tabs">
+    <div
+      className={`editor-tabs${inTitlebar ? " editor-tabs--titlebar" : ""}`}
+      data-testid="editor-tabs"
+      {...(inTitlebar ? { "data-tauri-drag-region": true } : {})}
+    >
       <div
-        className="editor-tabs__list"
+        className={`editor-tabs__list${inTitlebar ? " editor-tabs__list--titlebar" : ""}`}
         ref={listRef}
         onWheel={handleWheel}
         role="tablist"
+        {...(inTitlebar ? { "data-tauri-drag-region": true } : {})}
       >
         {openFiles.map((file) => {
           const isActive = file.path === activePath;
@@ -64,9 +74,7 @@ export function EditorTabs() {
                 title={file.path}
               >
                 {file.dirty && (
-                  <span className="editor-tabs__dirty" aria-label="Unsaved">
-                    •
-                  </span>
+                  <IconDot size={8} className="editor-tabs__dirty" aria-label="Unsaved" />
                 )}
                 <span className="editor-tabs__label">{tabLabel(file.path)}</span>
               </button>
@@ -79,11 +87,18 @@ export function EditorTabs() {
                 }}
                 aria-label={`Close ${tabLabel(file.path)}`}
               >
-                ×
+                <IconClose size={14} />
               </button>
             </div>
           );
         })}
+        {inTitlebar && (
+          <div
+            className="editor-tabs__drag-fill"
+            data-tauri-drag-region
+            aria-hidden="true"
+          />
+        )}
       </div>
       <button
         type="button"
@@ -93,7 +108,7 @@ export function EditorTabs() {
         aria-label="New file"
         disabled={!hasWorkspace}
       >
-        +
+        <IconPlus size={16} />
       </button>
     </div>
   );

@@ -1,0 +1,12 @@
+.rs-icon {
+  display: block;
+  flex-shrink: 0;
+  color: currentColor;
+  overflow: visible;
+}
+
+.rs-icon-btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

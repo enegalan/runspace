@@ -1,5 +1,15 @@
 import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
-import { DurationBadge, ExitCodeBadge, OutputStatus } from "./OutputStatus";
+import {
+  OUTPUT_WIDTH_MAX,
+  OUTPUT_WIDTH_MIN,
+} from "../../core/layout/panelLayout";
+import { isTauri } from "../../core/platform/isTauri";
+import { usePointerDragResize } from "../../hooks/usePointerDragResize";
+import { ResizeHandle } from "../layout/ResizeHandle";
+import { Button } from "../ui/Button";
+import { IconButton } from "../ui/IconButton";
+import { IconCopy } from "../ui/icons";
+import { OutputStatus } from "./OutputStatus";
 import { OutputStream } from "./OutputStream";
 
 interface OutputPanelProps {
@@ -7,10 +17,11 @@ interface OutputPanelProps {
   stderr: string;
   status: ExecutionStatus;
   phase: ExecutionPhase | null;
-  exitCode: number | null;
   timedOut: boolean;
   error: string | null;
-  durationMs: number | null;
+  width: number;
+  onWidthChange: (width: number) => void;
+  onClear: () => void;
 }
 
 export function OutputPanel({
@@ -18,10 +29,11 @@ export function OutputPanel({
   stderr,
   status,
   phase,
-  exitCode,
   timedOut,
   error,
-  durationMs,
+  width,
+  onWidthChange,
+  onClear,
 }: OutputPanelProps) {
   const isRunning = status === "running";
   const hasContent =
@@ -31,30 +43,69 @@ export function OutputPanel({
     timedOut ||
     isRunning;
 
+  const onResizePointerDown = usePointerDragResize(width, onWidthChange, {
+    min: OUTPUT_WIDTH_MIN,
+    max: OUTPUT_WIDTH_MAX,
+    side: "left",
+  });
+
+  const handleCopyAll = async () => {
+    const text = [stdout, stderr, error ? `Error: ${error}` : ""]
+      .filter(Boolean)
+      .join("\n");
+    if (text) {
+      await navigator.clipboard.writeText(text);
+    }
+  };
+
   return (
-    <aside className="output-panel" data-testid="output-panel">
-      <div className="output-panel__header">
-        <h2 className="output-panel__title">Output</h2>
-        <div className="output-panel__badges">
-          <OutputStatus status={status} />
-          <ExitCodeBadge exitCode={exitCode} />
-          <DurationBadge durationMs={durationMs} />
+    <div className="output-shell" style={{ width }} data-testid="output-panel">
+      <ResizeHandle
+        side="left"
+        onPointerDown={onResizePointerDown}
+        data-testid="output-resize-handle"
+      />
+      <aside className="output-panel">
+        <div
+          className={`output-panel__header${isTauri() ? " output-panel__header--titlebar" : ""}`}
+          {...(isTauri() ? { "data-tauri-drag-region": true } : {})}
+        >
+          <h2 className="output-panel__title">Output</h2>
+          <div className="output-panel__actions">
+            <OutputStatus status={status} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              disabled={!hasContent}
+              data-testid="clear-button"
+            >
+              Clear
+            </Button>
+            {hasContent && (
+              <IconButton label="Copy all output" onClick={() => void handleCopyAll()}>
+                <IconCopy size={16} />
+              </IconButton>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="output-panel__body">
-        {hasContent ? (
-          <OutputStream
-            stdout={stdout}
-            stderr={stderr}
-            error={error}
-            timedOut={timedOut}
-            isRunning={isRunning}
-            phase={phase}
-          />
-        ) : (
-          <p className="output-panel__placeholder">No output yet</p>
-        )}
-      </div>
-    </aside>
+        <div className="output-panel__body">
+          {hasContent ? (
+            <OutputStream
+              stdout={stdout}
+              stderr={stderr}
+              error={error}
+              timedOut={timedOut}
+              isRunning={isRunning}
+              phase={phase}
+            />
+          ) : (
+            <p className="output-panel__placeholder">
+              Run your code to see output here
+            </p>
+          )}
+        </div>
+      </aside>
+    </div>
   );
 }

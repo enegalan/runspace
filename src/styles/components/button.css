@@ -1,0 +1,207 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rs-space-2);
+  padding: var(--rs-space-2) var(--rs-space-3);
+  border: 1px solid var(--rs-border-subtle);
+  border-radius: var(--rs-radius-sm);
+  background: var(--rs-bg-overlay);
+  color: var(--rs-text-primary);
+  font-size: var(--rs-font-size-sm);
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--rs-duration-fast) var(--rs-ease),
+    border-color var(--rs-duration-fast) var(--rs-ease),
+    transform var(--rs-duration-fast) var(--rs-ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--rs-bg-hover);
+  border-color: var(--rs-border-strong);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--sm {
+  padding: var(--rs-space-1) var(--rs-space-2);
+  font-size: var(--rs-font-size-xs);
+}
+
+.btn--md {
+  padding: var(--rs-space-2) var(--rs-space-4);
+}
+
+.btn--primary {
+  background: var(--rs-accent);
+  border-color: var(--rs-accent);
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--rs-accent-hover);
+  border-color: var(--rs-accent-hover);
+}
+
+.btn--primary.btn--running {
+  animation: rs-run-pulse 1.2s ease-in-out infinite;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--rs-bg-subtle);
+  border-color: var(--rs-border-subtle);
+}
+
+.btn--danger {
+  background: transparent;
+  border-color: var(--rs-border-subtle);
+  color: var(--rs-text-secondary);
+}
+
+.btn--danger--active {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--rs-error);
+}
+
+.btn--danger--active:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.22);
+}
+
+.btn .btn__icon {
+  flex-shrink: 0;
+}
+
+.btn--primary .btn__icon {
+  color: #fff;
+}
+
+.btn--danger--active .btn__icon {
+  color: var(--rs-error);
+}
+
+.btn__shortcut {
+  margin-left: var(--rs-space-1);
+  opacity: 0.65;
+  font-size: var(--rs-font-size-xs);
+  font-weight: 400;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--rs-radius-sm);
+  background: transparent;
+  color: var(--rs-text-secondary);
+  font-size: var(--rs-font-size-lg);
+  cursor: pointer;
+  transition:
+    background var(--rs-duration-fast) var(--rs-ease),
+    color var(--rs-duration-fast) var(--rs-ease),
+    transform var(--rs-duration-fast) var(--rs-ease);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--rs-bg-hover);
+  color: var(--rs-text-secondary);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid var(--rs-border-subtle);
+  border-radius: var(--rs-radius-sm);
+  background: var(--rs-bg-subtle);
+  color: var(--rs-text-secondary);
+  font-family: var(--rs-font-sans);
+  font-size: var(--rs-font-size-xs);
+  line-height: 1.4;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--rs-space-2);
+  border-radius: var(--rs-radius-full);
+  font-size: var(--rs-font-size-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge--default {
+  background: var(--rs-bg-overlay);
+  color: var(--rs-text-secondary);
+}
+
+.badge--accent {
+  background: var(--rs-accent-muted);
+  color: var(--rs-accent);
+}
+
+.badge--success {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--rs-success);
+}
+
+.badge--warning {
+  background: rgba(250, 204, 21, 0.15);
+  color: var(--rs-warning);
+}
+
+.badge--error {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--rs-error);
+}
+
+.badge--running {
+  background: var(--rs-accent-muted);
+  color: var(--rs-accent);
+  animation: rs-pulse 1.2s ease-in-out infinite;
+}
+
+.divider {
+  border: none;
+  margin: 0;
+  background: var(--rs-border-subtle);
+}
+
+.divider--horizontal {
+  height: 1px;
+  width: 100%;
+}
+
+.divider--vertical {
+  width: 1px;
+  height: 100%;
+  align-self: stretch;
+}

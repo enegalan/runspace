@@ -22,8 +22,94 @@ use commands::{
     validate_environment, write_file, write_session, write_snippet,
 };
 use std::sync::{Arc, Mutex};
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+use tauri::Emitter;
 
 use state::{AppState, SharedState};
+
+fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
+    let new_workspace = MenuItemBuilder::with_id("new_workspace", "New Workspace")
+        .accelerator("CmdOrCtrl+N")
+        .build(app)?;
+    let save = MenuItemBuilder::with_id("save", "Save")
+        .accelerator("CmdOrCtrl+S")
+        .build(app)?;
+    let close_tab = MenuItemBuilder::with_id("close_tab", "Close Tab")
+        .accelerator("CmdOrCtrl+W")
+        .build(app)?;
+
+    let file_menu = SubmenuBuilder::new(app, "File")
+        .item(&new_workspace)
+        .item(&save)
+        .item(&close_tab)
+        .build()?;
+
+    let undo = PredefinedMenuItem::undo(app, None)?;
+    let redo = PredefinedMenuItem::redo(app, None)?;
+    let cut = PredefinedMenuItem::cut(app, None)?;
+    let copy = PredefinedMenuItem::copy(app, None)?;
+    let paste = PredefinedMenuItem::paste(app, None)?;
+
+    let edit_menu = SubmenuBuilder::new(app, "Edit")
+        .item(&undo)
+        .item(&redo)
+        .separator()
+        .item(&cut)
+        .item(&copy)
+        .item(&paste)
+        .build()?;
+
+    let run_action = MenuItemBuilder::with_id("run", "Run")
+        .accelerator("CmdOrCtrl+Enter")
+        .build(app)?;
+    let stop = MenuItemBuilder::with_id("stop", "Stop")
+        .accelerator("CmdOrCtrl+.")
+        .build(app)?;
+    let clear_output = MenuItemBuilder::with_id("clear_output", "Clear Output")
+        .build(app)?;
+
+    let run_menu = SubmenuBuilder::new(app, "Run")
+        .item(&run_action)
+        .item(&stop)
+        .item(&clear_output)
+        .build()?;
+
+    let keyboard_shortcuts =
+        MenuItemBuilder::with_id("keyboard_shortcuts", "Keyboard Shortcuts").build(app)?;
+    let about = MenuItemBuilder::with_id("about", "About Runspace").build(app)?;
+
+    let help_menu = SubmenuBuilder::new(app, "Help")
+        .item(&keyboard_shortcuts)
+        .item(&about)
+        .build()?;
+
+    let menu = MenuBuilder::new(app)
+        .items(&[&file_menu, &edit_menu, &run_menu, &help_menu])
+        .build()?;
+
+    app.set_menu(menu)?;
+
+    let handle = app.handle().clone();
+    app.on_menu_event(move |_app, event| {
+        let id = event.id().as_ref();
+        let action = match id {
+            "new_workspace" => Some("new_workspace"),
+            "save" => Some("save"),
+            "close_tab" => Some("close_tab"),
+            "run" => Some("run"),
+            "stop" => Some("stop"),
+            "clear_output" => Some("clear_output"),
+            "keyboard_shortcuts" => Some("keyboard_shortcuts"),
+            "about" => Some("about"),
+            _ => None,
+        };
+        if let Some(action) = action {
+            let _ = handle.emit("menu-action", action);
+        }
+    });
+
+    Ok(())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -49,6 +135,7 @@ pub fn run() {
                         *guard = Some(app.handle().clone());
                     }
                 }
+                build_app_menu(app)?;
                 Ok(())
             }
         })

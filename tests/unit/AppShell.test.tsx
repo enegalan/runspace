@@ -94,7 +94,7 @@ describe("AppShell", () => {
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     expect(screen.getByTestId("sidebar")).toBeInTheDocument();
@@ -105,8 +105,8 @@ describe("AppShell", () => {
     expect(screen.getByTestId("editor-tabs")).toBeInTheDocument();
     expect(screen.getByTestId("output-panel")).toBeInTheDocument();
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
-    expect(screen.getByTestId("environment-select")).toBeInTheDocument();
-    expect(screen.getByTestId("run-button")).toBeInTheDocument();
+    expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("run-button")).toBeDisabled();
     expect(screen.getByTestId("stop-button")).toBeInTheDocument();
     expect(screen.getByTestId("clear-button")).toBeInTheDocument();
     expect(screen.getByTestId("settings-button")).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe("AppShell", () => {
     });
 
     expect(screen.getByText("Welcome to Runspace")).toBeInTheDocument();
-    expect(screen.queryByTestId("toolbar")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("activity-bar")).not.toBeInTheDocument();
   });
 
   it("shows the main shell when onboarding was already completed", async () => {
@@ -172,7 +172,7 @@ describe("AppShell", () => {
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
@@ -236,7 +236,7 @@ describe("AppShell", () => {
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     await useWorkspaceStore.getState().deleteProject(mockWorkspace.id);
@@ -246,7 +246,8 @@ describe("AppShell", () => {
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
-    expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+    expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
+    expect(screen.getByTestId("run-button")).toBeDisabled();
   });
 });

@@ -10,9 +10,11 @@ import {
   hasFileDrag,
   readFileDragData,
 } from "../../core/workspace/fileTreeDrag";
+import { useNewFile } from "../../hooks/useNewFile";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
+import { Button } from "../ui/Button";
 
 const MonacoWrapper = lazy(() => import("../editor/MonacoWrapper"));
 
@@ -31,6 +33,7 @@ export function EditorArea({ onRun, onSave }: EditorAreaProps) {
   );
   const openFile = useEditorTabsStore((state) => state.openFile);
   const updateContent = useEditorTabsStore((state) => state.updateContent);
+  const { createAndOpenFile } = useNewFile();
   const [dropTarget, setDropTarget] = useState(false);
 
   const handleDragOver = (event: React.DragEvent) => {
@@ -84,65 +87,53 @@ export function EditorArea({ onRun, onSave }: EditorAreaProps) {
   };
 
   const editorClassName = `editor-area${dropTarget ? " editor-area--drop-target" : ""}`;
-  const dropHandlers = {
-    onDragOver: handleDragOver,
-    onDragOverCapture: handleDragOver,
-    onDragLeave: handleDragLeave,
-    onDrop: handleDrop,
-    onDropCapture: handleDrop,
-  };
+  const dropHandlers = workspace
+    ? {
+        onDragOver: handleDragOver,
+        onDragOverCapture: handleDragOver,
+        onDragLeave: handleDragLeave,
+        onDrop: handleDrop,
+        onDropCapture: handleDrop,
+      }
+    : {};
+
+  let body: React.ReactNode;
 
   if (!workspace) {
-    return (
-      <main
-        className={editorClassName}
-        data-testid="editor-area"
-        {...{ [DROP_TARGET_ATTR]: "" }}
-      >
-        <div className="editor-area__empty">
-          <p className="editor-area__empty-title">No project open</p>
-          <p className="editor-area__empty-hint">
-            {selectedRuntimeId
-              ? "Create a project to start editing and running code."
-              : "Add an environment in Settings before creating a project."}
-          </p>
-          <button
-            type="button"
-            className="btn btn--primary editor-area__empty-action"
+    body = (
+      <div className="editor-area__empty">
+        <p className="editor-area__empty-title">No project open</p>
+        <p className="editor-area__empty-hint">
+          {selectedRuntimeId
+            ? "Create a project to start editing and running code."
+            : "Add an environment in Settings before creating a project."}
+        </p>
+        <div className="editor-area__empty-actions">
+          <Button
+            variant="primary"
             onClick={() => selectedRuntimeId && void createProject(selectedRuntimeId)}
             disabled={!selectedRuntimeId}
           >
             Create project
-          </button>
+          </Button>
         </div>
-      </main>
+      </div>
     );
-  }
-
-  if (!activePath || !activeFile) {
-    return (
-      <main
-        className={editorClassName}
-        data-testid="editor-area"
-        {...{ [DROP_TARGET_ATTR]: "" }}
-        {...dropHandlers}
-      >
-        <div className="editor-area__empty">
-          <p className="editor-area__empty-hint">
-            Open a file from the sidebar, drag one here from your computer, or create a new tab.
-          </p>
+  } else if (!activePath || !activeFile) {
+    body = (
+      <div className="editor-area__empty">
+        <p className="editor-area__empty-hint">
+          Open a file from the sidebar, drag one here from your computer, or create a new file.
+        </p>
+        <div className="editor-area__empty-actions">
+          <Button variant="primary" onClick={() => void createAndOpenFile()}>
+            New file
+          </Button>
         </div>
-      </main>
+      </div>
     );
-  }
-
-  return (
-    <main
-      className={editorClassName}
-      data-testid="editor-area"
-      {...{ [DROP_TARGET_ATTR]: "" }}
-      {...dropHandlers}
-    >
+  } else {
+    body = (
       <Suspense fallback={<div className="editor-area__loading">Loading editor...</div>}>
         <MonacoWrapper
           key={activePath}
@@ -153,6 +144,17 @@ export function EditorArea({ onRun, onSave }: EditorAreaProps) {
           onSave={onSave}
         />
       </Suspense>
+    );
+  }
+
+  return (
+    <main
+      className={editorClassName}
+      data-testid="editor-area"
+      {...{ [DROP_TARGET_ATTR]: "" }}
+      {...dropHandlers}
+    >
+      <div className="editor-area__body">{body}</div>
     </main>
   );
 }
