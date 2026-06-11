@@ -8,7 +8,7 @@ export function nextUntitledFileName(
   const existing = new Set(existingPaths);
 
   for (let n = 1; n < 10_000; n += 1) {
-    const baseName = n === 1 ? "Untitled" : `Untitled ${n}`;
+    const baseName = n === 1 ? "Untitled" : `Untitled (${n})`;
     const path = `${baseName}.${ext}`;
     if (!existing.has(path)) {
       return baseName;
