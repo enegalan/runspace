@@ -146,16 +146,14 @@ export function FileTree() {
     let initialValue = "";
 
     while (true) {
-      const raw = await askPrompt(label, { initialValue });
-      if (!raw) {
+      const raw = await askPrompt(label, {
+        initialValue,
+        validate: (value) => (value.trim() ? null : "Folder name cannot be empty."),
+      });
+      if (raw === null) {
         return;
       }
       const trimmed = raw.trim();
-      if (!trimmed) {
-        label = "Folder name cannot be empty.";
-        initialValue = "";
-        continue;
-      }
       if (await workspaceEntryExists(trimmed)) {
         label = `"${trimmed}" already exists.`;
         initialValue = trimmed;

@@ -29,8 +29,9 @@ export function AppDialogs() {
       if (!input) {
         return;
       }
-      input.focus();
-      input.select();
+      input.focus({ preventScroll: true });
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
     });
 
     return () => {
@@ -106,6 +107,11 @@ export function AppDialogs() {
                 ref={promptInputRef}
                 value={prompt.value}
                 placeholder={prompt.placeholder}
+                error={prompt.error}
+                autoCapitalize="off"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck={false}
                 onChange={(event) => setPromptValue(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {

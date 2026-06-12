@@ -5,6 +5,8 @@ interface PromptState {
   title: string;
   value: string;
   placeholder?: string;
+  error?: string;
+  validate?: (value: string) => string | null;
   resolve: (value: string | null) => void;
 }
 
@@ -20,7 +22,11 @@ interface DialogStore {
   confirm: ConfirmState | null;
   askPrompt: (
     title: string,
-    options?: { initialValue?: string; placeholder?: string },
+    options?: {
+      initialValue?: string;
+      placeholder?: string;
+      validate?: (value: string) => string | null;
+    },
   ) => Promise<string | null>;
   askConfirm: (
     message: string,
@@ -44,6 +50,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
           title,
           value: options?.initialValue ?? "",
           placeholder: options?.placeholder,
+          validate: options?.validate,
           resolve,
         },
       });
@@ -66,7 +73,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
     if (!prompt) {
       return;
     }
-    set({ prompt: { ...prompt, value } });
+    set({ prompt: { ...prompt, value, error: undefined } });
   },
 
   submitPrompt: () => {
@@ -75,6 +82,13 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
       return;
     }
     const value = prompt.value;
+    if (prompt.validate) {
+      const error = prompt.validate(value);
+      if (error) {
+        set({ prompt: { ...prompt, error } });
+        return;
+      }
+    }
     prompt.resolve(value);
     set({ prompt: null });
   },

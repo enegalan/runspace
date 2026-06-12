@@ -10,15 +10,13 @@ export async function requireProjectName(
   while (true) {
     const raw = await useDialogStore
       .getState()
-      .askPrompt(currentLabel, { initialValue: currentInitial });
-    if (!raw) {
+      .askPrompt(currentLabel, {
+        initialValue: currentInitial,
+        validate: (value) => (value.trim() ? null : "Project name cannot be empty."),
+      });
+    if (raw === null) {
       return null;
     }
-    const trimmed = raw.trim();
-    if (trimmed) {
-      return trimmed;
-    }
-    currentLabel = "Project name cannot be empty.";
-    currentInitial = "";
+    return raw.trim();
   }
 }

@@ -11,17 +11,13 @@ export async function requireFileName(environmentId: string): Promise<string | n
     const raw = await useDialogStore.getState().askPrompt(label, {
       initialValue,
       placeholder: `filename.${ext}`,
+      validate: (value) => (value.trim() ? null : "File name cannot be empty."),
     });
-    if (!raw) {
+    if (raw === null) {
       return null;
     }
 
     const trimmed = raw.trim();
-    if (!trimmed) {
-      label = "File name cannot be empty.";
-      initialValue = "";
-      continue;
-    }
 
     const path = normalizeFileName(trimmed, environmentId);
     if (await workspaceEntryExists(path)) {
