@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
   importDroppedExternalFiles,
 } from "../../core/workspace/externalFileDrop";
 import {
+  clearFileTreeDropTarget,
+  updateFileTreeDropTargetFromDrag,
+} from "../../core/workspace/fileTreeDropTarget";
+import {
   canMoveToRoot,
   clearFileDragData,
   getActiveDragPayload,
   hasFileDrag,
   readFileDragData,
+  setFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
+import { useFileTreeDragActive } from "../../hooks/useFileTreeDragActive";
+import { useFileTreeDropTarget } from "../../hooks/useFileTreeDropTarget";
 import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists";
 import { useDialogStore } from "../../stores/dialogStore";
 import { useNewFile } from "../../hooks/useNewFile";
@@ -38,8 +45,30 @@ export function FileTree() {
   const askPrompt = useDialogStore((state) => state.askPrompt);
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
-  const [rootDropTarget, setRootDropTarget] = useState(false);
   const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
+  const dropTargetPath = useFileTreeDropTarget();
+  const rootDropTarget = dropTargetPath === "";
+  const isDragging = useFileTreeDragActive();
+
+  useEffect(() => {
+    const onDragEnd = () => {
+      setFileTreeDragActive(false);
+      clearFileTreeDropTarget();
+    };
+    window.addEventListener("dragend", onDragEnd);
+    return () => {
+      window.removeEventListener("dragend", onDragEnd);
+    };
+  }, []);
+
+  const handleTreeDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    if (
+      hasExternalFileDrag(event.dataTransfer) ||
+      hasFileDrag(event.dataTransfer.types)
+    ) {
+      setFileTreeDragActive(true);
+    }
+  };
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -57,7 +86,6 @@ export function FileTree() {
     if (hasExternalFileDrag(event.dataTransfer)) {
       event.preventDefault();
       event.dataTransfer.dropEffect = "copy";
-      setRootDropTarget(true);
       return;
     }
 
@@ -70,12 +98,18 @@ export function FileTree() {
     }
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    setRootDropTarget(true);
   };
 
-  const handleBodyDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleTreeDragOverCapture = (event: React.DragEvent<HTMLDivElement>) => {
+    if (!workspace) {
+      return;
+    }
+    updateFileTreeDropTargetFromDrag(event);
+  };
+
+  const handleTreeDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setRootDropTarget(false);
+      clearFileTreeDropTarget();
     }
   };
 
@@ -84,7 +118,7 @@ export function FileTree() {
       return;
     }
     event.preventDefault();
-    setRootDropTarget(false);
+    clearFileTreeDropTarget();
 
     if (hasExternalFileDrag(event.dataTransfer)) {
       void importDroppedExternalFiles(event.dataTransfer, "");
@@ -133,7 +167,13 @@ export function FileTree() {
   };
 
   return (
-    <div className="file-tree" data-testid="file-tree">
+    <div
+      className={`file-tree${isDragging ? " file-tree--dragging" : ""}`}
+      data-testid="file-tree"
+      onDragEnter={handleTreeDragEnter}
+      onDragOverCapture={handleTreeDragOverCapture}
+      onDragLeave={handleTreeDragLeave}
+    >
       <EnvironmentIndicator onOpenPicker={() => setEnvironmentPickerOpen(true)} />
       <EnvironmentPickerDialog
         open={environmentPickerOpen}
@@ -180,7 +220,6 @@ export function FileTree() {
         {...{ [DROP_TARGET_ATTR]: "" }}
         onContextMenu={openSidebarMenu}
         onDragOver={handleBodyDragOver}
-        onDragLeave={handleBodyDragLeave}
         onDrop={handleBodyDrop}
         role="presentation"
       >

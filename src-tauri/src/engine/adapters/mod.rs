@@ -50,12 +50,6 @@ pub trait CompiledAdapter: RuntimeAdapter {
     fn output_binary_name(&self) -> &str {
         "runspace_out"
     }
-    fn compile_timeout_secs(&self) -> u64 {
-        15
-    }
-    fn run_timeout_secs(&self) -> u64 {
-        30
-    }
 }
 
 pub trait RuntimeAdapter: Send + Sync {

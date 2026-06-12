@@ -11,7 +11,6 @@ import { requireProjectName } from "../../core/workspace/promptProjectName";
 import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
 import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
-import { useExternalFileDrop } from "../../hooks/useExternalFileDrop";
 import { useAppShortcuts } from "../../hooks/useAppShortcuts";
 import { useMenuActions } from "../../hooks/useMenuActions";
 import {
@@ -69,8 +68,6 @@ export function AppShell() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
-
-  useExternalFileDrop();
 
   const {
     stdout,

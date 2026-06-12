@@ -518,34 +518,11 @@ impl WorkspaceManager {
             format!("{target_dir}/{name}")
         };
 
-        if !Self::import_path_exists(workspace, &initial)? {
-            return Ok(initial);
+        if Self::import_path_exists(workspace, &initial)? {
+            return Err(WorkspaceError::AlreadyExists(initial));
         }
 
-        let path = Path::new(name);
-        let stem = path
-            .file_stem()
-            .and_then(|value| value.to_str())
-            .unwrap_or(name);
-        let extension = path.extension().and_then(|value| value.to_str());
-
-        for index in 1..10_000 {
-            let candidate_name = if let Some(ext) = extension {
-                format!("{stem} ({index}).{ext}")
-            } else {
-                format!("{stem} ({index})")
-            };
-            let relative = if target_dir.is_empty() {
-                candidate_name
-            } else {
-                format!("{target_dir}/{candidate_name}")
-            };
-            if !Self::import_path_exists(workspace, &relative)? {
-                return Ok(relative);
-            }
-        }
-
-        Err(WorkspaceError::AlreadyExists(name.to_string()))
+        Ok(initial)
     }
 
     fn import_path_exists(workspace: &Workspace, relative: &str) -> Result<bool, WorkspaceError> {
@@ -834,7 +811,7 @@ mod tests {
     }
 
     #[test]
-    fn import_external_uses_unique_name_when_target_exists() {
+    fn import_external_errors_when_target_exists() {
         let (manager, _temp) = temp_manager();
         let workspace = manager
             .create_named_workspace("Import conflict", "nodejs")
@@ -851,15 +828,9 @@ mod tests {
         let source = source_dir.join("notes.txt");
         fs::write(&source, "incoming").expect("source file");
 
-        let imported = manager
-            .import_external(&workspace, &[source.display().to_string()], None)
-            .expect("import");
+        let result = manager.import_external(&workspace, &[source.display().to_string()], None);
 
-        assert_eq!(imported, vec!["notes (1).txt"]);
-        assert_eq!(
-            fs::read_to_string(workspace.path.join("notes (1).txt")).expect("read imported"),
-            "incoming"
-        );
+        assert!(matches!(result, Err(WorkspaceError::AlreadyExists(_))));
 
         let _ = fs::remove_dir_all(source_dir);
     }

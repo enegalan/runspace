@@ -428,8 +428,7 @@
   padding: var(--rs-space-1) 0 var(--rs-space-2);
 }
 
-.file-tree__body--drop-target,
-.file-tree__body.external-drop-target {
+.file-tree__body--drop-target {
   outline: 1px dashed var(--rs-accent);
   outline-offset: -2px;
   background: var(--rs-accent-muted);
@@ -456,18 +455,52 @@
   background: var(--rs-bg-hover);
 }
 
-.file-tree__row--drop-target,
-.file-tree__row.external-drop-target {
-  background: var(--rs-accent-muted);
-  outline: 1px dashed var(--rs-accent);
-  outline-offset: -1px;
+.file-tree--dragging .file-tree__row {
+  transition: none;
 }
 
-.file-tree__label[draggable="true"] {
+.file-tree--dragging .file-tree__row:hover {
+  background: transparent;
+}
+
+.file-tree--dragging .file-tree__row:hover .file-tree__chevron {
+  color: var(--rs-text-muted);
+}
+
+.file-tree--dragging .file-tree__row:hover .file-tree__label {
+  color: var(--rs-text-secondary);
+}
+
+.file-tree__folder--drop-target {
+  position: relative;
+}
+
+.file-tree__folder--drop-target::before {
+  content: "";
+  position: absolute;
+  inset: 0 var(--rs-space-2);
+  background: var(--rs-accent-muted);
+  border: 1px dashed var(--rs-accent);
+  border-radius: var(--rs-radius-sm);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.file-tree__folder--drop-target > * {
+  position: relative;
+  z-index: 1;
+}
+
+.file-tree__folder--drop-target .file-tree__row {
+  background: transparent;
+  outline: none;
+}
+
+.file-tree__row[draggable="true"] {
   cursor: grab;
 }
 
-.file-tree__label[draggable="true"]:active {
+.file-tree__row[draggable="true"]:active {
   cursor: grabbing;
 }
 

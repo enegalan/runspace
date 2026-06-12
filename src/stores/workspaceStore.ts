@@ -5,6 +5,7 @@ import {
 } from "../core/onboarding/onboardingState";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { activateRuntime } from "../core/workspace/activateRuntime";
+import { confirmEntryReplace } from "../core/workspace/confirmEntryReplace";
 import { readFileAsText } from "../core/workspace/externalFileDrop";
 import { movedPath, parentDir } from "../core/workspace/fileTreeDrag";
 import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
@@ -44,6 +45,25 @@ interface WorkspaceStore {
   ) => Promise<string[]>;
   toggleDir: (path: string) => void;
   expandDir: (path: string) => void;
+}
+
+function entryName(path: string): string {
+  return path.split(/[/\\]/).pop() ?? path;
+}
+
+async function replaceEntryIfConfirmed(
+  relativePath: string,
+  deleteFile: (path: string) => Promise<void>,
+): Promise<boolean> {
+  if (!(await workspaceEntryExists(relativePath))) {
+    return true;
+  }
+  if (!(await confirmEntryReplace(entryName(relativePath)))) {
+    return false;
+  }
+  useEditorTabsStore.getState().removeOpenFile(relativePath);
+  await deleteFile(relativePath);
+  return true;
 }
 
 async function syncIfNeeded(workspace: WorkspaceInfo | null): Promise<void> {
@@ -401,6 +421,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     if (sourcePath === newPath) {
       return;
     }
+    await syncIfNeeded(get().workspace);
+    if (!(await replaceEntryIfConfirmed(newPath, get().deleteFile))) {
+      return;
+    }
     await get().renameFile(sourcePath, newPath);
     useEditorTabsStore.getState().renameOpenFile(sourcePath, newPath);
   },
@@ -413,18 +437,30 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
     let imported: string[] = [];
     if (typeof sources[0] === "string") {
-      imported =
-        (await runspaceInvoke<string[]>("import_external", {
-          sourcePaths: sources,
-          targetDir: targetDir || undefined,
-        })) ?? [];
+      const sourcePaths: string[] = [];
+      for (const sourcePath of sources as string[]) {
+        const relativePath = targetDir
+          ? `${targetDir}/${entryName(sourcePath)}`
+          : entryName(sourcePath);
+        if (!(await replaceEntryIfConfirmed(relativePath, get().deleteFile))) {
+          continue;
+        }
+        sourcePaths.push(sourcePath);
+      }
+      if (sourcePaths.length > 0) {
+        imported =
+          (await runspaceInvoke<string[]>("import_external", {
+            sourcePaths,
+            targetDir: targetDir || undefined,
+          })) ?? [];
+      }
     } else {
       for (const file of sources as File[]) {
-        const content = await readFileAsText(file);
         const relativePath = targetDir ? `${targetDir}/${file.name}` : file.name;
-        if (await workspaceEntryExists(relativePath)) {
-          throw new Error(`"${relativePath}" already exists.`);
+        if (!(await replaceEntryIfConfirmed(relativePath, get().deleteFile))) {
+          continue;
         }
+        const content = await readFileAsText(file);
         await runspaceInvoke("write_file", { path: relativePath, content });
         imported.push(relativePath);
       }

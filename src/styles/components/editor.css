@@ -318,8 +318,7 @@
   margin-top: var(--rs-space-4);
 }
 
-.editor-area--drop-target .editor-area__body,
-.editor-area.external-drop-target .editor-area__body {
+.editor-area--drop-target .editor-area__body {
   outline: 2px dashed var(--rs-accent);
   outline-offset: -4px;
   background: var(--rs-accent-muted);
