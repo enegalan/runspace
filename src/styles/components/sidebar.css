@@ -561,6 +561,10 @@
   flex-shrink: 0;
 }
 
+.file-tree__icon svg {
+  display: block;
+}
+
 .file-tree__rename-input {
   flex: 1 1 auto;
   min-width: 0;

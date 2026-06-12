@@ -3,6 +3,7 @@ import { useNewFile } from "../../hooks/useNewFile";
 import { useTabDragReorder } from "../../hooks/useTabDragReorder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
+import { FileIcon } from "../files/FileIcon";
 import { IconClose, IconDot, IconPlus } from "../ui/icons";
 
 function tabLabel(path: string): string {
@@ -101,6 +102,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
                 {file.dirty && (
                   <IconDot size={8} className="editor-tabs__dirty" aria-label="Unsaved" />
                 )}
+                <FileIcon path={file.path} isDirectory={false} />
                 <span className="editor-tabs__label">{tabLabel(file.path)}</span>
               </button>
               <button

@@ -332,7 +332,11 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
           onClick={handleOpen}
           title={entry.path}
         >
-          <FileIcon path={entry.path} isDirectory={entry.is_directory} />
+          <FileIcon
+            path={entry.path}
+            isDirectory={entry.is_directory}
+            isExpanded={expanded}
+          />
           <span className="file-tree__name">{entry.name}</span>
         </button>
       )}

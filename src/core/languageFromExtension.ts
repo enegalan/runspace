@@ -27,13 +27,3 @@ export function languageFromExtension(path: string): string {
   const ext = base.slice(dot + 1).toLowerCase();
   return EXTENSION_LANGUAGE_MAP[ext] ?? "plaintext";
 }
-
-export function fileIconClass(path: string): string {
-  const base = path.split("/").pop() ?? path;
-  const dot = base.lastIndexOf(".");
-  if (dot <= 0) {
-    return "file-tree__icon--file";
-  }
-  const ext = base.slice(dot + 1).toLowerCase();
-  return `file-tree__icon--${ext}`;
-}
