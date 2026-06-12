@@ -436,7 +436,6 @@ export function AppShell() {
         exitCode={exitCode}
         timedOut={timedOut}
         lastRunDurationMs={lastRunDurationMs}
-        environmentName={selectedEnvironment?.definition.name ?? "—"}
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />

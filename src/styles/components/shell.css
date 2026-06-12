@@ -159,15 +159,6 @@
   color: var(--rs-text-muted);
 }
 
-.status-bar__env-chip {
-  padding: 1px var(--rs-space-2);
-  border-radius: var(--rs-radius-full);
-  background: var(--rs-accent-muted);
-  color: var(--rs-accent);
-  font-size: var(--rs-font-size-xs);
-  font-weight: 500;
-}
-
 .status-bar__item--success {
   color: var(--rs-success);
 }
