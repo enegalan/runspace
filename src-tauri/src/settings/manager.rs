@@ -66,6 +66,7 @@ impl SettingsManager {
             self.settings.execution.compile_timeout_secs.clamp(5, 120);
         self.settings.layout.sidebar_width = self.settings.layout.sidebar_width.clamp(260, 480);
         self.settings.layout.output_width = self.settings.layout.output_width.clamp(200, 560);
+        self.settings.layout.terminal_height = self.settings.layout.terminal_height.clamp(120, 480);
     }
 }
 

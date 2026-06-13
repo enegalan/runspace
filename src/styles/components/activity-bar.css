@@ -75,3 +75,8 @@
 .activity-bar__btn--stop-active:hover:not(:disabled) {
   background: rgba(242, 63, 67, 0.22);
 }
+
+.activity-bar__btn--active {
+  color: var(--rs-accent);
+  background: var(--rs-accent-muted);
+}

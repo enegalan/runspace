@@ -3,7 +3,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--rs-radius-md) var(--rs-radius-md) 0;
   background: var(--rs-bg-elevated);
   overflow: hidden;
   user-select: none;

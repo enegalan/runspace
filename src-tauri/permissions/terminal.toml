@@ -1,0 +1,10 @@
+[[permission]]
+identifier = "allow-terminal"
+description = "Allows interactive terminal commands"
+commands.allow = [
+  "spawn_terminal",
+  "write_terminal",
+  "resize_terminal",
+  "close_terminal",
+  "list_terminal_sessions",
+]

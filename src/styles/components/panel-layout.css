@@ -28,6 +28,18 @@
   transition: background var(--rs-duration-fast) var(--rs-ease);
 }
 
+.resize-handle--horizontal {
+  flex: 0 0 4px;
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+  align-self: stretch;
+}
+
+.resize-handle--top {
+  order: -1;
+}
+
 .resize-handle:hover,
 .resize-handle--active {
   background: var(--rs-accent-muted);

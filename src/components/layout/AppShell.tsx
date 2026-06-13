@@ -19,6 +19,8 @@ import {
   OUTPUT_WIDTH_MIN,
   SIDEBAR_WIDTH_MAX,
   SIDEBAR_WIDTH_MIN,
+  TERMINAL_HEIGHT_MAX,
+  TERMINAL_HEIGHT_MIN,
 } from "../../core/layout/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
 import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome";
@@ -36,6 +38,7 @@ import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { AppDialogs } from "../ui/AppDialogs";
+import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 
 export function AppShell() {
@@ -271,6 +274,23 @@ export function AppShell() {
     [updateSettings],
   );
 
+  const handleTerminalHeightChange = useCallback(
+    (height: number) => {
+      void updateSettings({
+        layout: {
+          terminalHeight: clampPanelSize(height, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleToggleTerminal = useCallback(() => {
+    void updateSettings({
+      layout: { terminalVisible: !layoutSettings.terminalVisible },
+    });
+  }, [layoutSettings.terminalVisible, updateSettings]);
+
   const handleSave = useCallback(() => {
     void useEditorTabsStore.getState().saveActiveFile();
   }, []);
@@ -378,6 +398,7 @@ export function AppShell() {
     isTauri() ? "main-row--desktop" : "",
     !layoutSettings.sidebarVisible ? "main-row--sidebar-hidden" : "",
     !layoutSettings.outputVisible ? "main-row--output-hidden" : "",
+    !layoutSettings.terminalVisible ? "main-row--terminal-hidden" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -398,8 +419,10 @@ export function AppShell() {
           status={status}
           runDisabled={runDisabled}
           runDisabledReason={runDisabledReason}
+          terminalVisible={layoutSettings.terminalVisible}
           onRun={handleRun}
           onStop={stop}
+          onToggleTerminal={handleToggleTerminal}
           onOpenSettings={() => setSettingsOpen(true)}
         />
         {layoutSettings.sidebarVisible && (
@@ -414,6 +437,16 @@ export function AppShell() {
             <div className="editor-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
           )}
           <EditorArea onRun={handleRun} onSave={handleSave} />
+          {layoutSettings.terminalVisible && (
+            <TerminalPanel
+              height={layoutSettings.terminalHeight}
+              onHeightChange={handleTerminalHeightChange}
+              workspaceId={workspace?.id}
+              environmentId={selectedId ?? undefined}
+              configured={Boolean(selectedEnvironment?.configured)}
+              disabledReason={runDisabledReason}
+            />
+          )}
         </div>
         {layoutSettings.outputVisible && (
           <OutputPanel

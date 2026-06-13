@@ -5,7 +5,7 @@
   min-height: 0;
   background: var(--rs-bg-elevated);
   overflow: hidden;
-  border-radius: 8px 0 0 8px;
+  border-radius: var(--rs-radius-md) var(--rs-radius-md) 0 0;
 }
 
 .output-panel__header {

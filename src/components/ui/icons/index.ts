@@ -14,6 +14,7 @@ export {
   IconRefresh,
   IconSettings,
   IconStop,
+  IconTerminal,
   IconTrash,
 } from "./Icons";
 export type { IconProps } from "./Icons";

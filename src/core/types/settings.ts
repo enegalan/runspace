@@ -27,8 +27,10 @@ export interface ExecutionSettings {
 export interface LayoutSettings {
   sidebarWidth: number;
   outputWidth: number;
+  terminalHeight: number;
   sidebarVisible: boolean;
   outputVisible: boolean;
+  terminalVisible: boolean;
   restoreLastWorkspace: boolean;
   confirmCloseUnsavedTab: boolean;
 }

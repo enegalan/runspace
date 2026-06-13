@@ -11,6 +11,13 @@
   /* Editor */
   --rs-editor-bg: #1e1e1e;
 
+  /* Terminal */
+  --rs-terminal-bg: #2b2d31;
+  --rs-terminal-fg: #f2f3f5;
+  --rs-terminal-cursor: #f2f3f5;
+  --rs-terminal-cursor-accent: #1e1e1e;
+  --rs-terminal-selection: rgba(88, 101, 242, 0.35);
+
   /* Borders */
   --rs-border-subtle: rgb(43 43 43);
   --rs-border-strong: rgba(255, 255, 255, 0.1);
@@ -89,6 +96,12 @@
   --rs-bg-hover: #dee0e3;
 
   --rs-editor-bg: #ffffff;
+
+  --rs-terminal-bg: #ffffff;
+  --rs-terminal-fg: #060607;
+  --rs-terminal-cursor: #060607;
+  --rs-terminal-cursor-accent: #ffffff;
+  --rs-terminal-selection: rgba(88, 101, 242, 0.25);
 
   --rs-border-subtle: rgb(218 220 224);
   --rs-border-strong: rgba(0, 0, 0, 0.12);

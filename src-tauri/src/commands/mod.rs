@@ -2,6 +2,7 @@ pub mod environment;
 pub mod execution;
 pub mod settings;
 pub mod snippet;
+pub mod terminal;
 pub mod workspace;
 
 pub use environment::{
@@ -10,6 +11,9 @@ pub use environment::{
     uninstall_environment, validate_environment,
 };
 pub use execution::{execute_code, get_runtime_template, kill_process};
+pub use terminal::{
+    close_terminal, list_terminal_sessions, resize_terminal, spawn_terminal, write_terminal,
+};
 pub use settings::{read_settings, update_settings};
 pub use snippet::{read_snippet, write_snippet};
 pub use workspace::{

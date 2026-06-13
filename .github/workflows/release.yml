@@ -17,7 +17,19 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/runspace-skeleton-gen
+          key: runspace-skeleton-gen-v1-${{ runner.os }}
+
       - run: npm ci
+
+      - run: npm run prepare:frameworks
 
       - name: Build and release
         uses: tauri-apps/tauri-action@v0

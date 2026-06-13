@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 use crate::engine::{ExecutionEngine, ExecutionEventBus};
 use crate::environment::EnvironmentManager;
 use crate::settings::SettingsManager;
+use crate::terminal::{TerminalEventBus, TerminalManager};
 use crate::workspace::{Workspace, WorkspaceManager};
 
 pub type SharedState = Arc<AppState>;
@@ -14,6 +15,8 @@ pub struct AppState {
     pub settings_manager: Mutex<SettingsManager>,
     pub execution_engine: ExecutionEngine,
     pub execution_events: ExecutionEventBus,
+    pub terminal_manager: Mutex<TerminalManager>,
+    pub terminal_events: TerminalEventBus,
     pub active_workspace: Mutex<Option<Workspace>>,
 }
 
@@ -38,6 +41,8 @@ impl AppState {
             settings_manager: Mutex::new(settings_manager),
             execution_engine: ExecutionEngine::new(),
             execution_events: ExecutionEventBus::new(),
+            terminal_manager: Mutex::new(TerminalManager::new()),
+            terminal_events: TerminalEventBus::new(),
             active_workspace: Mutex::new(None),
         })
     }

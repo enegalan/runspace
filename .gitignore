@@ -10,3 +10,7 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
+
+# Generated framework sandboxes (see scripts/prepare-framework-skeletons.sh)
+/src-tauri/resources/frameworks/*/*
+!/src-tauri/resources/frameworks/*/*/.gitkeep

@@ -259,6 +259,9 @@ export function GeneralSettings() {
           }
           data-testid="setting-output-visible"
         />
+
+        <SettingsDivider />
+
         <SettingsToggleRow
           label="Restore last workspace on launch"
           description="Reopen your previous project when the app starts."

@@ -40,7 +40,7 @@ fn framework_definition(
         id: id.to_string(),
         name: name.to_string(),
         category: EnvironmentCategory::Framework,
-        entry_file: Some("snippet.php".to_string()),
+        entry_file: Some("main.php".to_string()),
         file_extension: "php".to_string(),
         monaco_language: "php".to_string(),
         install_guide_url: install_guide_url.to_string(),

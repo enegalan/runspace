@@ -11,6 +11,7 @@
     "allow-snippet",
     "allow-environment",
     "allow-settings",
+    "allow-terminal",
     "dialog:default",
     "opener:default"
   ]

@@ -8,6 +8,7 @@
 @import "./components/sidebar.css";
 @import "./components/editor.css";
 @import "./components/output.css";
+@import "./components/terminal.css";
 @import "./components/settings.css";
 @import "./components/dialog.css";
 @import "./components/welcome.css";

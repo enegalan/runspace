@@ -95,6 +95,13 @@ describe("AppShell", () => {
       if (cmd === "write_session") {
         return Promise.resolve(undefined);
       }
+      if (cmd === "spawn_terminal") {
+        return Promise.resolve({
+          sessionId: "session-test",
+          workspaceId: "ws-test",
+          environmentId: "nodejs",
+        });
+      }
       return Promise.resolve(undefined);
     });
   });
@@ -113,6 +120,8 @@ describe("AppShell", () => {
     expect(screen.getByTestId("workspace-switcher")).toBeInTheDocument();
     expect(screen.getByTestId("editor-tabs")).toBeInTheDocument();
     expect(screen.getByTestId("output-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("terminal-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("terminal-toggle-button")).toBeInTheDocument();
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
     expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     expect(screen.getByTestId("run-button")).toBeDisabled();
@@ -247,6 +256,13 @@ describe("AppShell", () => {
       }
       if (cmd === "set_selected_environment") {
         return Promise.resolve(undefined);
+      }
+      if (cmd === "spawn_terminal") {
+        return Promise.resolve({
+          sessionId: "session-test",
+          workspaceId: mockWorkspace.id,
+          environmentId: "nodejs",
+        });
       }
       return Promise.resolve(undefined);
     });

@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
-use super::framework::{ensure_skeleton, framework_extra_env, write_bootstrap};
+use super::framework::{ensure_skeleton, write_bootstrap};
 use super::php::normalize_php_snippet;
 use super::{script_command, AdapterError, PrepareContext, PrepareResult, RuntimeAdapter};
 
@@ -17,7 +18,7 @@ impl RuntimeAdapter for LaravelAdapter {
     }
 
     fn entry_filename(&self) -> String {
-        "snippet.php".to_string()
+        "main.php".to_string()
     }
 
     fn default_template(&self) -> &str {
@@ -38,11 +39,9 @@ impl RuntimeAdapter for LaravelAdapter {
         let bootstrap_path =
             write_bootstrap(ctx.workspace_path, ctx.snippet_path, &skeleton_root)
                 .map_err(|e| AdapterError::Prepare(e.to_string()))?;
-        let extra_env = framework_extra_env(&skeleton_root, ctx.snippet_path);
-
         Ok(PrepareResult {
             script_path: bootstrap_path,
-            extra_env,
+            extra_env: HashMap::new(),
         })
     }
 }

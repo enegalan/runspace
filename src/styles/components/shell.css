@@ -118,8 +118,12 @@
   grid-column: 3;
   grid-row: 1 / -1;
   display: grid;
-  grid-template-rows: var(--rs-editor-tabs-height) 1fr;
+  grid-template-rows: var(--rs-editor-tabs-height) minmax(0, 1fr) auto;
   flex: initial;
+}
+
+.main-row--desktop.main-row--terminal-hidden .editor-column {
+  grid-template-rows: var(--rs-editor-tabs-height) minmax(0, 1fr);
 }
 
 .main-row--desktop .editor-titlebar-zone {

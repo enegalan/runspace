@@ -28,5 +28,6 @@ describe("GeneralSettings", () => {
     expect(screen.getByTestId("setting-theme")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
     expect(screen.getByText("Show sidebar")).toBeInTheDocument();
+    expect(screen.getByText("Show output panel")).toBeInTheDocument();
   });
 });

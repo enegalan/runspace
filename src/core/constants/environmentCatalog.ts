@@ -35,7 +35,7 @@ function frameworkDefinition(
     id,
     name,
     category: "framework",
-    entry_file: "snippet.php",
+    entry_file: "main.php",
     file_extension: "php",
     monaco_language: "php",
     install_guide_url: installGuideUrl,

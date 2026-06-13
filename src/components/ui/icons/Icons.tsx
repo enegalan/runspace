@@ -179,6 +179,15 @@ export function IconDot({ size = 8, className = "" }: IconProps) {
   );
 }
 
+export function IconTerminal(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 17l6-6-6-6" {...stroke} />
+      <path d="M12 19h8" {...stroke} />
+    </Icon>
+  );
+}
+
 export function IconCheck(props: IconProps) {
   return (
     <Icon {...props}>

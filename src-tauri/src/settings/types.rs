@@ -84,8 +84,10 @@ impl Default for ExecutionSettings {
 pub struct LayoutSettings {
     pub sidebar_width: u32,
     pub output_width: u32,
+    pub terminal_height: u32,
     pub sidebar_visible: bool,
     pub output_visible: bool,
+    pub terminal_visible: bool,
     pub restore_last_workspace: bool,
     pub confirm_close_unsaved_tab: bool,
 }
@@ -95,8 +97,10 @@ impl Default for LayoutSettings {
         Self {
             sidebar_width: 260,
             output_width: 300,
+            terminal_height: 200,
             sidebar_visible: true,
             output_visible: true,
+            terminal_visible: true,
             restore_last_workspace: true,
             confirm_close_unsaved_tab: true,
         }

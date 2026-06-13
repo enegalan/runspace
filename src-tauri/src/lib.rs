@@ -7,19 +7,21 @@ mod security;
 mod services;
 mod settings;
 mod state;
+mod terminal;
 #[cfg(test)]
 mod test_home_lock;
 mod workspace;
 
 use commands::{
-    create_directory, create_workspace, delete_file, delete_workspace, execute_code,
-    get_active_workspace,
-    get_runtime_template, get_selected_environment, import_external, initialize_workspace,
-    install_environment, kill_process, list_available_environments, list_environments, list_files,
+    close_terminal, create_directory, create_workspace, delete_file, delete_workspace,
+    execute_code, get_active_workspace, get_runtime_template, get_selected_environment,
+    import_external, initialize_workspace, install_environment, kill_process,
+    list_available_environments, list_environments, list_files, list_terminal_sessions,
     list_workspaces, open_workspace, read_file, read_session, read_settings, read_snippet,
-    rename_file, rename_workspace, set_environment_env_vars, set_environment_paths,
-    set_selected_environment, uninstall_environment, update_manifest, update_settings,
-    validate_environment, write_file, write_session, write_snippet,
+    rename_file, rename_workspace, resize_terminal, set_environment_env_vars,
+    set_environment_paths, set_selected_environment, spawn_terminal, uninstall_environment,
+    update_manifest, update_settings, validate_environment, write_file, write_session,
+    write_snippet, write_terminal,
 };
 use std::sync::{Arc, Mutex};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
@@ -173,6 +175,11 @@ pub fn run() {
             read_session,
             write_session,
             update_manifest,
+            spawn_terminal,
+            write_terminal,
+            resize_terminal,
+            close_terminal,
+            list_terminal_sessions,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

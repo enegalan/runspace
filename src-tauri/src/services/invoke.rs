@@ -618,6 +618,49 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
+        "spawn_terminal" => {
+            let args: EnvironmentIdArgs = serde_json::from_value(args)
+                .map_err(|e| format!("Invalid spawn_terminal args: {e}"))?;
+            crate::services::terminal::spawn_terminal(state, app, &args.environment_id).await
+        }
+        "write_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            let data = args
+                .get("data")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing data".to_string())?
+                .to_string();
+            crate::services::terminal::write_terminal(state, &session_id, &data)
+        }
+        "resize_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            let cols = args
+                .get("cols")
+                .and_then(|value| value.as_u64())
+                .ok_or_else(|| "Missing cols".to_string())? as u16;
+            let rows = args
+                .get("rows")
+                .and_then(|value| value.as_u64())
+                .ok_or_else(|| "Missing rows".to_string())? as u16;
+            crate::services::terminal::resize_terminal(state, &session_id, cols, rows)
+        }
+        "close_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            crate::services::terminal::close_terminal(state, &session_id)
+        }
+        "list_terminal_sessions" => crate::services::terminal::list_terminal_sessions(state),
         _ => Err(format!("Unknown command: {cmd}")),
     }
 }

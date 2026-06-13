@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub use framework::FrameworkSkeletonError;
+pub use framework::{ensure_skeleton, framework_terminal_env, FrameworkSkeletonError};
 
 pub struct PrepareContext<'a> {
     pub workspace_path: &'a Path,
@@ -140,8 +140,8 @@ mod tests {
             ("php", "main.php"),
             ("python", "main.py"),
             ("ruby", "main.rb"),
-            ("laravel", "snippet.php"),
-            ("symfony", "snippet.php"),
+            ("laravel", "main.php"),
+            ("symfony", "main.php"),
             ("gcc", "main.c"),
             ("gpp", "main.cpp"),
         ];

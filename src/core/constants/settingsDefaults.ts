@@ -5,6 +5,9 @@ import {
   SIDEBAR_WIDTH_DEFAULT,
   SIDEBAR_WIDTH_MAX,
   SIDEBAR_WIDTH_MIN,
+  TERMINAL_HEIGHT_DEFAULT,
+  TERMINAL_HEIGHT_MAX,
+  TERMINAL_HEIGHT_MIN,
 } from "../layout/panelLayout";
 import type { AppSettings, AppSettingsPatch } from "../types/settings";
 
@@ -40,8 +43,10 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   layout: {
     sidebarWidth: SIDEBAR_WIDTH_DEFAULT,
     outputWidth: OUTPUT_WIDTH_DEFAULT,
+    terminalHeight: TERMINAL_HEIGHT_DEFAULT,
     sidebarVisible: true,
     outputVisible: true,
+    terminalVisible: true,
     restoreLastWorkspace: true,
     confirmCloseUnsavedTab: true,
   },
@@ -71,6 +76,10 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
       outputWidth: Math.min(
         OUTPUT_WIDTH_MAX,
         Math.max(OUTPUT_WIDTH_MIN, settings.layout.outputWidth),
+      ),
+      terminalHeight: Math.min(
+        TERMINAL_HEIGHT_MAX,
+        Math.max(TERMINAL_HEIGHT_MIN, settings.layout.terminalHeight),
       ),
     },
   };

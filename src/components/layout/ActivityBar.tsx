@@ -1,14 +1,16 @@
 import type { ExecutionStatus } from "../../core/types/execution";
 import { isTauri } from "../../core/platform/isTauri";
 import { IconButton } from "../ui/IconButton";
-import { IconPlay, IconSettings, IconStop } from "../ui/icons";
+import { IconPlay, IconSettings, IconStop, IconTerminal } from "../ui/icons";
 
 interface ActivityBarProps {
   status: ExecutionStatus;
   runDisabled: boolean;
   runDisabledReason?: string;
+  terminalVisible: boolean;
   onRun: () => void;
   onStop: () => void;
+  onToggleTerminal: () => void;
   onOpenSettings: () => void;
 }
 
@@ -21,8 +23,10 @@ export function ActivityBar({
   status,
   runDisabled,
   runDisabledReason,
+  terminalVisible,
   onRun,
   onStop,
+  onToggleTerminal,
   onOpenSettings,
 }: ActivityBarProps) {
   const isRunning = status === "running";
@@ -59,6 +63,15 @@ export function ActivityBar({
         <div className="activity-bar__drag-fill" data-tauri-drag-region aria-hidden="true" />
       )}
       <div className="activity-bar__bottom">
+        <IconButton
+          label="Terminal"
+          title="Toggle terminal panel"
+          className={`activity-bar__btn${terminalVisible ? " activity-bar__btn--active" : ""}`}
+          onClick={onToggleTerminal}
+          data-testid="terminal-toggle-button"
+        >
+          <IconTerminal size={16} />
+        </IconButton>
         <IconButton
           label="Settings"
           title="Settings (⌘,)"
