@@ -13,7 +13,7 @@ SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 
 if [[ ! -d "$LARAVEL_SRC/vendor" || ! -d "$SYMFONY_SRC/vendor" ]]; then
     echo "Generate skeletons first:" >&2
-    echo "  composer create-project laravel/laravel $LARAVEL_SRC \"11.*\"" >&2
+    echo "  composer create-project laravel/laravel $LARAVEL_SRC \"12.*\"" >&2
     echo "  composer create-project symfony/skeleton $SYMFONY_SRC \"7.2.*\"" >&2
     echo "  (cd $SYMFONY_SRC && composer require webapp)" >&2
     exit 1
@@ -84,7 +84,7 @@ PY
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
 
-SKELETON_VERSION="${SKELETON_VERSION:-2}"
+SKELETON_VERSION="${SKELETON_VERSION:-3}"
 echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
 echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
 

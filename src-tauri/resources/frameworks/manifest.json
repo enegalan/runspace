@@ -1,9 +1,9 @@
 {
-  "skeletonVersion": "2",
+  "skeletonVersion": "3",
   "frameworks": {
     "laravel": {
       "createProject": "laravel/laravel",
-      "versionConstraint": "11.*"
+      "versionConstraint": "12.*"
     },
     "symfony": {
       "createProject": "symfony/skeleton",
