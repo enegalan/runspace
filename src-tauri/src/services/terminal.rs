@@ -94,7 +94,7 @@ pub fn list_terminal_sessions(state: &SharedState) -> Result<Value, String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::terminal::manager::SpawnTerminalResult;
+    use crate::terminal::SpawnTerminalResult;
 
     #[test]
     fn spawn_terminal_result_shape_is_documented() {
