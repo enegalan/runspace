@@ -1,5 +1,5 @@
 {
-  "skeletonVersion": "3",
+  "skeletonVersion": "4",
   "frameworks": {
     "laravel": {
       "createProject": "laravel/laravel",
@@ -7,7 +7,7 @@
     },
     "symfony": {
       "createProject": "symfony/skeleton",
-      "versionConstraint": "7.2.*",
+      "versionConstraint": "7.4.*",
       "extraPackages": ["webapp"]
     }
   }
