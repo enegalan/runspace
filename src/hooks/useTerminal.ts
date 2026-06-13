@@ -26,11 +26,16 @@ export function useTerminal({
 }: UseTerminalOptions) {
   const xtermRef = useRef<XTermViewHandle | null>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const activeRef = useRef(active);
   const tab = useTerminalStore((state) => state.tabs[tabId]);
   const setConnecting = useTerminalStore((state) => state.setConnecting);
   const setSession = useTerminalStore((state) => state.setSession);
   const setExited = useTerminalStore((state) => state.setExited);
   const setError = useTerminalStore((state) => state.setError);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
 
   useEffect(() => {
     const sessionId = tab?.sessionId;
@@ -60,7 +65,7 @@ export function useTerminal({
         sessionIdRef.current = result.sessionId;
         setSession(tabId, result.sessionId);
         window.setTimeout(() => {
-          if (!active) {
+          if (!activeRef.current) {
             return;
           }
           xtermRef.current?.fit();

@@ -4,8 +4,8 @@ export async function requireProjectName(
   label = "Project name",
   initialValue = "",
 ): Promise<string | null> {
-  let currentLabel = label;
-  let currentInitial = initialValue;
+  const currentLabel = label;
+  const currentInitial = initialValue;
 
   while (true) {
     const raw = await useDialogStore
