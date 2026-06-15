@@ -101,7 +101,6 @@
   justify-content: space-between;
   gap: var(--rs-space-3);
   padding: var(--rs-space-4) var(--rs-space-5);
-  border-bottom: 1px solid var(--rs-border-subtle);
 }
 
 .app-dialog__panel--danger .app-dialog__header {
@@ -167,38 +166,125 @@
   background: transparent;
 }
 
-.about-dialog__version {
-  margin: 0 0 var(--rs-space-2);
+.about-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-4);
+}
+
+.about-dialog__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rs-space-2);
+  text-align: center;
+}
+
+.about-dialog__icon {
+  width: 64px;
+  height: 64px;
+}
+
+.about-dialog__title {
+  margin: 0;
   font-size: 20px;
   font-weight: 600;
-  text-align: center;
+}
+
+.about-dialog__version {
+  color: var(--rs-text-muted);
+  font-weight: 500;
 }
 
 .about-dialog__tagline {
-  margin: 0 0 var(--rs-space-4);
+  margin: 0;
   color: var(--rs-text-secondary);
   font-size: var(--rs-font-size-md);
-  text-align: center;
   line-height: 1.5;
 }
 
-.about-dialog__runtimes {
-  margin: 0 0 var(--rs-space-4);
+.about-dialog__section {
   padding: var(--rs-space-3);
   border-radius: var(--rs-radius-md);
   background: var(--rs-bg-base);
   border: 1px solid var(--rs-border-subtle);
-  font-size: var(--rs-font-size-sm);
+}
+
+.about-dialog__section-title {
+  margin: 0 0 var(--rs-space-3);
+  font-size: var(--rs-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rs-text-muted);
+}
+
+.about-dialog__runtime-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-3);
+}
+
+.about-dialog__runtime-group-label {
+  margin: 0 0 var(--rs-space-2);
+  font-size: var(--rs-font-size-xs);
   color: var(--rs-text-secondary);
+}
+
+.about-dialog__runtime-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rs-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-dialog__runtime-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+  padding: 4px var(--rs-space-2);
+  border-radius: var(--rs-radius-full);
+  border: 1px solid var(--rs-border-subtle);
+  background: var(--rs-bg-overlay);
+  font-size: var(--rs-font-size-xs);
+  color: var(--rs-text-secondary);
+}
+
+.about-dialog__runtime-pill--installed {
+  border-color: rgba(35, 165, 89, 0.35);
+  background: rgba(35, 165, 89, 0.08);
+}
+
+.about-dialog__runtime-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.about-dialog__summary {
+  margin: 0;
+  font-size: var(--rs-font-size-xs);
+  color: var(--rs-text-muted);
   text-align: center;
 }
 
 .about-dialog__meta {
-  margin: 0 0 var(--rs-space-4);
+  margin: 0;
   font-size: var(--rs-font-size-xs);
   color: var(--rs-text-muted);
   text-align: center;
   line-height: 1.6;
+}
+
+.about-dialog__meta p {
+  margin: 0;
+}
+
+.about-dialog__build {
+  color: var(--rs-text-muted);
 }
 
 .about-dialog__links {

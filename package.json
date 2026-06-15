@@ -1,8 +1,22 @@
 {
   "name": "runspace",
+  "description": "Desktop sandbox for multiple runtimes.",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "author": "Eneko Galan",
+  "license": "MIT",
+  "homepage": "https://github.com/enegalan/runspace",
+  "bugs": {
+    "url": "https://github.com/enegalan/runspace/issues"
+  },
+  "icon": "/app-icon.png",
+  "keywords": [
+    "runspace",
+    "sandbox",
+    "runtimes",
+    "desktop"
+  ],
   "scripts": {
     "dev": "vite",
     "prepare:frameworks": "bash scripts/prepare-framework-skeletons.sh",

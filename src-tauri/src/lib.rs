@@ -141,6 +141,14 @@ fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
         .item(&bring_all_to_front)
         .build()?;
 
+    let keyboard_shortcuts =
+        MenuItemBuilder::with_id("keyboard_shortcuts", "Keyboard Shortcuts").build(app)?;
+
+    let help_menu = SubmenuBuilder::new(app, "Help")
+        .item(&keyboard_shortcuts)
+        .item(&about)
+        .build()?;
+
     let menu = MenuBuilder::new(app)
         .items(&[
             &app_menu,
@@ -150,6 +158,7 @@ fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
             &view_menu,
             &terminal_menu,
             &window_menu,
+            &help_menu,
         ])
         .build()?;
 
@@ -170,6 +179,7 @@ fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
             "toggle_sidebar" => Some("toggle_sidebar"),
             "toggle_output" => Some("toggle_output"),
             "new_terminal" => Some("new_terminal"),
+            "keyboard_shortcuts" => Some("keyboard_shortcuts"),
             _ => None,
         };
         if let Some(action) = action {

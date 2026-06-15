@@ -4,6 +4,7 @@ import { isTauri } from "../core/platform/isTauri";
 
 export type MenuAction =
   | "about"
+  | "keyboard_shortcuts"
   | "settings"
   | "new_file"
   | "new_folder"

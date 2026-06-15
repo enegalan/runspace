@@ -33,6 +33,7 @@ import { useSettingsStore } from "../../stores/settingsStore";
 import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { AboutDialog } from "../about/AboutDialog";
+import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
 import { OutputPanel } from "../output/OutputPanel";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { ActivityBar } from "./ActivityBar";
@@ -69,6 +70,7 @@ export function AppShell() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   const { createAndOpenFile } = useNewFile();
@@ -325,6 +327,9 @@ export function AppShell() {
         case "about":
           setAboutOpen(true);
           break;
+        case "keyboard_shortcuts":
+          setShortcutsOpen(true);
+          break;
         case "settings":
           setSettingsOpen(true);
           break;
@@ -499,6 +504,10 @@ export function AppShell() {
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
       <AppDialogs />
     </div>
   );
