@@ -361,26 +361,6 @@ Can be deferred to v0.1.1 if it complicates initial release.
 - `tauri.conf.json`: `"version": "0.1.0"`
 - `Cargo.toml`: `version = "0.1.0"`
 
-### 13. Final README
-
-**Sections:**
-
-1. Hero + screenshot (new UI)
-2. What Runspace is
-3. Supported runtimes (table)
-4. Installation (download release / build from source)
-5. Quick start (3 steps)
-6. Development setup
-7. Roadmap (Laravel, auto-installers, snippet library, etc.)
-8. License
-
-**Screenshots:** capture on macOS retina after UI rework, save in `docs/images/`:
-
-- `shell-editor.png` — main editor with sidebar and output
-- `welcome.png` — onboarding (restyled)
-- `runtimes-settings.png` — settings / environments
-- `multi-file.png` — tabs + file tree
-
 ### 14. Smoke test checklist (manual QA)
 
 - [x] App opens without crash
