@@ -48,6 +48,7 @@ impl ExecutionEventBus {
         let _ = self.sender.send(event);
     }
 
+    #[cfg(any(debug_assertions, test))]
     pub fn replay_snapshot(&self) -> Vec<ExecutionEvent> {
         self.replay
             .lock()
@@ -55,6 +56,7 @@ impl ExecutionEventBus {
             .unwrap_or_default()
     }
 
+    #[cfg(debug_assertions)]
     pub fn subscribe(&self) -> broadcast::Receiver<ExecutionEvent> {
         self.sender.subscribe()
     }

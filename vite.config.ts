@@ -1,7 +1,21 @@
 import http from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+
+const appPackage = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  license: string;
+  homepage: string;
+  bugs: {
+    url: string;
+  };
+  icon: string;
+};
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -60,6 +74,18 @@ function proxyApiRequest(clientReq: IncomingMessage, clientRes: ServerResponse):
 // https://vite.dev/config/
 export default defineConfig(async () => ({
   plugins: [react(), silentApiProxy()],
+  define: {
+    __APP_NAME__: JSON.stringify(appPackage.name[0].toUpperCase() + appPackage.name.slice(1)),
+    __APP_VERSION__: JSON.stringify(appPackage.version),
+    __APP_DESCRIPTION__: JSON.stringify(appPackage.description),
+    __APP_AUTHOR__: JSON.stringify(appPackage.author),
+    __APP_LICENSE__: JSON.stringify(appPackage.license),
+    __APP_HOMEPAGE__: JSON.stringify(appPackage.homepage),
+    __APP_BUGS__: JSON.stringify(appPackage.bugs.url),
+    __APP_GITHUB_URL__: JSON.stringify(appPackage.homepage),
+    __APP_ISSUES_URL__: JSON.stringify(appPackage.bugs.url),
+    __APP_ICON_URL__: JSON.stringify(appPackage.icon),
+  },
   optimizeDeps: {
     include: ["monaco-editor"],
   },

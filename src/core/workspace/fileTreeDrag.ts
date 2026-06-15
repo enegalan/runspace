@@ -7,11 +7,42 @@ export interface FileTreeDragPayload {
 
 let activeDragPayload: FileTreeDragPayload | null = null;
 
+type DragActiveListener = () => void;
+
+let fileTreeDragActive = false;
+const dragActiveListeners = new Set<DragActiveListener>();
+
+function notifyDragActive(): void {
+  for (const listener of dragActiveListeners) {
+    listener();
+  }
+}
+
+export function isFileTreeDragActive(): boolean {
+  return fileTreeDragActive;
+}
+
+export function setFileTreeDragActive(active: boolean): void {
+  if (fileTreeDragActive === active) {
+    return;
+  }
+  fileTreeDragActive = active;
+  notifyDragActive();
+}
+
+export function subscribeFileTreeDragActive(listener: DragActiveListener): () => void {
+  dragActiveListeners.add(listener);
+  return () => {
+    dragActiveListeners.delete(listener);
+  };
+}
+
 export function setFileDragData(
   dataTransfer: DataTransfer,
   payload: FileTreeDragPayload,
 ): void {
   activeDragPayload = payload;
+  setFileTreeDragActive(true);
   dataTransfer.setData(FILE_TREE_DRAG_TYPE, JSON.stringify(payload));
   dataTransfer.setData("text/plain", payload.path);
   dataTransfer.effectAllowed = payload.isDirectory ? "move" : "all";
@@ -19,6 +50,7 @@ export function setFileDragData(
 
 export function clearFileDragData(): void {
   activeDragPayload = null;
+  setFileTreeDragActive(false);
 }
 
 export function getActiveDragPayload(): FileTreeDragPayload | null {
@@ -73,7 +105,7 @@ export function isInvalidMove(sourcePath: string, targetDir: string): boolean {
   if (sourcePath === targetDir) {
     return true;
   }
-  if (targetDir && sourcePath.startsWith(`${targetDir}/`)) {
+  if (sourcePath && targetDir.startsWith(`${sourcePath}/`)) {
     return true;
   }
   return parentDir(sourcePath) === targetDir;

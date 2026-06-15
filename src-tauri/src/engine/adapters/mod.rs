@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub use framework::FrameworkSkeletonError;
+pub use framework::{ensure_skeleton, framework_terminal_env, FrameworkSkeletonError};
 
 pub struct PrepareContext<'a> {
     pub workspace_path: &'a Path,
@@ -50,21 +50,10 @@ pub trait CompiledAdapter: RuntimeAdapter {
     fn output_binary_name(&self) -> &str {
         "runspace_out"
     }
-    fn compile_timeout_secs(&self) -> u64 {
-        15
-    }
-    fn run_timeout_secs(&self) -> u64 {
-        30
-    }
 }
 
 pub trait RuntimeAdapter: Send + Sync {
     fn runtime_id(&self) -> &str;
-    fn file_extension(&self) -> &str;
-    fn entry_filename(&self) -> String {
-        format!("main.{}", self.file_extension())
-    }
-    fn default_template(&self) -> &str;
     fn normalize_code(&self, code: &str) -> String {
         code.to_string()
     }
@@ -136,25 +125,6 @@ mod tests {
                 .collect();
             assert_eq!(cmd.get_program(), binary, "{id} program");
             assert_eq!(args, vec![script.to_string_lossy().to_string()], "{id} args");
-        }
-    }
-
-    #[test]
-    fn entry_filenames_match_environment() {
-        let expectations = [
-            ("nodejs", "main.js"),
-            ("php", "main.php"),
-            ("python", "main.py"),
-            ("ruby", "main.rb"),
-            ("laravel", "snippet.php"),
-            ("symfony", "snippet.php"),
-            ("gcc", "main.c"),
-            ("gpp", "main.cpp"),
-        ];
-
-        for (id, expected) in expectations {
-            let adapter = get_adapter(id).expect("adapter");
-            assert_eq!(adapter.entry_filename(), expected);
         }
     }
 }

@@ -13,8 +13,9 @@ export type ExecutionPhase = "compile" | "run";
 
 export interface ExecutionOptions {
   environmentId?: EnvironmentId;
+  file: string;
   timeoutSecs?: number;
-  entryFile?: string;
+  compileTimeoutSecs?: number;
 }
 
 export interface ExecutionOutputEvent {
@@ -30,8 +31,4 @@ export interface ExecutionFinishedEvent {
 
 export interface ExecutionPhaseEvent {
   phase: ExecutionPhase;
-}
-
-export interface ExecutionStartedEvent {
-  pid: number;
 }

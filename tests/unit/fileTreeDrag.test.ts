@@ -69,7 +69,9 @@ describe("fileTreeDrag", () => {
   it("detects invalid moves", () => {
     expect(isInvalidMove("lib", "lib")).toBe(true);
     expect(isInvalidMove("lib/utils", "lib")).toBe(true);
+    expect(isInvalidMove("lib", "lib/utils")).toBe(true);
     expect(isInvalidMove("src/app.js", "src")).toBe(true);
+    expect(isInvalidMove("lib/utils/file.js", "lib")).toBe(false);
     expect(isInvalidMove("app.js", "src")).toBe(false);
   });
 

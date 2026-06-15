@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
 import {
   isOnboardingComplete,
@@ -10,18 +10,38 @@ import { flushSessionState } from "../../core/workspace/flushSession";
 import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
 import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
-import { useExternalFileDrop } from "../../hooks/useExternalFileDrop";
+import { useAppShortcuts } from "../../hooks/useAppShortcuts";
+import type { MenuAction } from "../../hooks/useMenuActions";
+import { useMenuActions } from "../../hooks/useMenuActions";
+import { useNewFile } from "../../hooks/useNewFile";
+import { useNewFolder } from "../../hooks/useNewFolder";
+import {
+  clampPanelSize,
+  OUTPUT_WIDTH_MAX,
+  OUTPUT_WIDTH_MIN,
+  SIDEBAR_WIDTH_MAX,
+  SIDEBAR_WIDTH_MIN,
+  TERMINAL_HEIGHT_MAX,
+  TERMINAL_HEIGHT_MIN,
+} from "../../core/layout/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
+import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome";
+import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
+import { AboutDialog } from "../about/AboutDialog";
+import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
 import { OutputPanel } from "../output/OutputPanel";
 import { SettingsPanel } from "../settings/SettingsPanel";
+import { ActivityBar } from "./ActivityBar";
 import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
-import { Toolbar } from "./Toolbar";
 import { AppDialogs } from "../ui/AppDialogs";
+import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 
 export function AppShell() {
@@ -42,11 +62,19 @@ export function AppShell() {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const envLoaded = useEnvironmentStore((state) => state.loaded);
   const loadEnvironments = useEnvironmentStore((state) => state.load);
+  const settingsLoaded = useSettingsStore((state) => state.loaded);
+  const loadSettings = useSettingsStore((state) => state.load);
+  const layoutSettings = useSettingsStore((state) => state.settings.layout);
+  const executionSettings = useSettingsStore((state) => state.settings.execution);
+  const updateSettings = useSettingsStore((state) => state.update);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
-  useExternalFileDrop();
+  const { createAndOpenFile } = useNewFile();
+  const { createNewFolder } = useNewFolder();
 
   const {
     stdout,
@@ -56,7 +84,6 @@ export function AppShell() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     run,
     stop,
@@ -68,14 +95,19 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled = !workspace || !selectedEnvironment?.configured;
+  const runDisabled =
+    !workspace || !selectedEnvironment?.configured || !activePath;
   const runDisabledReason = !workspace
     ? "Create a project to run code"
     : !selectedEnvironment
       ? "Add an environment in Settings"
       : !selectedEnvironment.configured
         ? "Configure in Settings → Environments"
-        : undefined;
+        : !activePath
+          ? "Open a file to run"
+          : undefined;
+
+  const isRunning = status === "running";
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +145,7 @@ export function AppShell() {
 
     const bootstrap = async () => {
       try {
-        await loadEnvironments();
+        await Promise.all([loadSettings(), loadEnvironments()]);
         if (cancelled) {
           return;
         }
@@ -172,7 +204,7 @@ export function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [backendReady, loadEnvironments, selectEnvironment]);
+  }, [backendReady, loadEnvironments, loadSettings, selectEnvironment]);
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -208,8 +240,8 @@ export function AppShell() {
     };
   }, []);
 
-  const handleRun = () => {
-    if (!selectedId || !workspace) {
+  const handleRun = useCallback(() => {
+    if (!selectedId || !workspace || !activePath) {
       return;
     }
 
@@ -217,16 +249,154 @@ export function AppShell() {
       await useEditorTabsStore.getState().saveActiveFile();
       await run({
         environmentId: selectedId,
-        entryFile: activePath ?? workspace?.entry_file,
+        file: activePath,
+        timeoutSecs: executionSettings.runTimeoutSecs,
+        compileTimeoutSecs: executionSettings.compileTimeoutSecs,
       });
     })();
-  };
+  }, [selectedId, workspace, activePath, run, executionSettings]);
 
-  const handleSave = () => {
+  const handleSidebarWidthChange = useCallback(
+    (width: number) => {
+      void updateSettings({
+        layout: {
+          sidebarWidth: clampPanelSize(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleOutputWidthChange = useCallback(
+    (width: number) => {
+      void updateSettings({
+        layout: {
+          outputWidth: clampPanelSize(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleTerminalHeightChange = useCallback(
+    (height: number) => {
+      void updateSettings({
+        layout: {
+          terminalHeight: clampPanelSize(height, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
+        },
+      });
+    },
+    [updateSettings],
+  );
+
+  const handleToggleTerminal = useCallback(() => {
+    void updateSettings({
+      layout: { terminalVisible: !layoutSettings.terminalVisible },
+    });
+  }, [layoutSettings.terminalVisible, updateSettings]);
+
+  const handleToggleSidebar = useCallback(() => {
+    void updateSettings({
+      layout: { sidebarVisible: !layoutSettings.sidebarVisible },
+    });
+  }, [layoutSettings.sidebarVisible, updateSettings]);
+
+  const handleToggleOutput = useCallback(() => {
+    void updateSettings({
+      layout: { outputVisible: !layoutSettings.outputVisible },
+    });
+  }, [layoutSettings.outputVisible, updateSettings]);
+
+  const handleSave = useCallback(() => {
     void useEditorTabsStore.getState().saveActiveFile();
-  };
+  }, []);
 
-  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
+  const handleNewTerminal = useCallback(() => {
+    if (!workspace || !selectedId || !selectedEnvironment?.configured) {
+      return;
+    }
+    void updateSettings({
+      layout: { terminalVisible: true },
+    });
+    useTerminalStore.getState().addTab(workspace.id, selectedId);
+  }, [workspace, selectedId, selectedEnvironment?.configured, updateSettings]);
+
+  const handleMenuAction = useCallback(
+    (action: MenuAction) => {
+      switch (action) {
+        case "about":
+          setAboutOpen(true);
+          break;
+        case "keyboard_shortcuts":
+          setShortcutsOpen(true);
+          break;
+        case "settings":
+          setSettingsOpen(true);
+          break;
+        case "new_file":
+          void createAndOpenFile();
+          break;
+        case "new_folder":
+          void createNewFolder();
+          break;
+        case "save":
+          handleSave();
+          break;
+        case "run":
+          if (!runDisabled) {
+            handleRun();
+          }
+          break;
+        case "stop":
+          stop();
+          break;
+        case "clear_output":
+          clear();
+          break;
+        case "toggle_sidebar":
+          handleToggleSidebar();
+          break;
+        case "toggle_output":
+          handleToggleOutput();
+          break;
+        case "new_terminal":
+          handleNewTerminal();
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      createAndOpenFile,
+      createNewFolder,
+      handleSave,
+      handleRun,
+      runDisabled,
+      stop,
+      clear,
+      handleToggleSidebar,
+      handleToggleOutput,
+      handleNewTerminal,
+    ],
+  );
+
+  useMenuActions({ onAction: handleMenuAction });
+
+  useAppShortcuts({
+    onRun: handleRun,
+    onStop: stop,
+    onSave: handleSave,
+    onNewFile: () => void createAndOpenFile(),
+    onNewFolder: () => void createNewFolder(),
+    onNewTerminal: handleNewTerminal,
+    onOpenSettings: () => setSettingsOpen(true),
+    onToggleSidebar: handleToggleSidebar,
+    onToggleOutput: handleToggleOutput,
+    isRunning,
+    runDisabled,
+  });
+
+  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded || !settingsLoaded) {
     return (
       <div className="app-shell app-shell--loading" data-testid="app-shell">
         <div className="app-shell__loading">
@@ -245,37 +415,85 @@ export function AppShell() {
 
   if (showWelcome) {
     return (
-      <div className="app-shell app-shell--welcome" data-testid="app-shell">
+      <div
+        className={`app-shell app-shell--welcome${appShellDesktopClass()}`}
+        data-testid="app-shell"
+      >
         <WelcomeScreen />
         <AppDialogs />
       </div>
     );
   }
 
+  const mainRowClass = [
+    "main-row",
+    isTauri() ? "main-row--desktop" : "",
+    !layoutSettings.sidebarVisible ? "main-row--sidebar-hidden" : "",
+    !layoutSettings.outputVisible ? "main-row--output-hidden" : "",
+    !layoutSettings.terminalVisible ? "main-row--terminal-hidden" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="app-shell" data-testid="app-shell">
-      <Toolbar
-        status={status}
-        runDisabled={runDisabled}
-        runDisabledReason={runDisabledReason}
-        onRun={handleRun}
-        onStop={stop}
-        onClear={clear}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
-      <div className="main-row">
-        <Sidebar />
-        <EditorArea onRun={handleRun} onSave={handleSave} />
-        <OutputPanel
-          stdout={stdout}
-          stderr={stderr}
+    <div
+      className={`app-shell${appShellDesktopClass()}`}
+      data-testid="app-shell"
+    >
+      <div className={mainRowClass}>
+        {isTauri() && isMacOS() && (
+          <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
+        )}
+        {isTauri() && layoutSettings.sidebarVisible && (
+          <div className="sidebar-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
+        )}
+        <ActivityBar
           status={status}
-          phase={phase}
-          exitCode={exitCode}
-          timedOut={timedOut}
-          error={error}
-          durationMs={durationMs}
+          runDisabled={runDisabled}
+          runDisabledReason={runDisabledReason}
+          terminalVisible={layoutSettings.terminalVisible}
+          onRun={handleRun}
+          onStop={stop}
+          onToggleTerminal={handleToggleTerminal}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
+        {layoutSettings.sidebarVisible && (
+          <Sidebar
+            width={layoutSettings.sidebarWidth}
+            onWidthChange={handleSidebarWidthChange}
+          />
+        )}
+        <div className="editor-column">
+          {workspace && <EditorTabs inTitlebar={isTauri()} />}
+          {!workspace && isTauri() && (
+            <div className="editor-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
+          )}
+          <EditorArea onSave={handleSave} />
+          {layoutSettings.terminalVisible && (
+            <TerminalPanel
+              height={layoutSettings.terminalHeight}
+              onHeightChange={handleTerminalHeightChange}
+              workspaceId={workspace?.id}
+              environmentId={selectedId ?? undefined}
+              configured={Boolean(selectedEnvironment?.configured)}
+              disabledReason={runDisabledReason}
+            />
+          )}
+        </div>
+        {layoutSettings.outputVisible && (
+          <OutputPanel
+            stdout={stdout}
+            stderr={stderr}
+            status={status}
+            phase={phase}
+            timedOut={timedOut}
+            error={error}
+            width={layoutSettings.outputWidth}
+            onWidthChange={handleOutputWidthChange}
+            onClear={clear}
+            autoScrollEnabled={executionSettings.autoScrollOutput}
+          />
+        )}
       </div>
       <StatusBar
         status={status}
@@ -283,9 +501,13 @@ export function AppShell() {
         exitCode={exitCode}
         timedOut={timedOut}
         lastRunDurationMs={lastRunDurationMs}
-        environmentName={selectedEnvironment?.definition.name ?? "—"}
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
       <AppDialogs />
     </div>
   );

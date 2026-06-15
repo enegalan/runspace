@@ -1,6 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+
 vi.mock("../src/core/platform/isTauri", () => ({
   isTauri: vi.fn(() => true),
 }));
@@ -102,3 +110,33 @@ vi.mock("@monaco-editor/react", () => {
       }),
   };
 });
+
+vi.mock("@xterm/xterm", () => ({
+  Terminal: class {
+    cols = 80;
+    rows = 24;
+    options: { theme: Record<string, string> } = { theme: {} };
+    loadAddon() {}
+    open() {}
+    write() {}
+    clear() {}
+    focus() {}
+    dispose() {}
+    onData(handler: (value: string) => void) {
+      this.onDataHandler = handler;
+      return { dispose: () => {} };
+    }
+    onResize(handler: (size: { cols: number; rows: number }) => void) {
+      this.onResizeHandler = handler;
+      return { dispose: () => {} };
+    }
+    private onDataHandler?: (value: string) => void;
+    private onResizeHandler?: (size: { cols: number; rows: number }) => void;
+  },
+}));
+
+vi.mock("@xterm/addon-fit", () => ({
+  FitAddon: class {
+    fit() {}
+  },
+}));

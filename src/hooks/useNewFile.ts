@@ -8,7 +8,6 @@ export function useNewFile() {
   const workspaceRuntimeId = useWorkspaceStore((state) => state.workspace?.runtime_id);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const runtimeId = workspaceRuntimeId ?? selectedRuntimeId;
-  const rootFiles = useWorkspaceStore((state) => state.rootFiles);
   const createFile = useWorkspaceStore((state) => state.createFile);
   const openFile = useEditorTabsStore((state) => state.openFile);
 
@@ -18,8 +17,7 @@ export function useNewFile() {
     }
 
     try {
-      const rootPaths = rootFiles.map((entry) => entry.path);
-      const path = await requireFileName(runtimeId, rootPaths);
+      const path = await requireFileName(runtimeId);
       if (!path) {
         return;
       }
@@ -28,7 +26,7 @@ export function useNewFile() {
     } catch (error) {
       console.error("Failed to create file:", error);
     }
-  }, [createFile, openFile, rootFiles, runtimeId]);
+  }, [createFile, openFile, runtimeId]);
 
   return { createAndOpenFile, runtimeId };
 }

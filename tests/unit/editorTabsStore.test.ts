@@ -1,10 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
+import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useSettingsStore } from "../../src/stores/settingsStore";
+import { useDialogStore } from "../../src/stores/dialogStore";
 
 describe("editorTabsStore", () => {
   beforeEach(() => {
     vi.mocked(runspaceInvoke).mockReset();
+    useSettingsStore.setState({
+      settings: DEFAULT_APP_SETTINGS,
+      loaded: true,
+    });
     useEditorTabsStore.setState({
       openFiles: [],
       activePath: null,
@@ -116,5 +123,69 @@ describe("editorTabsStore", () => {
 
     expect(useEditorTabsStore.getState().openFiles).toHaveLength(1);
     expect(useEditorTabsStore.getState().activePath).toBe("main.js");
+  });
+
+  it("reorders open tabs", () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "a.js",
+          content: "a",
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "b.js",
+          content: "b",
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "c.js",
+          content: "c",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "b.js",
+    });
+
+    useEditorTabsStore.getState().reorderTabs(0, 2);
+
+    const state = useEditorTabsStore.getState();
+    expect(state.openFiles.map((file) => file.path)).toEqual([
+      "b.js",
+      "c.js",
+      "a.js",
+    ]);
+    expect(state.activePath).toBe("b.js");
+  });
+
+  it("closes dirty file without confirm when setting disabled", async () => {
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_APP_SETTINGS,
+        layout: { ...DEFAULT_APP_SETTINGS.layout, confirmCloseUnsavedTab: false },
+      },
+      loaded: true,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.js",
+          content: "dirty",
+          dirty: true,
+          language: "javascript",
+        },
+      ],
+      activePath: "main.js",
+    });
+
+    const askConfirm = vi.spyOn(useDialogStore.getState(), "askConfirm");
+    const closed = await useEditorTabsStore.getState().closeFile("main.js");
+
+    expect(closed).toBe(true);
+    expect(askConfirm).not.toHaveBeenCalled();
+    expect(useEditorTabsStore.getState().openFiles).toHaveLength(0);
   });
 });

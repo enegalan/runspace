@@ -1,6 +1,6 @@
 [package]
 name = "runspace"
-version = "0.0.1"
+version = "0.1.0"
 description = "Runspace desktop sandbox"
 authors = ["enegalan"]
 edition = "2021"
@@ -26,4 +26,10 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "sync",
 tokio-stream = { version = "0.1", features = ["sync"] }
 futures-util = "0.3"
 tower-http = { version = "0.6", features = ["cors"] }
+portable-pty = "0.8"
 rfd = "0.16"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6.4"
+objc2-app-kit = "0.3.2"
+objc2-foundation = "0.3.2"

@@ -50,6 +50,7 @@ pub fn run_compiled(
     workspace: &Path,
     env_vars: Vec<(String, String)>,
     run_timeout_secs: u64,
+    compile_timeout_secs: u64,
 ) -> Result<(), ExecutionError> {
     let binary_name = adapter.output_binary_name();
     let output_binary = workspace.join(binary_name);
@@ -65,7 +66,7 @@ pub fn run_compiled(
         program,
         args,
         cwd: workspace.to_path_buf(),
-        timeout_secs: adapter.compile_timeout_secs(),
+        timeout_secs: compile_timeout_secs,
         env_vars: env_vars.clone(),
         stderr_prefix: Some("compile".to_string()),
         emit_finished: false,
@@ -190,6 +191,7 @@ mod tests {
             &temp_dir,
             vec![],
             30,
+            15,
         )
         .expect("compiled run");
 
@@ -250,6 +252,7 @@ mod tests {
             &temp_dir,
             vec![],
             30,
+            15,
         )
         .expect("compiled run");
 

@@ -5,9 +5,12 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-destroy",
     "allow-execution",
-    "allow-snippet",
     "allow-environment",
+    "allow-settings",
+    "allow-terminal",
     "dialog:default",
     "opener:default"
   ]

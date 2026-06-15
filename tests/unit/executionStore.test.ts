@@ -33,7 +33,7 @@ describe("executionStore", () => {
     const state = useExecutionStore.getState();
     expect(state.status).toBe("success");
     expect(state.exitCode).toBe(0);
-    expect(state.durationMs).not.toBeNull();
+    expect(state.lastRunDurationMs).not.toBeNull();
   });
 
   it("resolves error on non-zero exit code", () => {
@@ -83,5 +83,17 @@ describe("executionStore", () => {
     const state = useExecutionStore.getState();
     expect(state.status).toBe("idle");
     expect(state.stdout).toBe("");
+  });
+
+  it("preserves output when requested", () => {
+    const store = useExecutionStore.getState();
+    store.setRunning();
+    store.appendOutput("stdout", "keep me");
+    store.setFinished(0, false);
+    store.setRunning({ preserveOutput: true });
+
+    const state = useExecutionStore.getState();
+    expect(state.status).toBe("running");
+    expect(state.stdout).toBe("keep me");
   });
 });

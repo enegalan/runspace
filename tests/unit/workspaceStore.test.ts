@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { markOnboardingComplete } from "../../src/core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
+import { useDialogStore } from "../../src/stores/dialogStore";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
@@ -8,7 +9,6 @@ const mockWorkspace = {
   id: "ws-1",
   name: "Untitled",
   runtime_id: "nodejs",
-  entry_file: "main.js",
 };
 
 describe("workspaceStore", () => {
@@ -56,10 +56,11 @@ describe("workspaceStore", () => {
     useWorkspaceStore.setState({ workspace: mockWorkspace, loaded: true });
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([])
       .mockResolvedValueOnce(["utils.js"])
       .mockResolvedValueOnce(mockWorkspace)
       .mockResolvedValueOnce([
-        { name: "utils.js", path: "utils.js", is_directory: false },
+        { name: "utils.js", path: "lib/utils.js", is_directory: false },
       ]);
 
     const imported = await useWorkspaceStore
@@ -73,6 +74,54 @@ describe("workspaceStore", () => {
     expect(imported).toEqual(["utils.js"]);
     expect(useWorkspaceStore.getState().rootFiles).toHaveLength(1);
     expect(useWorkspaceStore.getState().expandedDirs.has("lib")).toBe(true);
+  });
+
+  it("asks before replacing an existing file when moving", async () => {
+    useWorkspaceStore.setState({ workspace: mockWorkspace, loaded: true });
+    vi.mocked(useDialogStore.getState().askConfirm).mockResolvedValue(true);
+    vi.mocked(runspaceInvoke)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([
+        { name: "utils.js", path: "lib/utils.js", is_directory: false },
+      ])
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([]);
+
+    await useWorkspaceStore.getState().moveFile("utils.js", "lib");
+
+    expect(useDialogStore.getState().askConfirm).toHaveBeenCalled();
+    expect(runspaceInvoke).toHaveBeenCalledWith("delete_file", { path: "lib/utils.js" });
+    expect(runspaceInvoke).toHaveBeenCalledWith("rename_file", {
+      oldPath: "utils.js",
+      newPath: "lib/utils.js",
+    });
+  });
+
+  it("skips import when replace is declined", async () => {
+    useWorkspaceStore.setState({ workspace: mockWorkspace, loaded: true });
+    vi.mocked(useDialogStore.getState().askConfirm).mockResolvedValue(false);
+    vi.mocked(runspaceInvoke)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([
+        { name: "utils.js", path: "lib/utils.js", is_directory: false },
+      ]);
+
+    const imported = await useWorkspaceStore
+      .getState()
+      .importExternalFiles(["/tmp/utils.js"], "lib");
+
+    expect(imported).toEqual([]);
+    expect(runspaceInvoke).not.toHaveBeenCalledWith(
+      "import_external",
+      expect.anything(),
+    );
   });
 
   it("creates a file and refreshes the tree", async () => {

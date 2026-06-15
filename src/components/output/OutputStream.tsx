@@ -9,6 +9,7 @@ interface OutputStreamProps {
   timedOut: boolean;
   isRunning: boolean;
   phase: ExecutionPhase | null;
+  autoScrollEnabled: boolean;
 }
 
 export function OutputStream({
@@ -18,9 +19,16 @@ export function OutputStream({
   timedOut,
   isRunning,
   phase,
+  autoScrollEnabled,
 }: OutputStreamProps) {
   const containerRef = useRef<HTMLPreElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+
+  useEffect(() => {
+    if (autoScrollEnabled) {
+      setAutoScroll(true);
+    }
+  }, [autoScrollEnabled, isRunning]);
 
   const hasContent =
     stdout.length > 0 ||
@@ -29,11 +37,11 @@ export function OutputStream({
     timedOut;
 
   useEffect(() => {
-    if (!autoScroll || !containerRef.current) {
+    if (!autoScrollEnabled || !autoScroll || !containerRef.current) {
       return;
     }
     containerRef.current.scrollTop = containerRef.current.scrollHeight;
-  }, [stdout, stderr, error, timedOut, autoScroll, isRunning]);
+  }, [stdout, stderr, error, timedOut, autoScroll, autoScrollEnabled, isRunning]);
 
   const handleScroll = () => {
     const el = containerRef.current;

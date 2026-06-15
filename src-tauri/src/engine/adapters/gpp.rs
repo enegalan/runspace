@@ -10,14 +10,6 @@ impl RuntimeAdapter for GppAdapter {
         "gpp"
     }
 
-    fn file_extension(&self) -> &str {
-        "cpp"
-    }
-
-    fn default_template(&self) -> &str {
-        "#include <iostream>\n\nint main() {\n    std::cout << \"Hello from C++!\" << std::endl;\n    return 0;\n}\n"
-    }
-
     fn build_command(&self, _binary: &Path, _script: &Path) -> Command {
         Command::new("g++")
     }

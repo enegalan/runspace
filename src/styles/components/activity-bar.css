@@ -1,0 +1,82 @@
+.activity-bar {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 48px;
+  width: 48px;
+  min-height: 0;
+  background: var(--rs-bg-base);
+  border-right: 1px solid var(--rs-border-subtle);
+}
+
+.activity-bar__top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.activity-bar__bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid var(--rs-border-subtle);
+}
+
+.app-shell--desktop .activity-bar__bottom {
+  margin-top: 0;
+}
+
+.app-shell--desktop .activity-bar__drag-fill {
+  flex: 1 1 auto;
+  min-height: var(--rs-space-4);
+  -webkit-app-region: drag;
+}
+
+.app-shell--desktop .activity-bar__btn {
+  -webkit-app-region: no-drag;
+}
+
+.activity-bar__btn {
+  width: 100%;
+  height: 45px;
+  color: var(--rs-text-muted);
+  border-radius: 0;
+}
+
+.activity-bar__btn:hover:not(:disabled) {
+  color: var(--rs-text-primary);
+  background: var(--rs-bg-hover);
+}
+
+.activity-bar__btn--run {
+  color: var(--rs-accent);
+}
+
+.activity-bar__btn--run:hover:not(:disabled) {
+  color: #fff;
+  background: var(--rs-accent);
+}
+
+.activity-bar__btn--run.activity-bar__btn--running {
+  color: #fff;
+  background: var(--rs-accent);
+  animation: rs-run-pulse 1.2s ease-in-out infinite;
+}
+
+.activity-bar__btn--run:disabled {
+  opacity: 0.35;
+}
+
+.activity-bar__btn--stop-active {
+  color: var(--rs-error);
+  background: rgba(242, 63, 67, 0.12);
+}
+
+.activity-bar__btn--stop-active:hover:not(:disabled) {
+  background: rgba(242, 63, 67, 0.22);
+}
+
+.activity-bar__btn--active {
+  color: var(--rs-accent);
+  background: var(--rs-accent-muted);
+}

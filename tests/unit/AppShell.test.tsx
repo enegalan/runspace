@@ -5,6 +5,8 @@ import { AppShell } from "../../src/components/layout/AppShell";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useSettingsStore } from "../../src/stores/settingsStore";
+import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
@@ -22,7 +24,6 @@ const mockWorkspace = {
   id: "ws-test",
   name: "Untitled",
   runtime_id: "nodejs",
-  entry_file: "main.js",
 };
 
 describe("AppShell", () => {
@@ -52,8 +53,15 @@ describe("AppShell", () => {
       selectedId: "nodejs",
       loaded: false,
     });
+    useSettingsStore.setState({
+      settings: DEFAULT_APP_SETTINGS,
+      loaded: false,
+    });
 
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs")]);
       }
@@ -86,6 +94,13 @@ describe("AppShell", () => {
       if (cmd === "write_session") {
         return Promise.resolve(undefined);
       }
+      if (cmd === "spawn_terminal") {
+        return Promise.resolve({
+          sessionId: "session-test",
+          workspaceId: "ws-test",
+          environmentId: "nodejs",
+        });
+      }
       return Promise.resolve(undefined);
     });
   });
@@ -94,7 +109,7 @@ describe("AppShell", () => {
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     expect(screen.getByTestId("sidebar")).toBeInTheDocument();
@@ -104,9 +119,11 @@ describe("AppShell", () => {
     expect(screen.getByTestId("workspace-switcher")).toBeInTheDocument();
     expect(screen.getByTestId("editor-tabs")).toBeInTheDocument();
     expect(screen.getByTestId("output-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("terminal-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("terminal-toggle-button")).toBeInTheDocument();
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
-    expect(screen.getByTestId("environment-select")).toBeInTheDocument();
-    expect(screen.getByTestId("run-button")).toBeInTheDocument();
+    expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
+    expect(screen.getByTestId("run-button")).toBeDisabled();
     expect(screen.getByTestId("stop-button")).toBeInTheDocument();
     expect(screen.getByTestId("clear-button")).toBeInTheDocument();
     expect(screen.getByTestId("settings-button")).toBeInTheDocument();
@@ -115,6 +132,9 @@ describe("AppShell", () => {
   it("shows welcome onboarding when no projects exist", async () => {
     vi.mocked(runspaceInvoke).mockReset();
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }
@@ -142,7 +162,7 @@ describe("AppShell", () => {
     });
 
     expect(screen.getByText("Welcome to Runspace")).toBeInTheDocument();
-    expect(screen.queryByTestId("toolbar")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("activity-bar")).not.toBeInTheDocument();
   });
 
   it("shows the main shell when onboarding was already completed", async () => {
@@ -151,6 +171,9 @@ describe("AppShell", () => {
 
     vi.mocked(runspaceInvoke).mockReset();
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }
@@ -172,7 +195,7 @@ describe("AppShell", () => {
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
@@ -202,6 +225,9 @@ describe("AppShell", () => {
     });
 
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+      if (cmd === "read_settings") {
+        return Promise.resolve(DEFAULT_APP_SETTINGS);
+      }
       if (cmd === "list_environments") {
         return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
       }
@@ -230,13 +256,20 @@ describe("AppShell", () => {
       if (cmd === "set_selected_environment") {
         return Promise.resolve(undefined);
       }
+      if (cmd === "spawn_terminal") {
+        return Promise.resolve({
+          sessionId: "session-test",
+          workspaceId: mockWorkspace.id,
+          environmentId: "nodejs",
+        });
+      }
       return Promise.resolve(undefined);
     });
 
     render(<AppShell />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
     await useWorkspaceStore.getState().deleteProject(mockWorkspace.id);
@@ -246,7 +279,8 @@ describe("AppShell", () => {
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
-    expect(screen.getByTestId("toolbar")).toBeInTheDocument();
+    expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
+    expect(screen.getByTestId("run-button")).toBeDisabled();
   });
 });

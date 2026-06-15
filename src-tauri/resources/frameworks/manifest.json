@@ -1,0 +1,14 @@
+{
+  "skeletonVersion": "4",
+  "frameworks": {
+    "laravel": {
+      "createProject": "laravel/laravel",
+      "versionConstraint": "12.*"
+    },
+    "symfony": {
+      "createProject": "symfony/skeleton",
+      "versionConstraint": "7.4.*",
+      "extraPackages": ["webapp"]
+    }
+  }
+}

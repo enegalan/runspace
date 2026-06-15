@@ -13,7 +13,6 @@ export interface EnvironmentDefinition {
   id: string;
   name: string;
   category: EnvironmentCategory;
-  entry_file: string | null;
   file_extension: string;
   monaco_language: string;
   install_guide_url: string;

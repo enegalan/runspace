@@ -1,3 +1,6 @@
+import { Button } from "../ui/Button";
+import { IconPlus, IconTrash } from "../ui/icons";
+
 interface EnvVarRow {
   key: string;
   value: string;
@@ -59,7 +62,7 @@ export function EnvVarsEditor({ rows, onChange, disabled = false }: EnvVarsEdito
                     disabled={disabled}
                     aria-label="Remove variable"
                   >
-                    ×
+                    <IconTrash size={16} />
                   </button>
                 </td>
               </tr>
@@ -67,14 +70,16 @@ export function EnvVarsEditor({ rows, onChange, disabled = false }: EnvVarsEdito
           </tbody>
         </table>
       )}
-      <button
-        type="button"
-        className="btn env-vars-editor__add"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="env-vars-editor__add"
         onClick={addRow}
         disabled={disabled}
       >
-        + Add variable
-      </button>
+        <IconPlus size={14} />
+        Add variable
+      </Button>
     </div>
   );
 }

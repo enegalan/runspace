@@ -11,12 +11,14 @@ import type {
   ValidationResult,
 } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { IconCheck, IconChevronDown, IconChevronRight } from "../ui/icons";
 import {
   EnvVarsEditor,
   envVarsToRows,
   rowsToEnvVars,
   validateEnvVarRows,
 } from "./EnvVarsEditor";
+import { SettingsPageHeader } from "./SettingsUi";
 
 const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
   language: "Language",
@@ -129,13 +131,20 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
         aria-expanded={expanded}
       >
         <span className="env-card__chevron" aria-hidden="true">
-          {expanded ? "▼" : "▶"}
+          {expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
         </span>
         <span className="env-card__name">{definition.name}</span>
         <span
           className={`env-card__status${configured ? " env-card__status--configured" : ""}`}
         >
-          {configured ? "Configured ✓" : "Not configured"}
+          {configured ? (
+            <>
+              <IconCheck size={12} />
+              Configured
+            </>
+          ) : (
+            "Not configured"
+          )}
         </span>
       </button>
 
@@ -295,15 +304,17 @@ export function EnvironmentsSettings() {
   const available = useEnvironmentStore((state) => state.available);
 
   return (
-    <div className="environments-settings" data-testid="environments-settings">
-      <h2 className="environments-settings__title">Environments</h2>
-      <p className="environments-settings__description">
-        Configure binary paths and environment variables. Paths are auto-detected on startup
-        when possible.
-      </p>
+    <div className="settings-page environments-settings" data-testid="environments-settings">
+      <SettingsPageHeader
+        title="Environments"
+        description="Configure binary paths and environment variables. Paths are auto-detected on startup when possible."
+      />
 
-      <section className="environments-settings__section">
-        <h3 className="environments-settings__section-title">Installed</h3>
+      <section className="settings-card environments-settings__section">
+        <div className="settings-card__header">
+          <h3 className="settings-card__title">Installed</h3>
+        </div>
+        <div className="settings-card__body">
         {environments.length === 0 ? (
           <p className="environments-settings__empty" data-testid="environments-empty">
             No environments installed. Add one from the list below.
@@ -315,15 +326,23 @@ export function EnvironmentsSettings() {
             ))}
           </div>
         )}
+        </div>
       </section>
 
       {available.length > 0 && (
-        <section className="environments-settings__section">
-          <h3 className="environments-settings__section-title">Available</h3>
+        <section className="settings-card environments-settings__section">
+          <div className="settings-card__header">
+            <h3 className="settings-card__title">Available</h3>
+            <p className="settings-card__description">
+              Add runtimes and frameworks to the toolbar selector.
+            </p>
+          </div>
+          <div className="settings-card__body">
           <div className="environments-settings__available">
             {available.map((definition) => (
               <AvailableEnvironmentRow key={definition.id} definition={definition} />
             ))}
+          </div>
           </div>
         </section>
       )}

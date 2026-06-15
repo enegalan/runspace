@@ -1,0 +1,214 @@
+.app-shell {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--rs-bg-base);
+}
+
+.app-shell--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-shell__loading {
+  color: var(--rs-text-muted);
+  font-size: var(--rs-font-size-md);
+}
+
+.app-shell--welcome {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-shell--welcome.app-shell--macos {
+  padding-top: var(--rs-editor-tabs-height);
+}
+
+.main-row {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.main-row--desktop {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: 48px auto 1fr auto;
+  grid-template-rows: 35px 1fr;
+}
+
+.app-shell--desktop.app-shell--macos,
+.main-row--desktop {
+  pointer-events: none;
+}
+
+.app-shell--desktop.app-shell--macos > *,
+.main-row--desktop > * {
+  pointer-events: auto;
+}
+
+.main-row--desktop .traffic-light-zone {
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 5;
+  width: var(--rs-titlebar-drag-inset-left);
+  pointer-events: none;
+}
+
+.main-row--desktop .sidebar-titlebar-zone {
+  grid-column: 2;
+  grid-row: 1;
+  z-index: 4;
+  -webkit-app-region: drag;
+}
+
+.main-row--desktop .activity-bar {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.main-row--desktop .sidebar-shell {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.main-row--desktop.main-row--sidebar-hidden {
+  grid-template-columns: 48px 1fr auto;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .sidebar-titlebar-zone {
+  display: none;
+}
+
+.main-row--desktop.main-row--output-hidden {
+  grid-template-columns: 48px auto 1fr;
+}
+
+.main-row--desktop.main-row--sidebar-hidden.main-row--output-hidden {
+  grid-template-columns: 48px 1fr;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .editor-column {
+  grid-column: 2;
+}
+
+.main-row--desktop.main-row--sidebar-hidden .output-shell {
+  grid-column: 3;
+}
+
+.main-row:not(.main-row--desktop) {
+  flex-wrap: nowrap;
+}
+
+.editor-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.main-row--desktop .editor-column {
+  grid-column: 3;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: var(--rs-editor-tabs-height) minmax(0, 1fr) auto;
+  flex: initial;
+}
+
+.main-row--desktop.main-row--terminal-hidden .editor-column {
+  grid-template-rows: var(--rs-editor-tabs-height) minmax(0, 1fr);
+}
+
+.main-row--desktop .editor-titlebar-zone {
+  grid-row: 1;
+  -webkit-app-region: drag;
+}
+
+.app-shell--windows .editor-titlebar-zone {
+  padding-right: var(--rs-titlebar-drag-inset-right);
+}
+
+.main-row--desktop .editor-area {
+  grid-row: 2;
+}
+
+.main-row--desktop .output-shell {
+  grid-column: 4;
+  grid-row: 1 / -1;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-3);
+  padding: 0 var(--rs-space-4);
+  height: 26px;
+  border-top: 1px solid var(--rs-border-subtle);
+  background: var(--rs-bg-base);
+  color: var(--rs-text-muted);
+  font-size: var(--rs-font-size-xs);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.status-bar__separator {
+  opacity: 0.4;
+  color: var(--rs-text-muted);
+}
+
+.status-bar__item--success {
+  color: var(--rs-success);
+}
+
+.status-bar__item--error {
+  color: var(--rs-error);
+}
+
+.status-bar__item--running {
+  color: var(--rs-accent);
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+}
+
+.input__label {
+  font-size: var(--rs-font-size-xs);
+  font-weight: 500;
+  color: var(--rs-text-secondary);
+}
+
+.input__field {
+  width: 100%;
+  padding: var(--rs-space-2) var(--rs-space-3);
+  border: 1px solid var(--rs-border-subtle);
+  border-radius: var(--rs-radius-sm);
+  background: var(--rs-bg-base);
+  color: var(--rs-text-primary);
+  font-size: var(--rs-font-size-md);
+  font-family: inherit;
+  transition: border-color var(--rs-duration-fast) var(--rs-ease);
+}
+
+.input__field:focus {
+  outline: none;
+  border-color: var(--rs-accent);
+}
+
+.input__field--error {
+  border-color: var(--rs-error);
+}
+
+.input__error {
+  font-size: var(--rs-font-size-xs);
+  color: var(--rs-error);
+}

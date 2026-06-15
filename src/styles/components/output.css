@@ -1,0 +1,98 @@
+.output-panel {
+  display: grid;
+  grid-template-rows: var(--rs-editor-tabs-height) 1fr;
+  min-width: 0;
+  min-height: 0;
+  background: var(--rs-bg-elevated);
+  overflow: hidden;
+  border-radius: var(--rs-radius-md) var(--rs-radius-md) 0 0;
+}
+
+.output-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rs-space-2);
+  min-height: 52px;
+  padding: 0 var(--rs-space-4);
+  border-bottom: 1px solid var(--rs-border-subtle);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app-shell--desktop .output-panel__header--titlebar {
+  -webkit-app-region: drag;
+}
+
+.app-shell--desktop .output-panel__header .output-panel__actions,
+.app-shell--desktop .output-panel__header .output-panel__actions * {
+  -webkit-app-region: no-drag;
+}
+
+.app-shell--windows .output-panel__header {
+  padding-right: calc(var(--rs-space-3) + var(--rs-titlebar-drag-inset-right));
+}
+
+.output-panel__title {
+  margin: 0;
+  font-size: var(--rs-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rs-text-muted);
+}
+
+.output-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-1);
+}
+
+.output-panel__body {
+  min-height: 0;
+  padding: var(--rs-space-2) var(--rs-space-3) var(--rs-space-3);
+  overflow: hidden;
+}
+
+.output-panel__placeholder {
+  margin: 0;
+  padding: var(--rs-space-4);
+  color: var(--rs-text-muted);
+  font-size: var(--rs-font-size-sm);
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.output-stream {
+  margin: 0;
+  height: 100%;
+  padding: var(--rs-space-3);
+  background: var(--rs-bg-base);
+  border: 1px solid var(--rs-border-subtle);
+  border-radius: var(--rs-radius-sm);
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-sm);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+.output-stdout {
+  color: var(--rs-text-primary);
+}
+
+.output-stderr {
+  color: var(--rs-error);
+}
+
+.output-timeout {
+  color: var(--rs-warning);
+  font-weight: bold;
+}
+
+.output-stream__running {
+  color: var(--rs-text-muted);
+  font-style: italic;
+}

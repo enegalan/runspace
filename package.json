@@ -1,12 +1,27 @@
 {
   "name": "runspace",
+  "description": "Desktop sandbox for multiple runtimes.",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
+  "author": "Eneko Galan",
+  "license": "MIT",
+  "homepage": "https://github.com/enegalan/runspace",
+  "bugs": {
+    "url": "https://github.com/enegalan/runspace/issues"
+  },
+  "icon": "/app-icon.png",
+  "keywords": [
+    "runspace",
+    "sandbox",
+    "runtimes",
+    "desktop"
+  ],
   "scripts": {
     "dev": "vite",
-    "dev:prepare": "cargo build --manifest-path src-tauri/Cargo.toml",
-    "build": "tsc && vite build",
+    "prepare:frameworks": "bash scripts/prepare-framework-skeletons.sh",
+    "dev:prepare": "npm run prepare:frameworks && cargo build --manifest-path src-tauri/Cargo.toml",
+    "build": "npm run prepare:frameworks && tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
@@ -15,13 +30,18 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@monaco-editor/react": "^4.7.0",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "@tauri-apps/plugin-opener": "^2.5.4",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
     "monaco-editor": "^0.55.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-material-vscode-icons": "^0.1.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

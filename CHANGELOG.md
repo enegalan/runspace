@@ -1,6 +1,42 @@
 # Changelog
 
+## [0.1.0] - 2026-06-11
+
+### Added
+
+- Desktop app with Monaco editor
+- Runtimes: Node.js, PHP, Python, Ruby, C, C++
+- Runtime detection and configuration
+- Workspace file management
+- Onboarding welcome flow
+- Workspace sandbox (isolated cwd, sanitized env)
+- Design system with Inter and JetBrains Mono typography
+- Shared UI primitives (Button, Badge, Input, Panel, Kbd)
+- About dialog and keyboard shortcuts reference
+- macOS application menu (File, Edit, Run, View, Help)
+- Global shortcuts: sidebar/output toggle, new workspace, settings
+- GitHub release workflow for tagged builds
+
+### Changed
+
+- Full UI redesign with modern dark-first design language
+- App shell: unified toolbar, pill tabs, elevated status bar
+- File tree uses SVG icons instead of emoji
+- Settings panel with slide-over navigation
+- macOS title bar overlay integration
+
 ## [Unreleased]
+
+### General Settings
+
+- General tab in Settings with sidebar navigation and card-based sections
+- Persistent app preferences in `~/.runspace/settings.json` via Rust `SettingsManager` and `read_settings` / `update_settings` commands
+- **Appearance:** dark, light, and system theme; comfortable/compact UI density; editor font size and family
+- **Editor:** tab size, word wrap, minimap, scroll beyond last line, and insert spaces wired to Monaco
+- **Execution:** configurable run and compile timeouts; auto-clear output on run; auto-scroll output
+- **Layout:** sidebar/output width and visibility; restore last workspace on launch; confirm before closing unsaved tabs
+- Keyboard shortcuts reference embedded in General settings
+- Light theme token palette and `color-scheme` for native form controls in dark/light mode
 
 ### Phase 6: C/C++ (compiled languages)
 
@@ -26,6 +62,7 @@
 - Multiple projects per environment; workspace switcher with right-click rename and delete
 - File tree sidebar with expand/collapse, context menus, create file/folder, rename, delete, and refresh
 - Editor tabs in the toolbar with dirty indicator, close confirmation, and `Cmd+S` save
+- Drag-and-drop tab reordering in the tab strip (Chrome-style live preview; order persisted per workspace in session)
 - `execute_code` reads entry file from workspace disk (auto-save before Run)
 - Session restored on launch (`~/.runspace/session.json`): last environment, workspace, open tabs, and active file per runtime
 - No default file on editor open; empty editor until the user opens or creates a file
@@ -60,7 +97,7 @@
 - `EnvironmentManager` with load/save to `~/.runspace/environments.json`
 - On-demand path validation and version probe via Test action
 - `execute_code` refactored to accept `environment_id` with resolved paths and env vars (Node.js end-to-end)
-- Settings panel (gear icon) with expandable environment cards, Browse, Save, Test, and env vars editor
+- Settings panel (gear icon) with General and Environments tabs; expandable environment cards, Browse, Save, Test, and env vars editor
 - Toolbar environment selector grouped by category with configured/not configured badges
 - Run blocked with tooltip when selected environment is not configured
 

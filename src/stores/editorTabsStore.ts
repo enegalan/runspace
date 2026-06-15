@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { useDialogStore } from "./dialogStore";
+import { getAppSettings } from "./settingsStore";
 import { languageFromExtension } from "../core/languageFromExtension";
 import type { OpenFile, SessionData } from "../core/types/workspace";
+import { reorderByIndex } from "../core/editor/tabReorder";
 import {
   getEnvironmentSession,
   uniquePaths,
@@ -15,6 +17,7 @@ interface EditorTabsStore {
   openFile: (path: string) => Promise<void>;
   closeFile: (path: string, force?: boolean) => Promise<boolean>;
   setActive: (path: string) => void;
+  reorderTabs: (fromIndex: number, toIndex: number) => void;
   updateContent: (path: string, content: string) => void;
   saveFile: (path: string) => Promise<void>;
   saveActiveFile: () => Promise<void>;
@@ -30,8 +33,6 @@ interface EditorTabsStore {
     runtimeId: string,
     workspaceId: string | null,
   ) => Promise<void>;
-  hasDirtyFiles: () => boolean;
-  getActiveFile: () => OpenFile | null;
 }
 
 function basename(path: string): string {
@@ -65,7 +66,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     if (!file) {
       return true;
     }
-    if (file.dirty && !force) {
+    if (file.dirty && !force && getAppSettings().layout.confirmCloseUnsavedTab) {
       const name = basename(path);
       const confirmed = await useDialogStore.getState().askConfirm(
         `"${name}" has unsaved changes. Close without saving?`,
@@ -91,6 +92,14 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     if (get().openFiles.some((file) => file.path === path)) {
       set({ activePath: path });
     }
+  },
+
+  reorderTabs: (fromIndex, toIndex) => {
+    const openFiles = reorderByIndex(get().openFiles, fromIndex, toIndex);
+    if (openFiles === get().openFiles) {
+      return;
+    }
+    set({ openFiles });
   },
 
   updateContent: (path, content) => {
@@ -195,15 +204,5 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       session: { ...session, environments, last_runtime_id: runtimeId },
     });
     await runspaceInvoke("set_selected_environment", { environmentId: runtimeId });
-  },
-
-  hasDirtyFiles: () => get().openFiles.some((file) => file.dirty),
-
-  getActiveFile: () => {
-    const { activePath, openFiles } = get();
-    if (!activePath) {
-      return null;
-    }
-    return openFiles.find((file) => file.path === activePath) ?? null;
   },
 }));

@@ -10,14 +10,6 @@ impl RuntimeAdapter for GccAdapter {
         "gcc"
     }
 
-    fn file_extension(&self) -> &str {
-        "c"
-    }
-
-    fn default_template(&self) -> &str {
-        "#include <stdio.h>\n\nint main() {\n    printf(\"Hello from C!\\n\");\n    return 0;\n}\n"
-    }
-
     fn build_command(&self, _binary: &Path, _script: &Path) -> Command {
         Command::new("gcc")
     }

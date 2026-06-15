@@ -18,6 +18,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tauri::AppHandle;
 
 use crate::engine::ExecutionEvent;
+use crate::terminal::TerminalEvent;
 use crate::services::dialog::pick_path;
 use crate::services::invoke::dispatch_invoke;
 use crate::state::SharedState;
@@ -92,6 +93,7 @@ async fn run_server(
         .route("/api/invoke", post(invoke_handler))
         .route("/api/browse", post(browse_handler))
         .route("/api/execution/events", get(execution_events_handler))
+        .route("/api/terminal/events", get(terminal_events_handler))
         .layer(cors)
         .with_state(http_state);
 
@@ -179,6 +181,33 @@ async fn execution_events_handler(
     let receiver = state.app.execution_events.subscribe();
     let live = BroadcastStream::new(receiver).filter_map(|message| {
         execution_event_to_sse(message.ok()?)
+    });
+
+    let stream = stream::iter(replay).chain(live);
+
+    Sse::new(stream).keep_alive(KeepAlive::new().interval(Duration::from_secs(15)))
+}
+
+fn terminal_event_to_sse(event: TerminalEvent) -> Option<Result<Event, Infallible>> {
+    let payload = serde_json::to_string(&event).ok()?;
+    Some(Ok(Event::default().data(payload)))
+}
+
+async fn terminal_events_handler(
+    State(state): State<HttpState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    use futures_util::stream;
+
+    let replay = state
+        .app
+        .terminal_events
+        .replay_snapshot()
+        .into_iter()
+        .filter_map(terminal_event_to_sse);
+
+    let receiver = state.app.terminal_events.subscribe();
+    let live = BroadcastStream::new(receiver).filter_map(|message| {
+        terminal_event_to_sse(message.ok()?)
     });
 
     let stream = stream::iter(replay).chain(live);

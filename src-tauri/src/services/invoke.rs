@@ -4,8 +4,6 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use tauri::AppHandle;
 
-use crate::commands::snippet::{read_snippet, write_snippet, SnippetData};
-use crate::engine::adapters::get_adapter;
 use crate::services::execution::{start_execution_http, start_execution_tauri};
 use crate::state::SharedState;
 
@@ -14,10 +12,11 @@ struct ExecuteArgs {
     code: Option<String>,
     #[serde(rename = "environmentId")]
     environment_id: Option<String>,
-    #[serde(rename = "entryFile")]
-    entry_file: Option<String>,
+    file: Option<String>,
     #[serde(rename = "timeoutSecs")]
     timeout_secs: Option<u64>,
+    #[serde(rename = "compileTimeoutSecs")]
+    compile_timeout_secs: Option<u64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,11 +38,6 @@ struct SetEnvVarsArgs {
     environment_id: String,
     #[serde(rename = "envVars")]
     env_vars: HashMap<String, String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct WriteSnippetArgs {
-    data: SnippetData,
 }
 
 pub async fn dispatch_invoke(
@@ -142,18 +136,22 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(json!(result))
         }
-        "read_snippet" => Ok(json!(read_snippet()?)),
-        "write_snippet" => {
-            let args: WriteSnippetArgs = serde_json::from_value(args)
-                .map_err(|e| format!("Invalid write_snippet args: {e}"))?;
-            write_snippet(args.data)?;
-            Ok(Value::Null)
+        "read_settings" => {
+            let manager = state
+                .settings_manager
+                .lock()
+                .map_err(|_| "Settings manager lock poisoned".to_string())?;
+            Ok(json!(manager.get().clone()))
         }
-        "get_runtime_template" => {
-            let args: EnvironmentIdArgs = serde_json::from_value(args)
-                .map_err(|e| format!("Invalid get_runtime_template args: {e}"))?;
-            let adapter = get_adapter(&args.environment_id).map_err(|e| e.to_string())?;
-            Ok(json!(adapter.default_template()))
+        "update_settings" => {
+            let mut manager = state
+                .settings_manager
+                .lock()
+                .map_err(|_| "Settings manager lock poisoned".to_string())?;
+            let updated = manager
+                .update(args)
+                .map_err(|e| e.to_string())?;
+            Ok(json!(updated))
         }
         "execute_code" => {
             let args: ExecuteArgs = serde_json::from_value(args)
@@ -164,16 +162,18 @@ pub async fn dispatch_invoke(
                     app,
                     args.code,
                     args.environment_id,
-                    args.entry_file,
+                    args.file,
                     args.timeout_secs,
+                    args.compile_timeout_secs,
                 )?;
             } else {
                 start_execution_http(
                     state,
                     args.code,
                     args.environment_id,
-                    args.entry_file,
+                    args.file,
                     args.timeout_secs,
+                    args.compile_timeout_secs,
                 )?;
             }
             Ok(Value::Null)
@@ -265,13 +265,17 @@ pub async fn dispatch_invoke(
                 .and_then(|v| v.as_str())
                 .ok_or("Missing runtimeId")?
                 .to_string();
+            let use_session = args
+                .get("useSession")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true);
             let manager = state
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
             let session = manager.load_session().map_err(|e| e.to_string())?;
             let (workspace, info) = manager
-                .initialize_active_workspace(&runtime_id, &session)
+                .initialize_active_workspace(&runtime_id, &session, use_session)
                 .map_err(|e| e.to_string())?;
             {
                 let mut active = state
@@ -533,10 +537,6 @@ pub async fn dispatch_invoke(
         }
         "update_manifest" => {
             let name = args.get("name").and_then(|v| v.as_str()).map(|s| s.to_string());
-            let entry_file = args
-                .get("entryFile")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
             let manager = state
                 .workspace_manager
                 .lock()
@@ -559,9 +559,6 @@ pub async fn dispatch_invoke(
                     return Err("Project name cannot be empty".to_string());
                 }
                 manifest.name = trimmed.to_string();
-            }
-            if let Some(next_entry) = entry_file {
-                manifest.entry_file = next_entry;
             }
             manifest.updated_at = chrono::Utc::now().to_rfc3339();
             manager
@@ -593,6 +590,49 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
+        "spawn_terminal" => {
+            let args: EnvironmentIdArgs = serde_json::from_value(args)
+                .map_err(|e| format!("Invalid spawn_terminal args: {e}"))?;
+            crate::services::terminal::spawn_terminal(state, app, &args.environment_id).await
+        }
+        "write_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            let data = args
+                .get("data")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing data".to_string())?
+                .to_string();
+            crate::services::terminal::write_terminal(state, &session_id, &data)
+        }
+        "resize_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            let cols = args
+                .get("cols")
+                .and_then(|value| value.as_u64())
+                .ok_or_else(|| "Missing cols".to_string())? as u16;
+            let rows = args
+                .get("rows")
+                .and_then(|value| value.as_u64())
+                .ok_or_else(|| "Missing rows".to_string())? as u16;
+            crate::services::terminal::resize_terminal(state, &session_id, cols, rows)
+        }
+        "close_terminal" => {
+            let session_id = args
+                .get("sessionId")
+                .and_then(|value| value.as_str())
+                .ok_or_else(|| "Missing sessionId".to_string())?
+                .to_string();
+            crate::services::terminal::close_terminal(state, &session_id)
+        }
+        "list_terminal_sessions" => crate::services::terminal::list_terminal_sessions(state),
         _ => Err(format!("Unknown command: {cmd}")),
     }
 }

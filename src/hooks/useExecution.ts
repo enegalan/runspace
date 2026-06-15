@@ -3,6 +3,7 @@ import { useCallback, useEffect } from "react";
 import { shouldUseHttpApi } from "../core/api/backendTransport";
 import { subscribeExecutionEvents } from "../core/api/executionEvents";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
+import { DEFAULT_APP_SETTINGS } from "../core/constants/settingsDefaults";
 import type {
   ExecutionFinishedEvent,
   ExecutionOptions,
@@ -10,8 +11,7 @@ import type {
   ExecutionPhaseEvent,
 } from "../core/types/execution";
 import { useExecutionStore } from "../stores/executionStore";
-
-const DEFAULT_TIMEOUT_SECS = 30;
+import { getAppSettings } from "../stores/settingsStore";
 
 export function useExecution() {
   const {
@@ -21,7 +21,6 @@ export function useExecution() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     appendOutput,
     reset,
@@ -102,21 +101,29 @@ export function useExecution() {
   }, [appendOutput, setFinished, setPhase, setStarted]);
 
   const run = useCallback(async (options?: ExecutionOptions) => {
-    setRunning();
+    const executionSettings = getAppSettings().execution;
+    setRunning({ preserveOutput: !executionSettings.autoClearOutput });
 
-    const environmentId = options?.environmentId;
+    const { environmentId, file, timeoutSecs, compileTimeoutSecs } = options ?? {};
     if (!environmentId) {
       setError("No environment selected. Add one in Settings → Environments.");
       return;
     }
-    const timeoutSecs = options?.timeoutSecs ?? DEFAULT_TIMEOUT_SECS;
-    const entryFile = options?.entryFile;
+    if (!file) {
+      setError("Open a file to run.");
+      return;
+    }
+    const resolvedTimeoutSecs =
+      timeoutSecs ?? executionSettings.runTimeoutSecs ?? DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
+    const resolvedCompileTimeoutSecs =
+      compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
 
     try {
       await runspaceInvoke("execute_code", {
         environmentId,
-        timeoutSecs,
-        entryFile,
+        file,
+        timeoutSecs: resolvedTimeoutSecs,
+        compileTimeoutSecs: resolvedCompileTimeoutSecs,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -143,7 +150,6 @@ export function useExecution() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     run,
     stop,

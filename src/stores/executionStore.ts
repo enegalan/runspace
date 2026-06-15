@@ -11,11 +11,10 @@ export interface ExecutionState {
   compileFailed: boolean;
   error: string | null;
   startedAt: number | null;
-  durationMs: number | null;
   lastRunDurationMs: number | null;
   appendOutput: (stream: "stdout" | "stderr", chunk: string) => void;
   reset: () => void;
-  setRunning: () => void;
+  setRunning: (options?: { preserveOutput?: boolean }) => void;
   setStarted: () => void;
   setPhase: (phase: ExecutionPhase) => void;
   setFinished: (
@@ -36,7 +35,6 @@ const initialState = {
   compileFailed: false,
   error: null as string | null,
   startedAt: null as number | null,
-  durationMs: null as number | null,
   lastRunDurationMs: null as number | null,
 };
 
@@ -70,10 +68,11 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     set({ ...initialState, lastRunDurationMs });
   },
 
-  setRunning: () => {
-    set({
-      stdout: "",
-      stderr: "",
+  setRunning: (options) => {
+    const preserveOutput = options?.preserveOutput ?? false;
+    set((state) => ({
+      stdout: preserveOutput ? state.stdout : "",
+      stderr: preserveOutput ? state.stderr : "",
       exitCode: null,
       timedOut: false,
       compileFailed: false,
@@ -81,8 +80,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       error: null,
       status: "running",
       startedAt: Date.now(),
-      durationMs: null,
-    });
+    }));
   },
 
   setStarted: () => {
@@ -95,25 +93,21 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
 
   setFinished: (exitCode, timedOut, compileFailed = false) => {
     const { startedAt } = get();
-    const durationMs = startedAt !== null ? Date.now() - startedAt : null;
+    const lastRunDurationMs = startedAt !== null ? Date.now() - startedAt : null;
     set({
       exitCode,
       timedOut,
       compileFailed,
       phase: null,
       status: resolveStatus(exitCode, timedOut, compileFailed),
-      durationMs,
-      lastRunDurationMs: durationMs,
+      lastRunDurationMs,
     });
   },
 
   setError: (message) => {
-    const { startedAt } = get();
-    const durationMs = startedAt !== null ? Date.now() - startedAt : null;
     set({
       status: "error",
       error: message,
-      durationMs,
     });
   },
 }));

@@ -1,0 +1,6 @@
+.rs-icon {
+  display: block;
+  flex-shrink: 0;
+  color: currentColor;
+  overflow: visible;
+}

@@ -4,21 +4,19 @@ export async function requireProjectName(
   label = "Project name",
   initialValue = "",
 ): Promise<string | null> {
-  let currentLabel = label;
-  let currentInitial = initialValue;
+  const currentLabel = label;
+  const currentInitial = initialValue;
 
   while (true) {
     const raw = await useDialogStore
       .getState()
-      .askPrompt(currentLabel, { initialValue: currentInitial });
-    if (!raw) {
+      .askPrompt(currentLabel, {
+        initialValue: currentInitial,
+        validate: (value) => (value.trim() ? null : "Project name cannot be empty."),
+      });
+    if (raw === null) {
       return null;
     }
-    const trimmed = raw.trim();
-    if (trimmed) {
-      return trimmed;
-    }
-    currentLabel = "Project name cannot be empty.";
-    currentInitial = "";
+    return raw.trim();
   }
 }
