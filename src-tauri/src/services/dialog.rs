@@ -2,6 +2,7 @@ use std::sync::mpsc;
 
 use tauri::AppHandle;
 
+#[cfg(debug_assertions)]
 pub fn pick_path(app: &AppHandle, directory: bool) -> Option<String> {
     let (tx, rx) = mpsc::channel();
 

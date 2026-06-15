@@ -23,6 +23,7 @@ use commands::{
     update_manifest, update_settings, validate_environment, write_file, write_session,
     write_snippet, write_terminal,
 };
+#[cfg(debug_assertions)]
 use std::sync::{Arc, Mutex};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::Emitter;

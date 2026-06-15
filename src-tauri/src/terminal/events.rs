@@ -42,6 +42,7 @@ impl TerminalEventBus {
         let _ = self.sender.send(event);
     }
 
+    #[cfg(debug_assertions)]
     pub fn replay_snapshot(&self) -> Vec<TerminalEvent> {
         self.replay
             .lock()
@@ -49,6 +50,7 @@ impl TerminalEventBus {
             .unwrap_or_default()
     }
 
+    #[cfg(debug_assertions)]
     pub fn subscribe(&self) -> broadcast::Receiver<TerminalEvent> {
         self.sender.subscribe()
     }
