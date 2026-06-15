@@ -1,4 +1,6 @@
-# Runspace
+<p align="center">
+  <img src="art/logo.png" width="360" alt="Runspace" />
+</p>
 
 Runspace is a desktop sandbox for running multiple programming runtimes in isolated, on-demand environments.
 
