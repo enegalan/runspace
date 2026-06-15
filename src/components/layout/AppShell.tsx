@@ -245,7 +245,7 @@ export function AppShell() {
       await useEditorTabsStore.getState().saveActiveFile();
       await run({
         environmentId: selectedId,
-        entryFile: activePath,
+        file: activePath,
         timeoutSecs: executionSettings.runTimeoutSecs,
         compileTimeoutSecs: executionSettings.compileTimeoutSecs,
       });
@@ -436,7 +436,7 @@ export function AppShell() {
           {!workspace && isTauri() && (
             <div className="editor-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
           )}
-          <EditorArea onRun={handleRun} onSave={handleSave} />
+          <EditorArea onSave={handleSave} />
           {layoutSettings.terminalVisible && (
             <TerminalPanel
               height={layoutSettings.terminalHeight}

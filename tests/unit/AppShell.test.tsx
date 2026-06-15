@@ -24,7 +24,6 @@ const mockWorkspace = {
   id: "ws-test",
   name: "Untitled",
   runtime_id: "nodejs",
-  entry_file: "main.js",
 };
 
 describe("AppShell", () => {

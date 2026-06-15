@@ -35,10 +35,6 @@ interface TerminalStoreState {
     workspaceId: string,
     environmentId: string,
   ) => TerminalTabState[];
-  getActiveTabId: (
-    workspaceId: string,
-    environmentId: string,
-  ) => string | undefined;
 }
 
 export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
@@ -212,10 +208,5 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
     return order
       .map((tabId) => get().tabs[tabId])
       .filter((tab): tab is TerminalTabState => tab !== undefined);
-  },
-
-  getActiveTabId: (workspaceId, environmentId) => {
-    const contextKey = terminalContextKey(workspaceId, environmentId);
-    return get().activeTabIdByContext[contextKey];
   },
 }));

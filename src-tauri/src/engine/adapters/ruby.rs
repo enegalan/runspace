@@ -11,14 +11,6 @@ impl RuntimeAdapter for RubyAdapter {
         "ruby"
     }
 
-    fn file_extension(&self) -> &str {
-        "rb"
-    }
-
-    fn default_template(&self) -> &str {
-        "puts 'Hello from Ruby!'\n"
-    }
-
     fn build_command(&self, binary: &Path, script: &Path) -> Command {
         script_command(binary, script)
     }

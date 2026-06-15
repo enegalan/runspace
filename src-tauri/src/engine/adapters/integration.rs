@@ -15,6 +15,16 @@ mod tests {
         None
     }
 
+    fn sample_script_name(environment_id: &str) -> &'static str {
+        match environment_id {
+            "nodejs" => "main.js",
+            "php" | "laravel" | "symfony" => "main.php",
+            "python" => "main.py",
+            "ruby" => "main.rb",
+            _ => "main.txt",
+        }
+    }
+
     fn run_hello(environment_id: &str, binary: PathBuf, template: &str) {
         let adapter = get_adapter(environment_id).expect("adapter");
         let temp_dir = std::env::temp_dir().join(format!(
@@ -26,8 +36,7 @@ mod tests {
         ));
         std::fs::create_dir_all(&temp_dir).expect("temp dir");
 
-        let entry = adapter.entry_filename();
-        let snippet_path = temp_dir.join(&entry);
+        let snippet_path = temp_dir.join(sample_script_name(environment_id));
         std::fs::write(&snippet_path, template).expect("write snippet");
 
         let prepared = adapter
@@ -99,8 +108,11 @@ mod tests {
         let Some(binary) = runtime_binary(&["php"]) else {
             return;
         };
-        let adapter = get_adapter("laravel").expect("adapter");
-        run_hello("laravel", binary, adapter.default_template());
+        run_hello(
+            "laravel",
+            binary,
+            "<?php\n\nuse Illuminate\\Support\\Str;\n\necho Str::upper('Hello from Laravel!');\n",
+        );
     }
 
     #[test]
@@ -109,7 +121,10 @@ mod tests {
         let Some(binary) = runtime_binary(&["php"]) else {
             return;
         };
-        let adapter = get_adapter("symfony").expect("adapter");
-        run_hello("symfony", binary, adapter.default_template());
+        run_hello(
+            "symfony",
+            binary,
+            "<?php\n\nuse Symfony\\Component\\String\\UnicodeString;\n\necho (new UnicodeString('hello'))->upper();\n",
+        );
     }
 }

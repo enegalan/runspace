@@ -92,10 +92,6 @@
   font-weight: bold;
 }
 
-.output-error {
-  color: var(--rs-error);
-}
-
 .output-stream__running {
   color: var(--rs-text-muted);
   font-style: italic;

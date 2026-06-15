@@ -234,7 +234,6 @@ pub fn rename_workspace(
 pub fn update_manifest(
     state: State<'_, SharedState>,
     name: Option<String>,
-    entry_file: Option<String>,
 ) -> Result<WorkspaceInfo, String> {
     let manager = lock_workspace_manager(&state)?;
     let workspace = require_active_workspace(&state)?;
@@ -244,9 +243,6 @@ pub fn update_manifest(
 
     if let Some(next_name) = name {
         manifest.name = next_name;
-    }
-    if let Some(next_entry) = entry_file {
-        manifest.entry_file = next_entry;
     }
     manifest.updated_at = chrono::Utc::now().to_rfc3339();
 

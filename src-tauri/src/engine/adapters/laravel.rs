@@ -13,18 +13,6 @@ impl RuntimeAdapter for LaravelAdapter {
         "laravel"
     }
 
-    fn file_extension(&self) -> &str {
-        "php"
-    }
-
-    fn entry_filename(&self) -> String {
-        "main.php".to_string()
-    }
-
-    fn default_template(&self) -> &str {
-        "<?php\n\nuse Illuminate\\Support\\Str;\n\necho Str::upper('Hello from Laravel!');\n"
-    }
-
     fn normalize_code(&self, code: &str) -> String {
         normalize_php_snippet(code)
     }

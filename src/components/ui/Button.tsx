@@ -8,7 +8,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   shortcut?: string;
-  running?: boolean;
   dangerActive?: boolean;
   children: ReactNode;
 }
@@ -29,7 +28,6 @@ export function Button({
   variant = "secondary",
   size = "md",
   shortcut,
-  running = false,
   dangerActive = false,
   className = "",
   type = "button",
@@ -40,7 +38,6 @@ export function Button({
     "btn",
     variantClass[variant],
     sizeClass[size],
-    running ? "btn--running" : "",
     variant === "danger" && dangerActive ? "btn--danger--active" : "",
     className,
   ]

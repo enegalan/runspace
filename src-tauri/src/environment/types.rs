@@ -30,7 +30,6 @@ pub struct EnvironmentDefinition {
     pub id: String,
     pub name: String,
     pub category: EnvironmentCategory,
-    pub entry_file: Option<String>,
     pub file_extension: String,
     pub monaco_language: String,
     pub install_guide_url: String,
@@ -77,7 +76,6 @@ pub struct ResolvedEnvironment {
     pub binary_path: String,
     pub env_vars: HashMap<String, String>,
     pub extra_paths: HashMap<String, String>,
-    pub entry_file: Option<String>,
     pub file_extension: String,
 }
 

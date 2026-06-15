@@ -8,7 +8,6 @@ pub const MANIFEST_FILENAME: &str = "runspace.json";
 pub struct WorkspaceManifest {
     pub name: String,
     pub runtime_id: String,
-    pub entry_file: String,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -18,7 +17,6 @@ pub struct WorkspaceInfo {
     pub id: String,
     pub name: String,
     pub runtime_id: String,
-    pub entry_file: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

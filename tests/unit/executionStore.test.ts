@@ -33,7 +33,7 @@ describe("executionStore", () => {
     const state = useExecutionStore.getState();
     expect(state.status).toBe("success");
     expect(state.exitCode).toBe(0);
-    expect(state.durationMs).not.toBeNull();
+    expect(state.lastRunDurationMs).not.toBeNull();
   });
 
   it("resolves error on non-zero exit code", () => {

@@ -5,7 +5,6 @@ export const DEFAULT_ENVIRONMENT_ID = "nodejs";
 function languageDefinition(
   id: string,
   name: string,
-  entryFile: string,
   fileExtension: string,
   monacoLanguage: string,
   installGuideUrl: string,
@@ -16,7 +15,6 @@ function languageDefinition(
     id,
     name,
     category: "language",
-    entry_file: entryFile,
     file_extension: fileExtension,
     monaco_language: monacoLanguage,
     install_guide_url: installGuideUrl,
@@ -35,7 +33,6 @@ function frameworkDefinition(
     id,
     name,
     category: "framework",
-    entry_file: "main.php",
     file_extension: "php",
     monaco_language: "php",
     install_guide_url: installGuideUrl,
@@ -55,7 +52,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "nodejs",
     "Node.js",
-    "main.js",
     "js",
     "javascript",
     "https://nodejs.org/en/download",
@@ -65,7 +61,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "php",
     "PHP",
-    "main.php",
     "php",
     "php",
     "https://www.php.net/downloads",
@@ -75,7 +70,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "python",
     "Python",
-    "main.py",
     "py",
     "python",
     "https://www.python.org/downloads/",
@@ -85,7 +79,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "ruby",
     "Ruby",
-    "main.rb",
     "rb",
     "ruby",
     "https://www.ruby-lang.org/en/downloads/",
@@ -95,7 +88,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "gcc",
     "GCC (C)",
-    "main.c",
     "c",
     "c",
     "https://developer.apple.com/xcode/resources/",
@@ -105,7 +97,6 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "gpp",
     "G++ (C++)",
-    "main.cpp",
     "cpp",
     "cpp",
     "https://developer.apple.com/xcode/resources/",

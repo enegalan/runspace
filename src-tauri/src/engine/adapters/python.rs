@@ -11,14 +11,6 @@ impl RuntimeAdapter for PythonAdapter {
         "python"
     }
 
-    fn file_extension(&self) -> &str {
-        "py"
-    }
-
-    fn default_template(&self) -> &str {
-        "print('Hello from Python!')\n"
-    }
-
     fn build_command(&self, binary: &Path, script: &Path) -> Command {
         script_command(binary, script)
     }

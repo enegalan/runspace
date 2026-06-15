@@ -11,14 +11,6 @@ impl RuntimeAdapter for NodeAdapter {
         "nodejs"
     }
 
-    fn file_extension(&self) -> &str {
-        "js"
-    }
-
-    fn default_template(&self) -> &str {
-        "console.log('Hello from Node.js!');\n"
-    }
-
     fn build_command(&self, binary: &Path, script: &Path) -> Command {
         script_command(binary, script)
     }

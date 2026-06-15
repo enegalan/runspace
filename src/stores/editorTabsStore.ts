@@ -33,8 +33,6 @@ interface EditorTabsStore {
     runtimeId: string,
     workspaceId: string | null,
   ) => Promise<void>;
-  hasDirtyFiles: () => boolean;
-  getActiveFile: () => OpenFile | null;
 }
 
 function basename(path: string): string {
@@ -206,15 +204,5 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       session: { ...session, environments, last_runtime_id: runtimeId },
     });
     await runspaceInvoke("set_selected_environment", { environmentId: runtimeId });
-  },
-
-  hasDirtyFiles: () => get().openFiles.some((file) => file.dirty),
-
-  getActiveFile: () => {
-    const { activePath, openFiles } = get();
-    if (!activePath) {
-      return null;
-    }
-    return openFiles.find((file) => file.path === activePath) ?? null;
   },
 }));

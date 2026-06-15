@@ -151,7 +151,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            entry_file: Some("main.js".to_string()),
             file_extension: "js".to_string(),
         };
 
@@ -173,7 +172,6 @@ mod tests {
                 "composer_path".to_string(),
                 "/usr/local/bin/composer".to_string(),
             )]),
-            entry_file: Some("main.php".to_string()),
             file_extension: "php".to_string(),
         };
 
@@ -192,7 +190,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            entry_file: Some("main.js".to_string()),
             file_extension: "js".to_string(),
         };
 
@@ -214,7 +211,6 @@ mod tests {
             binary_path: "/usr/local/bin/php".to_string(),
             env_vars: HashMap::from([("PATH".to_string(), "/old".to_string())]),
             extra_paths: HashMap::new(),
-            entry_file: Some("main.php".to_string()),
             file_extension: "php".to_string(),
         };
 

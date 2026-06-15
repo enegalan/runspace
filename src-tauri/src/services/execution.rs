@@ -20,7 +20,7 @@ pub fn start_execution(
     emitter: ExecutionEmitter,
     code: Option<String>,
     environment_id: Option<String>,
-    entry_file: Option<String>,
+    file: Option<String>,
     timeout_secs: Option<u64>,
     compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
@@ -88,8 +88,11 @@ pub fn start_execution(
 
         let workspace = active_workspace.as_ref().ok_or("No active workspace")?;
 
+        let relative_path = file
+            .as_deref()
+            .ok_or("No file selected to run")?;
         let resolved_entry = workspace_manager
-            .resolve_entry_file(workspace, entry_file.as_deref())
+            .resolve_run_file(workspace, relative_path)
             .map_err(|e| e.to_string())?;
 
         let file_content = if let Some(editor_code) = code {
@@ -213,7 +216,7 @@ pub fn start_execution_tauri(
     app: AppHandle,
     code: Option<String>,
     environment_id: Option<String>,
-    entry_file: Option<String>,
+    file: Option<String>,
     timeout_secs: Option<u64>,
     compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
@@ -223,7 +226,7 @@ pub fn start_execution_tauri(
         emitter,
         code,
         environment_id,
-        entry_file,
+        file,
         timeout_secs,
         compile_timeout_secs,
     )
@@ -233,7 +236,7 @@ pub fn start_execution_http(
     state: &SharedState,
     code: Option<String>,
     environment_id: Option<String>,
-    entry_file: Option<String>,
+    file: Option<String>,
     timeout_secs: Option<u64>,
     compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
@@ -243,7 +246,7 @@ pub fn start_execution_http(
         emitter,
         code,
         environment_id,
-        entry_file,
+        file,
         timeout_secs,
         compile_timeout_secs,
     )

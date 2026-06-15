@@ -1,4 +1,0 @@
-[[permission]]
-identifier = "allow-snippet"
-description = "Allows snippet persistence commands"
-commands.allow = ["read_snippet", "write_snippet"]

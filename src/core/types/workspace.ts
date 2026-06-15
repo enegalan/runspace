@@ -2,7 +2,6 @@ export interface WorkspaceInfo {
   id: string;
   name: string;
   runtime_id: string;
-  entry_file: string;
 }
 
 export interface FileEntry {

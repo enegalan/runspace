@@ -4,7 +4,6 @@ import {
   TERMINAL_HEIGHT_MAX,
   TERMINAL_HEIGHT_MIN,
 } from "../../core/layout/panelLayout";
-import { isTauri } from "../../core/platform/isTauri";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { terminalContextKey } from "../../core/types/terminal";
 import { useVerticalDragResize } from "../../hooks/useVerticalDragResize";
@@ -127,9 +126,7 @@ export function TerminalPanel({
         data-testid="terminal-resize-handle"
       />
       <section className="terminal-panel">
-        <div
-          className={`terminal-panel__header${isTauri() ? " terminal-panel__header--titlebar" : ""}`}
-        >
+        <div className="terminal-panel__header">
           {!showPlaceholder && (
             <div
               className="terminal-tabs__list"

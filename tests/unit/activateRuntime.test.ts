@@ -6,7 +6,6 @@ const mockWorkspace = {
   id: "ws-1",
   name: "Demo",
   runtime_id: "php",
-  entry_file: "main.php",
 };
 
 describe("activateRuntime", () => {

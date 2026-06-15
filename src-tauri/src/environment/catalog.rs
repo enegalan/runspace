@@ -12,7 +12,6 @@ fn file_field(key: &str, label: &str, required: bool) -> ConfigField {
 fn language_definition(
     id: &str,
     name: &str,
-    entry_file: &str,
     file_extension: &str,
     monaco_language: &str,
     install_guide_url: &str,
@@ -23,7 +22,6 @@ fn language_definition(
         id: id.to_string(),
         name: name.to_string(),
         category: EnvironmentCategory::Language,
-        entry_file: Some(entry_file.to_string()),
         file_extension: file_extension.to_string(),
         monaco_language: monaco_language.to_string(),
         install_guide_url: install_guide_url.to_string(),
@@ -40,7 +38,6 @@ fn framework_definition(
         id: id.to_string(),
         name: name.to_string(),
         category: EnvironmentCategory::Framework,
-        entry_file: Some("main.php".to_string()),
         file_extension: "php".to_string(),
         monaco_language: "php".to_string(),
         install_guide_url: install_guide_url.to_string(),
@@ -56,7 +53,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "nodejs",
             "Node.js",
-            "main.js",
             "js",
             "javascript",
             "https://nodejs.org/en/download",
@@ -66,7 +62,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "php",
             "PHP",
-            "main.php",
             "php",
             "php",
             "https://www.php.net/downloads",
@@ -76,7 +71,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "python",
             "Python",
-            "main.py",
             "py",
             "python",
             "https://www.python.org/downloads/",
@@ -86,7 +80,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "ruby",
             "Ruby",
-            "main.rb",
             "rb",
             "ruby",
             "https://www.ruby-lang.org/en/downloads/",
@@ -106,7 +99,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "gcc",
             "GCC (C)",
-            "main.c",
             "c",
             "c",
             "https://developer.apple.com/xcode/resources/",
@@ -116,7 +108,6 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
         language_definition(
             "gpp",
             "G++ (C++)",
-            "main.cpp",
             "cpp",
             "cpp",
             "https://developer.apple.com/xcode/resources/",

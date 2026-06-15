@@ -21,7 +21,9 @@ describe("terminalStore", () => {
     expect(tabs).toHaveLength(2);
     expect(tabs[0]?.sessionId).toBe("session-1");
     expect(tabs[1]?.sessionId).toBe("session-2");
-    expect(store.getActiveTabId("ws-1", "nodejs")).toBe(secondTabId);
+    expect(
+      useTerminalStore.getState().activeTabIdByContext[terminalContextKey("ws-1", "nodejs")],
+    ).toBe(secondTabId);
     expect(terminalContextKey("ws-1", "nodejs")).toBe("ws-1:nodejs");
   });
 

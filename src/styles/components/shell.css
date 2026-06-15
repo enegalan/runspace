@@ -175,34 +175,6 @@
   color: var(--rs-accent);
 }
 
-.panel {
-  background: var(--rs-bg-elevated);
-  border-radius: var(--rs-radius-md);
-}
-
-.panel--bordered {
-  border: 1px solid var(--rs-border-subtle);
-}
-
-.panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--rs-space-3) var(--rs-space-4);
-  border-bottom: 1px solid var(--rs-border-subtle);
-}
-
-.panel__title {
-  margin: 0;
-  font-size: var(--rs-font-size-sm);
-  font-weight: 600;
-  color: var(--rs-text-primary);
-}
-
-.panel__body {
-  padding: var(--rs-space-4);
-}
-
 .input {
   display: flex;
   flex-direction: column;

@@ -52,10 +52,6 @@
   border-color: var(--rs-accent-hover);
 }
 
-.btn--primary.btn--running {
-  animation: rs-run-pulse 1.2s ease-in-out infinite;
-}
-
 .btn--ghost {
   background: transparent;
   border-color: transparent;
@@ -80,18 +76,6 @@
 
 .btn--danger--active:hover:not(:disabled) {
   background: rgba(248, 113, 113, 0.22);
-}
-
-.btn .btn__icon {
-  flex-shrink: 0;
-}
-
-.btn--primary .btn__icon {
-  color: #fff;
-}
-
-.btn--danger--active .btn__icon {
-  color: var(--rs-error);
 }
 
 .btn__shortcut {
@@ -159,45 +143,7 @@
   color: var(--rs-text-secondary);
 }
 
-.badge--accent {
-  background: var(--rs-accent-muted);
-  color: var(--rs-accent);
-}
-
 .badge--success {
   background: rgba(74, 222, 128, 0.15);
   color: var(--rs-success);
-}
-
-.badge--warning {
-  background: rgba(250, 204, 21, 0.15);
-  color: var(--rs-warning);
-}
-
-.badge--error {
-  background: rgba(248, 113, 113, 0.15);
-  color: var(--rs-error);
-}
-
-.badge--running {
-  background: var(--rs-accent-muted);
-  color: var(--rs-accent);
-  animation: rs-pulse 1.2s ease-in-out infinite;
-}
-
-.divider {
-  border: none;
-  margin: 0;
-  background: var(--rs-border-subtle);
-}
-
-.divider--horizontal {
-  height: 1px;
-  width: 100%;
-}
-
-.divider--vertical {
-  width: 1px;
-  height: 100%;
-  align-self: stretch;
 }

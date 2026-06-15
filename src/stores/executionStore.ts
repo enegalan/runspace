@@ -11,7 +11,6 @@ export interface ExecutionState {
   compileFailed: boolean;
   error: string | null;
   startedAt: number | null;
-  durationMs: number | null;
   lastRunDurationMs: number | null;
   appendOutput: (stream: "stdout" | "stderr", chunk: string) => void;
   reset: () => void;
@@ -36,7 +35,6 @@ const initialState = {
   compileFailed: false,
   error: null as string | null,
   startedAt: null as number | null,
-  durationMs: null as number | null,
   lastRunDurationMs: null as number | null,
 };
 
@@ -82,7 +80,6 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       error: null,
       status: "running",
       startedAt: Date.now(),
-      durationMs: null,
     }));
   },
 
@@ -96,25 +93,21 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
 
   setFinished: (exitCode, timedOut, compileFailed = false) => {
     const { startedAt } = get();
-    const durationMs = startedAt !== null ? Date.now() - startedAt : null;
+    const lastRunDurationMs = startedAt !== null ? Date.now() - startedAt : null;
     set({
       exitCode,
       timedOut,
       compileFailed,
       phase: null,
       status: resolveStatus(exitCode, timedOut, compileFailed),
-      durationMs,
-      lastRunDurationMs: durationMs,
+      lastRunDurationMs,
     });
   },
 
   setError: (message) => {
-    const { startedAt } = get();
-    const durationMs = startedAt !== null ? Date.now() - startedAt : null;
     set({
       status: "error",
       error: message,
-      durationMs,
     });
   },
 }));

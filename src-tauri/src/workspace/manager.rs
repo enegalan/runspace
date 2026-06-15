@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use chrono::Utc;
 use uuid::Uuid;
 
-use crate::engine::adapters::{get_adapter, RuntimeAdapter};
+use crate::engine::adapters::get_adapter;
 use crate::security::layer::{validate_path_in_workspace, SecurityError};
 
 use super::types::{
@@ -144,10 +144,9 @@ impl WorkspaceManager {
         let path = self.workspaces_dir().join(&id);
         fs::create_dir_all(&path)?;
 
-        let adapter = get_adapter(runtime_id).map_err(|e| {
+        get_adapter(runtime_id).map_err(|e| {
             WorkspaceError::InvalidPath(format!("Unsupported runtime: {e}"))
         })?;
-        let entry_file = adapter.entry_filename();
         let now = Utc::now().to_rfc3339();
 
         let workspace = Workspace {
@@ -158,7 +157,6 @@ impl WorkspaceManager {
         let manifest = WorkspaceManifest {
             name: name.to_string(),
             runtime_id: runtime_id.to_string(),
-            entry_file: entry_file.clone(),
             created_at: now.clone(),
             updated_at: now,
         };
@@ -195,7 +193,6 @@ impl WorkspaceManager {
             id: workspace.id.clone(),
             name: manifest.name,
             runtime_id: manifest.runtime_id,
-            entry_file: manifest.entry_file,
         })
     }
 
@@ -221,34 +218,6 @@ impl WorkspaceManager {
         Ok(workspaces)
     }
 
-    fn detect_entry_file(
-        workspace: &Workspace,
-        adapter: &dyn RuntimeAdapter,
-    ) -> Result<String, WorkspaceError> {
-        let default = adapter.entry_filename();
-        if workspace.path.join(&default).is_file() {
-            return Ok(default);
-        }
-
-        let mut files = Vec::new();
-        for entry in fs::read_dir(&workspace.path)? {
-            let entry = entry?;
-            if entry.file_type()?.is_file() {
-                files.push(entry.file_name().to_string_lossy().to_string());
-            }
-        }
-
-        files.sort();
-        if let Some(name) = files.iter().find(|name| name.starts_with("main.")) {
-            return Ok(name.clone());
-        }
-        if let Some(name) = files.first() {
-            return Ok(name.clone());
-        }
-
-        Ok(default)
-    }
-
     pub fn ensure_workspace_info(
         &self,
         workspace: &Workspace,
@@ -258,15 +227,10 @@ impl WorkspaceManager {
             return self.workspace_info(workspace);
         }
 
-        let adapter = get_adapter(default_runtime_id).map_err(|e| {
-            WorkspaceError::InvalidPath(format!("Unsupported runtime: {e}"))
-        })?;
-        let entry_file = Self::detect_entry_file(workspace, adapter.as_ref())?;
         let now = Utc::now().to_rfc3339();
         let manifest = WorkspaceManifest {
             name: "Untitled".to_string(),
             runtime_id: default_runtime_id.to_string(),
-            entry_file: entry_file.clone(),
             created_at: now.clone(),
             updated_at: now,
         };
@@ -276,7 +240,6 @@ impl WorkspaceManager {
             id: workspace.id.clone(),
             name: manifest.name,
             runtime_id: manifest.runtime_id,
-            entry_file: manifest.entry_file,
         })
     }
 
@@ -569,16 +532,25 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    pub fn resolve_entry_file(
+    pub fn resolve_run_file(
         &self,
         workspace: &Workspace,
-        entry_file: Option<&str>,
+        relative_path: &str,
     ) -> Result<String, WorkspaceError> {
-        if let Some(path) = entry_file {
-            return Ok(path.to_string());
+        let trimmed = relative_path.trim();
+        if trimmed.is_empty() {
+            return Err(WorkspaceError::InvalidPath(
+                "No file selected to run".to_string(),
+            ));
         }
-        let manifest = self.read_manifest(workspace)?;
-        Ok(manifest.entry_file)
+        let path = workspace.path.join(trimmed);
+        validate_path_in_workspace(&workspace.path, &path)?;
+        if !path.is_file() {
+            return Err(WorkspaceError::InvalidPath(format!(
+                "File not found: {trimmed}"
+            )));
+        }
+        Ok(trimmed.to_string())
     }
 
     pub fn delete_workspace(&self, id: &str) -> Result<(), WorkspaceError> {
@@ -704,7 +676,6 @@ mod tests {
             .ensure_workspace_info(&workspace, "nodejs")
             .expect("migrate");
 
-        assert_eq!(info.entry_file, "main.js");
         assert_eq!(info.runtime_id, "nodejs");
         assert!(workspace.path.join(MANIFEST_FILENAME).is_file());
     }
@@ -868,8 +839,8 @@ mod tests {
             .expect("write main");
 
         let entry = manager
-            .resolve_entry_file(&workspace, None)
-            .expect("entry file");
+            .resolve_run_file(&workspace, "main.js")
+            .expect("run file");
         assert_eq!(entry, "main.js");
 
         let adapter = get_adapter("nodejs").expect("adapter");

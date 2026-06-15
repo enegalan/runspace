@@ -21,7 +21,6 @@ export function useExecution() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     appendOutput,
     reset,
@@ -105,23 +104,26 @@ export function useExecution() {
     const executionSettings = getAppSettings().execution;
     setRunning({ preserveOutput: !executionSettings.autoClearOutput });
 
-    const environmentId = options?.environmentId;
+    const { environmentId, file, timeoutSecs, compileTimeoutSecs } = options ?? {};
     if (!environmentId) {
       setError("No environment selected. Add one in Settings → Environments.");
       return;
     }
-    const timeoutSecs =
-      options?.timeoutSecs ?? executionSettings.runTimeoutSecs ?? DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
-    const compileTimeoutSecs =
-      options?.compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
-    const entryFile = options?.entryFile;
+    if (!file) {
+      setError("Open a file to run.");
+      return;
+    }
+    const resolvedTimeoutSecs =
+      timeoutSecs ?? executionSettings.runTimeoutSecs ?? DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
+    const resolvedCompileTimeoutSecs =
+      compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
 
     try {
       await runspaceInvoke("execute_code", {
         environmentId,
-        timeoutSecs,
-        compileTimeoutSecs,
-        entryFile,
+        file,
+        timeoutSecs: resolvedTimeoutSecs,
+        compileTimeoutSecs: resolvedCompileTimeoutSecs,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -148,7 +150,6 @@ export function useExecution() {
     exitCode,
     timedOut,
     error,
-    durationMs,
     lastRunDurationMs,
     run,
     stop,

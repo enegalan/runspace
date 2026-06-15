@@ -11,14 +11,6 @@ impl RuntimeAdapter for PhpAdapter {
         "php"
     }
 
-    fn file_extension(&self) -> &str {
-        "php"
-    }
-
-    fn default_template(&self) -> &str {
-        "<?php\necho \"Hello from PHP!\";\n"
-    }
-
     fn normalize_code(&self, code: &str) -> String {
         normalize_php_snippet(code)
     }

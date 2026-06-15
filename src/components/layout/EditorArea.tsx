@@ -19,11 +19,10 @@ import { Button } from "../ui/Button";
 const MonacoWrapper = lazy(() => import("../editor/MonacoWrapper"));
 
 interface EditorAreaProps {
-  onRun: () => void;
   onSave: () => void;
 }
 
-export function EditorArea({ onRun, onSave }: EditorAreaProps) {
+export function EditorArea({ onSave }: EditorAreaProps) {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const createProject = useWorkspaceStore((state) => state.createProject);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
@@ -140,7 +139,6 @@ export function EditorArea({ onRun, onSave }: EditorAreaProps) {
           value={activeFile.content}
           onChange={(content) => updateContent(activePath, content)}
           language={activeFile.language}
-          onRun={onRun}
           onSave={onSave}
         />
       </Suspense>

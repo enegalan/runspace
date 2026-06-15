@@ -54,11 +54,6 @@ pub trait CompiledAdapter: RuntimeAdapter {
 
 pub trait RuntimeAdapter: Send + Sync {
     fn runtime_id(&self) -> &str;
-    fn file_extension(&self) -> &str;
-    fn entry_filename(&self) -> String {
-        format!("main.{}", self.file_extension())
-    }
-    fn default_template(&self) -> &str;
     fn normalize_code(&self, code: &str) -> String {
         code.to_string()
     }
@@ -130,25 +125,6 @@ mod tests {
                 .collect();
             assert_eq!(cmd.get_program(), binary, "{id} program");
             assert_eq!(args, vec![script.to_string_lossy().to_string()], "{id} args");
-        }
-    }
-
-    #[test]
-    fn entry_filenames_match_environment() {
-        let expectations = [
-            ("nodejs", "main.js"),
-            ("php", "main.php"),
-            ("python", "main.py"),
-            ("ruby", "main.rb"),
-            ("laravel", "main.php"),
-            ("symfony", "main.php"),
-            ("gcc", "main.c"),
-            ("gpp", "main.cpp"),
-        ];
-
-        for (id, expected) in expectations {
-            let adapter = get_adapter(id).expect("adapter");
-            assert_eq!(adapter.entry_filename(), expected);
         }
     }
 }

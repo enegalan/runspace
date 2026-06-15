@@ -14,14 +14,14 @@ mod workspace;
 
 use commands::{
     close_terminal, create_directory, create_workspace, delete_file, delete_workspace,
-    execute_code, get_active_workspace, get_runtime_template, get_selected_environment,
+    execute_code, get_active_workspace, get_selected_environment,
     import_external, initialize_workspace, install_environment, kill_process,
     list_available_environments, list_environments, list_files, list_terminal_sessions,
-    list_workspaces, open_workspace, read_file, read_session, read_settings, read_snippet,
+    list_workspaces, open_workspace, read_file, read_session, read_settings,
     rename_file, rename_workspace, resize_terminal, set_environment_env_vars,
     set_environment_paths, set_selected_environment, spawn_terminal, uninstall_environment,
     update_manifest, update_settings, validate_environment, write_file, write_session,
-    write_snippet, write_terminal,
+    write_terminal,
 };
 #[cfg(debug_assertions)]
 use std::sync::{Arc, Mutex};
@@ -144,10 +144,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             execute_code,
-            get_runtime_template,
             kill_process,
-            read_snippet,
-            write_snippet,
             list_environments,
             list_available_environments,
             get_selected_environment,

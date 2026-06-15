@@ -9,7 +9,6 @@ const mockWorkspace = {
   id: "ws-1",
   name: "Untitled",
   runtime_id: "nodejs",
-  entry_file: "main.js",
 };
 
 describe("workspaceStore", () => {

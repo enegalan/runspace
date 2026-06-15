@@ -50,7 +50,6 @@ export interface MonacoWrapperProps {
   value: string;
   onChange: (value: string) => void;
   language: string;
-  onRun: () => void;
   onSave: () => void;
 }
 
@@ -58,7 +57,6 @@ export default function MonacoWrapper({
   value,
   onChange,
   language,
-  onRun,
   onSave,
 }: MonacoWrapperProps) {
   const settings = useSettingsStore((state) => state.settings);
@@ -69,24 +67,6 @@ export default function MonacoWrapper({
   const handleMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-
-    editor.addAction({
-      id: "run-code",
-      label: "Run Code",
-      keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
-      run: () => {
-        onRun();
-      },
-    });
-
-    editor.addAction({
-      id: "save-snippet",
-      label: "Save Snippet",
-      keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
-      run: () => {
-        void onSave();
-      },
-    });
 
     editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, () => {
       void onSave();

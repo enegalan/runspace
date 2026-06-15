@@ -4,8 +4,6 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use tauri::AppHandle;
 
-use crate::commands::snippet::{read_snippet, write_snippet, SnippetData};
-use crate::engine::adapters::get_adapter;
 use crate::services::execution::{start_execution_http, start_execution_tauri};
 use crate::state::SharedState;
 
@@ -14,8 +12,7 @@ struct ExecuteArgs {
     code: Option<String>,
     #[serde(rename = "environmentId")]
     environment_id: Option<String>,
-    #[serde(rename = "entryFile")]
-    entry_file: Option<String>,
+    file: Option<String>,
     #[serde(rename = "timeoutSecs")]
     timeout_secs: Option<u64>,
     #[serde(rename = "compileTimeoutSecs")]
@@ -41,11 +38,6 @@ struct SetEnvVarsArgs {
     environment_id: String,
     #[serde(rename = "envVars")]
     env_vars: HashMap<String, String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct WriteSnippetArgs {
-    data: SnippetData,
 }
 
 pub async fn dispatch_invoke(
@@ -161,19 +153,6 @@ pub async fn dispatch_invoke(
                 .map_err(|e| e.to_string())?;
             Ok(json!(updated))
         }
-        "read_snippet" => Ok(json!(read_snippet()?)),
-        "write_snippet" => {
-            let args: WriteSnippetArgs = serde_json::from_value(args)
-                .map_err(|e| format!("Invalid write_snippet args: {e}"))?;
-            write_snippet(args.data)?;
-            Ok(Value::Null)
-        }
-        "get_runtime_template" => {
-            let args: EnvironmentIdArgs = serde_json::from_value(args)
-                .map_err(|e| format!("Invalid get_runtime_template args: {e}"))?;
-            let adapter = get_adapter(&args.environment_id).map_err(|e| e.to_string())?;
-            Ok(json!(adapter.default_template()))
-        }
         "execute_code" => {
             let args: ExecuteArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid execute_code args: {e}"))?;
@@ -183,7 +162,7 @@ pub async fn dispatch_invoke(
                     app,
                     args.code,
                     args.environment_id,
-                    args.entry_file,
+                    args.file,
                     args.timeout_secs,
                     args.compile_timeout_secs,
                 )?;
@@ -192,7 +171,7 @@ pub async fn dispatch_invoke(
                     state,
                     args.code,
                     args.environment_id,
-                    args.entry_file,
+                    args.file,
                     args.timeout_secs,
                     args.compile_timeout_secs,
                 )?;
@@ -558,10 +537,6 @@ pub async fn dispatch_invoke(
         }
         "update_manifest" => {
             let name = args.get("name").and_then(|v| v.as_str()).map(|s| s.to_string());
-            let entry_file = args
-                .get("entryFile")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
             let manager = state
                 .workspace_manager
                 .lock()
@@ -584,9 +559,6 @@ pub async fn dispatch_invoke(
                     return Err("Project name cannot be empty".to_string());
                 }
                 manifest.name = trimmed.to_string();
-            }
-            if let Some(next_entry) = entry_file {
-                manifest.entry_file = next_entry;
             }
             manifest.updated_at = chrono::Utc::now().to_rfc3339();
             manager
