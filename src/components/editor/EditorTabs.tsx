@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useTabDragReorder } from "../../hooks/useTabDragReorder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
@@ -46,20 +46,6 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
       listRef.current.scrollLeft += event.deltaY;
     }
   };
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!(event.metaKey || event.ctrlKey)) {
-        return;
-      }
-      if (event.key === "w" && activePath) {
-        event.preventDefault();
-        void closeFile(activePath);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activePath, closeFile]);
 
   return (
     <div

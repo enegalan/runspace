@@ -31,20 +31,51 @@ use tauri::Emitter;
 use state::{AppState, SharedState};
 
 fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
-    let new_workspace = MenuItemBuilder::with_id("new_workspace", "New Workspace")
+    let app_name = app
+        .config()
+        .product_name
+        .clone()
+        .unwrap_or_else(|| "Runspace".to_string());
+
+    let about = MenuItemBuilder::with_id("about", format!("About {app_name}")).build(app)?;
+    let settings = MenuItemBuilder::with_id("settings", "Settings")
+        .accelerator("CmdOrCtrl+,")
+        .build(app)?;
+    let hide_label = format!("Hide {app_name}");
+    let quit_label = format!("Quit {app_name}");
+    let hide = PredefinedMenuItem::hide(app, Some(hide_label.as_str()))?;
+    let hide_others = PredefinedMenuItem::hide_others(app, None)?;
+    let show_all = PredefinedMenuItem::show_all(app, None)?;
+    let quit = PredefinedMenuItem::quit(app, Some(quit_label.as_str()))?;
+
+    let app_menu = SubmenuBuilder::new(app, &app_name)
+        .item(&about)
+        .item(&settings)
+        .separator()
+        .item(&hide)
+        .item(&hide_others)
+        .item(&show_all)
+        .separator()
+        .item(&quit)
+        .build()?;
+
+    let new_file = MenuItemBuilder::with_id("new_file", "New File")
         .accelerator("CmdOrCtrl+N")
+        .build(app)?;
+    let new_folder = MenuItemBuilder::with_id("new_folder", "New Folder")
+        .accelerator("CmdOrCtrl+Shift+N")
         .build(app)?;
     let save = MenuItemBuilder::with_id("save", "Save")
         .accelerator("CmdOrCtrl+S")
         .build(app)?;
-    let close_tab = MenuItemBuilder::with_id("close_tab", "Close Tab")
-        .accelerator("CmdOrCtrl+W")
-        .build(app)?;
+    let close_window = PredefinedMenuItem::close_window(app, None)?;
 
     let file_menu = SubmenuBuilder::new(app, "File")
-        .item(&new_workspace)
+        .item(&new_file)
+        .item(&new_folder)
         .item(&save)
-        .item(&close_tab)
+        .separator()
+        .item(&close_window)
         .build()?;
 
     let undo = PredefinedMenuItem::undo(app, None)?;
@@ -77,17 +108,49 @@ fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
         .item(&clear_output)
         .build()?;
 
-    let keyboard_shortcuts =
-        MenuItemBuilder::with_id("keyboard_shortcuts", "Keyboard Shortcuts").build(app)?;
-    let about = MenuItemBuilder::with_id("about", "About Runspace").build(app)?;
+    let toggle_sidebar = MenuItemBuilder::with_id("toggle_sidebar", "Toggle Sidebar")
+        .accelerator("CmdOrCtrl+B")
+        .build(app)?;
+    let toggle_output = MenuItemBuilder::with_id("toggle_output", "Toggle Output Panel")
+        .accelerator("CmdOrCtrl+J")
+        .build(app)?;
 
-    let help_menu = SubmenuBuilder::new(app, "Help")
-        .item(&keyboard_shortcuts)
-        .item(&about)
+    let view_menu = SubmenuBuilder::new(app, "View")
+        .item(&toggle_sidebar)
+        .item(&toggle_output)
+        .build()?;
+
+    let new_terminal = MenuItemBuilder::with_id("new_terminal", "New Terminal")
+        .accelerator("CmdOrCtrl+Shift+T")
+        .build(app)?;
+
+    let terminal_menu = SubmenuBuilder::new(app, "Terminal")
+        .item(&new_terminal)
+        .build()?;
+
+    let minimize = PredefinedMenuItem::minimize(app, None)?;
+    let zoom = PredefinedMenuItem::maximize(app, None)?;
+    let fullscreen = PredefinedMenuItem::fullscreen(app, None)?;
+    let bring_all_to_front = PredefinedMenuItem::bring_all_to_front(app, None)?;
+
+    let window_menu = SubmenuBuilder::new(app, "Window")
+        .item(&minimize)
+        .item(&zoom)
+        .item(&fullscreen)
+        .separator()
+        .item(&bring_all_to_front)
         .build()?;
 
     let menu = MenuBuilder::new(app)
-        .items(&[&file_menu, &edit_menu, &run_menu, &help_menu])
+        .items(&[
+            &app_menu,
+            &file_menu,
+            &edit_menu,
+            &run_menu,
+            &view_menu,
+            &terminal_menu,
+            &window_menu,
+        ])
         .build()?;
 
     app.set_menu(menu)?;
@@ -96,14 +159,17 @@ fn build_app_menu(app: &tauri::App) -> tauri::Result<()> {
     app.on_menu_event(move |_app, event| {
         let id = event.id().as_ref();
         let action = match id {
-            "new_workspace" => Some("new_workspace"),
+            "about" => Some("about"),
+            "settings" => Some("settings"),
+            "new_file" => Some("new_file"),
+            "new_folder" => Some("new_folder"),
             "save" => Some("save"),
-            "close_tab" => Some("close_tab"),
             "run" => Some("run"),
             "stop" => Some("stop"),
             "clear_output" => Some("clear_output"),
-            "keyboard_shortcuts" => Some("keyboard_shortcuts"),
-            "about" => Some("about"),
+            "toggle_sidebar" => Some("toggle_sidebar"),
+            "toggle_output" => Some("toggle_output"),
+            "new_terminal" => Some("new_terminal"),
             _ => None,
         };
         if let Some(action) = action {

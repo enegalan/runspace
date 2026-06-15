@@ -3,15 +3,17 @@ import { useEffect } from "react";
 import { isTauri } from "../core/platform/isTauri";
 
 export type MenuAction =
-  | "new_workspace"
+  | "about"
+  | "settings"
+  | "new_file"
+  | "new_folder"
   | "save"
-  | "close_tab"
   | "run"
   | "stop"
   | "clear_output"
-  | "welcome"
-  | "keyboard_shortcuts"
-  | "about";
+  | "toggle_sidebar"
+  | "toggle_output"
+  | "new_terminal";
 
 interface MenuActionHandlers {
   onAction: (action: MenuAction) => void;

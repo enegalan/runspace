@@ -11,7 +11,11 @@ export const APP_SHORTCUTS: AppShortcut[] = [
   { action: "Run", keys: [mod, "↵"] },
   { action: "Stop", keys: [mod, "."] },
   { action: "Save file", keys: [mod, "S"] },
-  { action: "New workspace", keys: [mod, "N"] },
-  { action: "Close tab", keys: [mod, "W"] },
+  { action: "New file", keys: [mod, "N"] },
+  { action: "New folder", keys: [mod, "Shift", "N"] },
+  { action: "New terminal", keys: [mod, "Shift", "T"] },
+  { action: "Toggle sidebar", keys: [mod, "B"] },
+  { action: "Toggle output panel", keys: [mod, "J"] },
   { action: "Settings", keys: [mod, ","] },
+  { action: "Close window", keys: [mod, "W"] },
 ];

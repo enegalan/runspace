@@ -4,8 +4,12 @@ interface AppShortcutHandlers {
   onRun?: () => void;
   onStop?: () => void;
   onSave?: () => void;
-  onNewWorkspace?: () => void;
+  onNewFile?: () => void;
+  onNewFolder?: () => void;
+  onNewTerminal?: () => void;
   onOpenSettings?: () => void;
+  onToggleSidebar?: () => void;
+  onToggleOutput?: () => void;
   isRunning?: boolean;
   runDisabled?: boolean;
 }
@@ -14,8 +18,12 @@ export function useAppShortcuts({
   onRun,
   onStop,
   onSave,
-  onNewWorkspace,
+  onNewFile,
+  onNewFolder,
+  onNewTerminal,
   onOpenSettings,
+  onToggleSidebar,
+  onToggleOutput,
   isRunning = false,
   runDisabled = false,
 }: AppShortcutHandlers) {
@@ -27,6 +35,7 @@ export function useAppShortcuts({
       }
 
       const key = event.key.toLowerCase();
+      const shift = event.shiftKey;
 
       if (key === "enter" && onRun && !isRunning && !runDisabled) {
         event.preventDefault();
@@ -46,15 +55,39 @@ export function useAppShortcuts({
         return;
       }
 
-      if (key === "n" && onNewWorkspace) {
+      if (key === "n" && shift && onNewFolder) {
         event.preventDefault();
-        onNewWorkspace();
+        onNewFolder();
+        return;
+      }
+
+      if (key === "n" && onNewFile) {
+        event.preventDefault();
+        onNewFile();
+        return;
+      }
+
+      if (key === "t" && shift && onNewTerminal) {
+        event.preventDefault();
+        onNewTerminal();
         return;
       }
 
       if (key === "," && onOpenSettings) {
         event.preventDefault();
         onOpenSettings();
+        return;
+      }
+
+      if (key === "b" && onToggleSidebar) {
+        event.preventDefault();
+        onToggleSidebar();
+        return;
+      }
+
+      if (key === "j" && onToggleOutput) {
+        event.preventDefault();
+        onToggleOutput();
       }
     };
 
@@ -64,8 +97,12 @@ export function useAppShortcuts({
     onRun,
     onStop,
     onSave,
-    onNewWorkspace,
+    onNewFile,
+    onNewFolder,
+    onNewTerminal,
     onOpenSettings,
+    onToggleSidebar,
+    onToggleOutput,
     isRunning,
     runDisabled,
   ]);

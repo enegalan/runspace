@@ -7,12 +7,14 @@ import {
 } from "../../core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { flushSessionState } from "../../core/workspace/flushSession";
-import { requireProjectName } from "../../core/workspace/promptProjectName";
 import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
 import type { EnvironmentId } from "../../core/types/environment";
 import { useExecution } from "../../hooks/useExecution";
 import { useAppShortcuts } from "../../hooks/useAppShortcuts";
+import type { MenuAction } from "../../hooks/useMenuActions";
 import { useMenuActions } from "../../hooks/useMenuActions";
+import { useNewFile } from "../../hooks/useNewFile";
+import { useNewFolder } from "../../hooks/useNewFolder";
 import {
   clampPanelSize,
   OUTPUT_WIDTH_MAX,
@@ -28,9 +30,9 @@ import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { AboutDialog } from "../about/AboutDialog";
-import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
 import { OutputPanel } from "../output/OutputPanel";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { ActivityBar } from "./ActivityBar";
@@ -46,7 +48,6 @@ export function AppShell() {
   const workspaceLoaded = useWorkspaceStore((state) => state.loaded);
   const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
   const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
-  const createProject = useWorkspaceStore((state) => state.createProject);
   const bootstrapStarted = useRef(false);
   const hasEnteredMainShell = useRef(
     useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
@@ -54,7 +55,6 @@ export function AppShell() {
 
   const tabsLoaded = useEditorTabsStore((state) => state.loaded);
   const activePath = useEditorTabsStore((state) => state.activePath);
-  const closeFile = useEditorTabsStore((state) => state.closeFile);
   const selectEnvironment = useEnvironmentStore((state) => state.select);
 
   const environments = useEnvironmentStore((state) => state.environments);
@@ -69,8 +69,10 @@ export function AppShell() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
+
+  const { createAndOpenFile } = useNewFile();
+  const { createNewFolder } = useNewFolder();
 
   const {
     stdout,
@@ -291,33 +293,49 @@ export function AppShell() {
     });
   }, [layoutSettings.terminalVisible, updateSettings]);
 
+  const handleToggleSidebar = useCallback(() => {
+    void updateSettings({
+      layout: { sidebarVisible: !layoutSettings.sidebarVisible },
+    });
+  }, [layoutSettings.sidebarVisible, updateSettings]);
+
+  const handleToggleOutput = useCallback(() => {
+    void updateSettings({
+      layout: { outputVisible: !layoutSettings.outputVisible },
+    });
+  }, [layoutSettings.outputVisible, updateSettings]);
+
   const handleSave = useCallback(() => {
     void useEditorTabsStore.getState().saveActiveFile();
   }, []);
 
-  const handleNewWorkspace = useCallback(async () => {
-    if (!selectedId) {
+  const handleNewTerminal = useCallback(() => {
+    if (!workspace || !selectedId || !selectedEnvironment?.configured) {
       return;
     }
-    const projectName = await requireProjectName("Name for the new project");
-    if (projectName) {
-      await createProject(selectedId, projectName);
-    }
-  }, [selectedId, createProject]);
+    void updateSettings({
+      layout: { terminalVisible: true },
+    });
+    useTerminalStore.getState().addTab(workspace.id, selectedId);
+  }, [workspace, selectedId, selectedEnvironment?.configured, updateSettings]);
 
   const handleMenuAction = useCallback(
-    (action: string) => {
+    (action: MenuAction) => {
       switch (action) {
-        case "new_workspace":
-          void handleNewWorkspace();
+        case "about":
+          setAboutOpen(true);
+          break;
+        case "settings":
+          setSettingsOpen(true);
+          break;
+        case "new_file":
+          void createAndOpenFile();
+          break;
+        case "new_folder":
+          void createNewFolder();
           break;
         case "save":
           handleSave();
-          break;
-        case "close_tab":
-          if (activePath) {
-            void closeFile(activePath);
-          }
           break;
         case "run":
           if (!runDisabled) {
@@ -330,25 +348,30 @@ export function AppShell() {
         case "clear_output":
           clear();
           break;
-        case "keyboard_shortcuts":
-          setShortcutsOpen(true);
+        case "toggle_sidebar":
+          handleToggleSidebar();
           break;
-        case "about":
-          setAboutOpen(true);
+        case "toggle_output":
+          handleToggleOutput();
+          break;
+        case "new_terminal":
+          handleNewTerminal();
           break;
         default:
           break;
       }
     },
     [
-      handleNewWorkspace,
+      createAndOpenFile,
+      createNewFolder,
       handleSave,
-      activePath,
-      closeFile,
       handleRun,
       runDisabled,
       stop,
       clear,
+      handleToggleSidebar,
+      handleToggleOutput,
+      handleNewTerminal,
     ],
   );
 
@@ -358,8 +381,12 @@ export function AppShell() {
     onRun: handleRun,
     onStop: stop,
     onSave: handleSave,
-    onNewWorkspace: () => void handleNewWorkspace(),
+    onNewFile: () => void createAndOpenFile(),
+    onNewFolder: () => void createNewFolder(),
+    onNewTerminal: handleNewTerminal,
     onOpenSettings: () => setSettingsOpen(true),
+    onToggleSidebar: handleToggleSidebar,
+    onToggleOutput: handleToggleOutput,
     isRunning,
     runDisabled,
   });
@@ -472,10 +499,6 @@ export function AppShell() {
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <KeyboardShortcutsDialog
-        open={shortcutsOpen}
-        onClose={() => setShortcutsOpen(false)}
-      />
       <AppDialogs />
     </div>
   );

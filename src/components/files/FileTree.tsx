@@ -18,9 +18,8 @@ import {
 } from "../../core/workspace/fileTreeDrag";
 import { useFileTreeDragActive } from "../../hooks/useFileTreeDragActive";
 import { useFileTreeDropTarget } from "../../hooks/useFileTreeDropTarget";
-import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists";
-import { useDialogStore } from "../../stores/dialogStore";
 import { useNewFile } from "../../hooks/useNewFile";
+import { useNewFolder } from "../../hooks/useNewFolder";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
@@ -40,9 +39,8 @@ export function FileTree() {
   const rootFiles = useWorkspaceStore((state) => state.rootFiles);
   const refreshFiles = useWorkspaceStore((state) => state.refreshFiles);
   const moveFile = useWorkspaceStore((state) => state.moveFile);
-  const createFolder = useWorkspaceStore((state) => state.createFolder);
   const { createAndOpenFile } = useNewFile();
-  const askPrompt = useDialogStore((state) => state.askPrompt);
+  const { createNewFolder } = useNewFolder();
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
   const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
@@ -141,29 +139,6 @@ export function FileTree() {
     setSidebarMenu({ x: event.clientX, y: event.clientY });
   };
 
-  const handleNewFolder = async () => {
-    let label = "New folder name";
-    let initialValue = "";
-
-    while (true) {
-      const raw = await askPrompt(label, {
-        initialValue,
-        validate: (value) => (value.trim() ? null : "Folder name cannot be empty."),
-      });
-      if (raw === null) {
-        return;
-      }
-      const trimmed = raw.trim();
-      if (await workspaceEntryExists(trimmed)) {
-        label = `"${trimmed}" already exists.`;
-        initialValue = trimmed;
-        continue;
-      }
-      await createFolder(trimmed);
-      return;
-    }
-  };
-
   return (
     <div
       className={`file-tree${isDragging ? " file-tree--dragging" : ""}`}
@@ -193,7 +168,7 @@ export function FileTree() {
           <button
             type="button"
             className="file-tree__action"
-            onClick={() => void handleNewFolder()}
+            onClick={() => void createNewFolder()}
             title="New folder"
             aria-label="New folder"
             disabled={!workspace}
@@ -254,7 +229,7 @@ export function FileTree() {
             {
               id: "new-folder",
               label: "New folder",
-              onClick: () => void handleNewFolder(),
+              onClick: () => void createNewFolder(),
             },
           ]}
           onClose={() => setSidebarMenu(null)}
