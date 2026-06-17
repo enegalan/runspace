@@ -1,3 +1,5 @@
+import type { ShortcutSettings } from "./shortcuts";
+
 export type ThemeMode = "dark" | "light" | "system";
 export type UiDensity = "comfortable" | "compact";
 export type TabSize = 2 | 4 | 8;
@@ -40,6 +42,7 @@ export interface AppSettings {
   editor: EditorSettings;
   execution: ExecutionSettings;
   layout: LayoutSettings;
+  shortcuts: ShortcutSettings;
 }
 
 export type AppSettingsPatch = {
@@ -47,4 +50,5 @@ export type AppSettingsPatch = {
   editor?: Partial<EditorSettings>;
   execution?: Partial<ExecutionSettings>;
   layout?: Partial<LayoutSettings>;
+  shortcuts?: Partial<ShortcutSettings>;
 };

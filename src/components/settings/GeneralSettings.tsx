@@ -1,7 +1,7 @@
 import { EDITOR_FONT_OPTIONS } from "../../core/constants/settingsDefaults";
-import { ShortcutList } from "../about/ShortcutList";
 import type { TabSize, ThemeMode, UiDensity } from "../../core/types/settings";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { ShortcutsSettingsCard } from "./ShortcutsSettings";
 import {
   SettingsCard,
   SettingsDivider,
@@ -281,12 +281,7 @@ export function GeneralSettings() {
         />
       </SettingsCard>
 
-      <SettingsCard
-        title="Keyboard shortcuts"
-        description="Custom remapping will be added in a future release."
-      >
-        <ShortcutList className="settings-shortcuts" />
-      </SettingsCard>
+      <ShortcutsSettingsCard />
     </div>
   );
 }

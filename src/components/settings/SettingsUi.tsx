@@ -20,17 +20,26 @@ export function SettingsPageHeader({
 export function SettingsCard({
   title,
   description,
+  headerAction,
   children,
 }: {
   title: string;
   description?: string;
+  headerAction?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="settings-card">
-      <div className="settings-card__header">
-        <h3 className="settings-card__title">{title}</h3>
-        {description && <p className="settings-card__description">{description}</p>}
+      <div
+        className={`settings-card__header${
+          headerAction ? " settings-card__header--with-action" : ""
+        }`}
+      >
+        <div className="settings-card__header-text">
+          <h3 className="settings-card__title">{title}</h3>
+          {description && <p className="settings-card__description">{description}</p>}
+        </div>
+        {headerAction}
       </div>
       <div className="settings-card__body">{children}</div>
     </section>

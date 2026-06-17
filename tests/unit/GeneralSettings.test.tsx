@@ -25,6 +25,8 @@ describe("GeneralSettings", () => {
     expect(screen.getByText("Execution")).toBeInTheDocument();
     expect(screen.getByText("Layout")).toBeInTheDocument();
     expect(screen.getByText("Keyboard shortcuts")).toBeInTheDocument();
+    expect(screen.getByTestId("shortcuts-reset-defaults")).toBeInTheDocument();
+    expect(screen.getByTestId("shortcut-recorder-run")).toBeInTheDocument();
     expect(screen.getByTestId("setting-theme")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
     expect(screen.getByText("Show sidebar")).toBeInTheDocument();

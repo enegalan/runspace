@@ -1,3 +1,4 @@
+import { DEFAULT_SHORTCUT_SETTINGS, normalizeShortcutSettings } from "./keyboardShortcuts";
 import {
   OUTPUT_WIDTH_DEFAULT,
   OUTPUT_WIDTH_MAX,
@@ -50,6 +51,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     restoreLastWorkspace: true,
     confirmCloseUnsavedTab: true,
   },
+  shortcuts: DEFAULT_SHORTCUT_SETTINGS,
 };
 
 export function normalizeAppSettings(settings: AppSettings): AppSettings {
@@ -82,6 +84,7 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
         Math.max(TERMINAL_HEIGHT_MIN, settings.layout.terminalHeight),
       ),
     },
+    shortcuts: normalizeShortcutSettings(settings.shortcuts),
   };
 }
 
@@ -94,6 +97,7 @@ export function mergeAppSettings(
     editor: { ...current.editor, ...patch.editor },
     execution: { ...current.execution, ...patch.execution },
     layout: { ...current.layout, ...patch.layout },
+    shortcuts: { ...current.shortcuts, ...patch.shortcuts },
   });
 }
 
