@@ -16,6 +16,9 @@ interface EditorTabsStore {
   loaded: boolean;
   openFile: (path: string) => Promise<void>;
   closeFile: (path: string, force?: boolean) => Promise<boolean>;
+  closeOthers: (path: string) => Promise<boolean>;
+  closeRight: (path: string) => Promise<boolean>;
+  closeAll: () => Promise<boolean>;
   setActive: (path: string) => void;
   reorderTabs: (fromIndex: number, toIndex: number) => void;
   updateContent: (path: string, content: string) => void;
@@ -85,6 +88,46 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       activePath = next?.path ?? null;
     }
     set({ openFiles, activePath });
+    return true;
+  },
+
+  closeOthers: async (path) => {
+    const paths = get()
+      .openFiles.filter((item) => item.path !== path)
+      .map((item) => item.path);
+    for (const itemPath of paths) {
+      const closed = await get().closeFile(itemPath);
+      if (!closed) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  closeRight: async (path) => {
+    const openFiles = get().openFiles;
+    const index = openFiles.findIndex((item) => item.path === path);
+    if (index === -1) {
+      return true;
+    }
+    const paths = openFiles.slice(index + 1).map((item) => item.path);
+    for (const itemPath of paths) {
+      const closed = await get().closeFile(itemPath);
+      if (!closed) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  closeAll: async () => {
+    const paths = get().openFiles.map((item) => item.path);
+    for (const itemPath of paths) {
+      const closed = await get().closeFile(itemPath);
+      if (!closed) {
+        return false;
+      }
+    }
     return true;
   },
 

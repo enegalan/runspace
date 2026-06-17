@@ -188,4 +188,57 @@ describe("editorTabsStore", () => {
     expect(askConfirm).not.toHaveBeenCalled();
     expect(useEditorTabsStore.getState().openFiles).toHaveLength(0);
   });
+
+  it("closes other tabs", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "a.js", content: "a", dirty: false, language: "javascript" },
+        { path: "b.js", content: "b", dirty: false, language: "javascript" },
+        { path: "c.js", content: "c", dirty: false, language: "javascript" },
+      ],
+      activePath: "b.js",
+    });
+
+    const closed = await useEditorTabsStore.getState().closeOthers("b.js");
+
+    expect(closed).toBe(true);
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
+      "b.js",
+    ]);
+    expect(useEditorTabsStore.getState().activePath).toBe("b.js");
+  });
+
+  it("closes tabs to the right", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "a.js", content: "a", dirty: false, language: "javascript" },
+        { path: "b.js", content: "b", dirty: false, language: "javascript" },
+        { path: "c.js", content: "c", dirty: false, language: "javascript" },
+      ],
+      activePath: "a.js",
+    });
+
+    const closed = await useEditorTabsStore.getState().closeRight("a.js");
+
+    expect(closed).toBe(true);
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
+      "a.js",
+    ]);
+  });
+
+  it("closes all tabs", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "a.js", content: "a", dirty: false, language: "javascript" },
+        { path: "b.js", content: "b", dirty: false, language: "javascript" },
+      ],
+      activePath: "a.js",
+    });
+
+    const closed = await useEditorTabsStore.getState().closeAll();
+
+    expect(closed).toBe(true);
+    expect(useEditorTabsStore.getState().openFiles).toHaveLength(0);
+    expect(useEditorTabsStore.getState().activePath).toBeNull();
+  });
 });

@@ -1,9 +1,10 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useTabDragReorder } from "../../hooks/useTabDragReorder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { FileIcon } from "../files/FileIcon";
+import { ContextMenu, type ContextMenuItem } from "../ui/ContextMenu";
 import { IconClose, IconDot, IconPlus } from "../ui/icons";
 
 function tabLabel(path: string): string {
@@ -22,8 +23,17 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   const setActive = useEditorTabsStore((state) => state.setActive);
   const reorderTabs = useEditorTabsStore((state) => state.reorderTabs);
   const closeFile = useEditorTabsStore((state) => state.closeFile);
+  const closeOthers = useEditorTabsStore((state) => state.closeOthers);
+  const closeRight = useEditorTabsStore((state) => state.closeRight);
+  const closeAll = useEditorTabsStore((state) => state.closeAll);
   const { createAndOpenFile } = useNewFile();
   const listRef = useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    path: string;
+    index: number;
+  } | null>(null);
 
   const handleReorder = useCallback(
     (fromIndex: number, toIndex: number) => {
@@ -45,6 +55,49 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
     if (event.deltaY !== 0) {
       listRef.current.scrollLeft += event.deltaY;
     }
+  };
+
+  const handleContextMenu = (
+    event: React.MouseEvent,
+    path: string,
+    index: number,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({ x: event.clientX, y: event.clientY, path, index });
+  };
+
+  const buildContextMenuItems = (): ContextMenuItem[] => {
+    if (!contextMenu) {
+      return [];
+    }
+    const { path, index } = contextMenu;
+    const hasTabsToRight = index < openFiles.length - 1;
+
+    return [
+      {
+        id: "close",
+        label: "Close",
+        onClick: () => void closeFile(path),
+      },
+      {
+        id: "close-others",
+        label: "Close others",
+        disabled: openFiles.length <= 1,
+        onClick: () => void closeOthers(path),
+      },
+      {
+        id: "close-right",
+        label: "Close right",
+        disabled: !hasTabsToRight,
+        onClick: () => void closeRight(path),
+      },
+      {
+        id: "close-all",
+        label: "Close all",
+        onClick: () => void closeAll(),
+      },
+    ];
   };
 
   return (
@@ -73,6 +126,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
               data-tab-index={index}
               style={tabStyle}
               onPointerDown={(event) => onTabPointerDown(event, index)}
+              onContextMenu={(event) => handleContextMenu(event, file.path, index)}
             >
               <button
                 type="button"
@@ -124,6 +178,14 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
       >
         <IconPlus size={16} />
       </button>
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={buildContextMenuItems()}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
