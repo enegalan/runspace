@@ -172,7 +172,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
         type="button"
         className="editor-tabs__new"
         onClick={() => void createAndOpenFile()}
-        title={hasWorkspace ? "New file" : "Create a project first"}
+        title={hasWorkspace ? "New file" : "Create a workspace first"}
         aria-label="New file"
         disabled={!hasWorkspace}
       >

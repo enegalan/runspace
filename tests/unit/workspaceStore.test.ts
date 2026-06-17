@@ -145,7 +145,7 @@ describe("workspaceStore", () => {
     expect(useWorkspaceStore.getState().rootFiles).toHaveLength(2);
   });
 
-  it("clears active workspace and keeps onboarding complete after deleting the last project", async () => {
+  it("clears active workspace and keeps onboarding complete after deleting the last workspace", async () => {
     markOnboardingComplete();
     useWorkspaceStore.setState({
       workspace: mockWorkspace,
@@ -179,7 +179,7 @@ describe("workspaceStore", () => {
         onboarding_complete: true,
       });
 
-    await useWorkspaceStore.getState().deleteProject(mockWorkspace.id);
+    await useWorkspaceStore.getState().deleteWorkspace(mockWorkspace.id);
 
     const state = useWorkspaceStore.getState();
     expect(state.workspace).toBeNull();

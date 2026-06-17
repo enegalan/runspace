@@ -43,11 +43,11 @@ describe("WelcomeScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "Get started" }));
 
     expect(screen.getByText("How Runspace works")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Create my first project" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create my first workspace" }));
 
-    expect(screen.getByText("Create your first project")).toBeInTheDocument();
+    expect(screen.getByText("Create your first workspace")).toBeInTheDocument();
     expect(
-      screen.getByText(/Runspace needs at least one project to open the editor/i),
+      screen.getByText(/Runspace needs at least one workspace to open the editor/i),
     ).toBeInTheDocument();
   });
 });
