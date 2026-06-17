@@ -95,22 +95,9 @@ pub fn start_execution(
             .resolve_run_file(workspace, relative_path)
             .map_err(|e| e.to_string())?;
 
-        let file_content = if let Some(editor_code) = code {
+        if let Some(editor_code) = code {
             workspace_manager
                 .write_file(workspace, &resolved_entry, &editor_code)
-                .map_err(|e| e.to_string())?;
-            editor_code
-        } else {
-            workspace_manager
-                .read_file(workspace, &resolved_entry)
-                .map_err(|e| e.to_string())?
-        };
-
-        let normalized_code = adapter.normalize_code(&file_content);
-
-        if normalized_code != file_content {
-            workspace_manager
-                .write_file(workspace, &resolved_entry, &normalized_code)
                 .map_err(|e| e.to_string())?;
         }
 

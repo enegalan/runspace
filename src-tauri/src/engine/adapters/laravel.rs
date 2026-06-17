@@ -3,7 +3,6 @@ use std::path::Path;
 use std::process::Command;
 
 use super::framework::{ensure_skeleton, write_bootstrap};
-use super::php::normalize_php_snippet;
 use super::{script_command, AdapterError, PrepareContext, PrepareResult, RuntimeAdapter};
 
 pub struct LaravelAdapter;
@@ -11,10 +10,6 @@ pub struct LaravelAdapter;
 impl RuntimeAdapter for LaravelAdapter {
     fn runtime_id(&self) -> &str {
         "laravel"
-    }
-
-    fn normalize_code(&self, code: &str) -> String {
-        normalize_php_snippet(code)
     }
 
     fn build_command(&self, binary: &Path, script: &Path) -> Command {

@@ -54,9 +54,6 @@ pub trait CompiledAdapter: RuntimeAdapter {
 
 pub trait RuntimeAdapter: Send + Sync {
     fn runtime_id(&self) -> &str;
-    fn normalize_code(&self, code: &str) -> String {
-        code.to_string()
-    }
     fn build_command(&self, binary: &Path, script: &Path) -> Command;
     fn prepare(&self, ctx: PrepareContext<'_>) -> Result<PrepareResult, AdapterError> {
         Ok(PrepareResult {
