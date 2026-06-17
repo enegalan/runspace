@@ -446,6 +446,10 @@
   color: var(--rs-text-primary);
 }
 
+.shortcut-recorder:focus-visible {
+  outline: none;
+}
+
 .shortcut-recorder--recording {
   background: var(--rs-accent-muted);
   border-color: var(--rs-accent);
