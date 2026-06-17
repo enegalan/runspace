@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { matchesEnvironmentSearch } from "../../core/environment/search";
 import type { Environment, EnvironmentCategory, EnvironmentId } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
+import { useSettingsUiStore } from "../../stores/settingsUiStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { Button } from "../ui/Button";
 import { IconClose } from "../ui/icons";
@@ -30,12 +33,28 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const select = useEnvironmentStore((state) => state.select);
+  const openSettings = useSettingsUiStore((state) => state.openSettings);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setSearch("");
+    }
+  }, [open]);
 
   if (!open || typeof document === "undefined") {
     return null;
   }
 
-  const groups = groupByCategory(environments);
+  const filteredEnvironments = environments.filter((env) =>
+    matchesEnvironmentSearch(
+      env.definition.name,
+      CATEGORY_LABELS[env.definition.category],
+      search,
+    ),
+  );
+  const groups = groupByCategory(filteredEnvironments);
+  const hasVisibleEnvironments = filteredEnvironments.length > 0;
 
   const handleSelect = (id: string) => {
     if (id === selectedId) {
@@ -53,6 +72,11 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
     })();
   };
 
+  const handleOpenEnvironmentsSettings = () => {
+    onClose();
+    openSettings("environments");
+  };
+
   return createPortal(
     <div
       className="app-dialog"
@@ -68,9 +92,24 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
             <IconClose size={16} />
           </Button>
         </header>
+        <div className="environment-search">
+          <input
+            type="search"
+            className="environment-search__input"
+            placeholder="Search environments..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            autoFocus
+            data-testid="environment-picker-search"
+          />
+        </div>
         {environments.length === 0 ? (
           <p className="env-picker__empty">
             No environments installed. Add runtimes in Settings → Environments.
+          </p>
+        ) : !hasVisibleEnvironments ? (
+          <p className="env-picker__empty" data-testid="environment-picker-no-results">
+            No environments match your search.
           </p>
         ) : (
           <div className="env-picker__groups" data-testid="environment-select">
@@ -113,7 +152,15 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
             })}
           </div>
         )}
-        <div className="app-dialog__actions">
+        <div className="env-picker__actions">
+          <button
+            type="button"
+            className="env-picker__settings-link"
+            onClick={handleOpenEnvironmentsSettings}
+            data-testid="environment-picker-settings-link"
+          >
+            Configure environments
+          </button>
           <Button variant="primary" onClick={onClose}>
             Close
           </Button>

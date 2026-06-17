@@ -439,6 +439,30 @@
 
 /* Environments tab */
 
+.environment-search {
+  margin-bottom: var(--rs-space-4);
+}
+
+.environment-search__input {
+  width: 100%;
+  padding: var(--rs-space-2) var(--rs-space-3);
+  border: 1px solid var(--rs-border-subtle);
+  border-radius: var(--rs-radius-sm);
+  background: var(--rs-bg-base);
+  color: var(--rs-text-primary);
+  font-size: var(--rs-font-size-sm);
+  font-family: inherit;
+}
+
+.environment-search__input:focus {
+  outline: none;
+  border-color: var(--rs-accent);
+}
+
+.environments-settings__search {
+  margin-bottom: var(--rs-space-5);
+}
+
 .environments-settings__section {
   margin-bottom: 0;
 }

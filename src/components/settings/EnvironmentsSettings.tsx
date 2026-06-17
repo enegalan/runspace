@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
+import { matchesEnvironmentSearch } from "../../core/environment/search";
 import { pickNativePath } from "../../core/api/pickNativePath";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import type {
@@ -302,6 +303,25 @@ function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
 export function EnvironmentsSettings() {
   const environments = useEnvironmentStore((state) => state.environments);
   const available = useEnvironmentStore((state) => state.available);
+  const [search, setSearch] = useState("");
+
+  const filteredEnvironments = environments.filter((env) =>
+    matchesEnvironmentSearch(
+      env.definition.name,
+      CATEGORY_LABELS[env.definition.category],
+      search,
+    ),
+  );
+  const filteredAvailable = available.filter((definition) =>
+    matchesEnvironmentSearch(
+      definition.name,
+      CATEGORY_LABELS[definition.category],
+      search,
+    ),
+  );
+  const showAvailableSection = available.length > 0;
+  const hasSearch = search.trim().length > 0;
+  const hasVisibleResults = filteredEnvironments.length > 0 || filteredAvailable.length > 0;
 
   return (
     <div className="settings-page environments-settings" data-testid="environments-settings">
@@ -310,6 +330,23 @@ export function EnvironmentsSettings() {
         description="Configure binary paths and environment variables. Paths are auto-detected on startup when possible."
       />
 
+      <div className="environment-search environments-settings__search">
+        <input
+          type="search"
+          className="environment-search__input"
+          placeholder="Search environments..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          data-testid="environments-settings-search"
+        />
+      </div>
+
+      {hasSearch && !hasVisibleResults ? (
+        <p className="environments-settings__empty" data-testid="environments-no-results">
+          No environments match your search.
+        </p>
+      ) : (
+        <>
       <section className="settings-card environments-settings__section">
         <div className="settings-card__header">
           <h3 className="settings-card__title">Installed</h3>
@@ -319,9 +356,11 @@ export function EnvironmentsSettings() {
           <p className="environments-settings__empty" data-testid="environments-empty">
             No environments installed. Add one from the list below.
           </p>
+        ) : filteredEnvironments.length === 0 ? (
+          <p className="environments-settings__empty">No installed environments match your search.</p>
         ) : (
           <div className="environments-settings__list">
-            {environments.map((env) => (
+            {filteredEnvironments.map((env) => (
               <EnvironmentCard key={env.definition.id} environment={env} />
             ))}
           </div>
@@ -329,7 +368,7 @@ export function EnvironmentsSettings() {
         </div>
       </section>
 
-      {available.length > 0 && (
+      {showAvailableSection && (
         <section className="settings-card environments-settings__section">
           <div className="settings-card__header">
             <h3 className="settings-card__title">Available</h3>
@@ -338,13 +377,19 @@ export function EnvironmentsSettings() {
             </p>
           </div>
           <div className="settings-card__body">
+          {filteredAvailable.length === 0 ? (
+            <p className="environments-settings__empty">No available environments match your search.</p>
+          ) : (
           <div className="environments-settings__available">
-            {available.map((definition) => (
+            {filteredAvailable.map((definition) => (
               <AvailableEnvironmentRow key={definition.id} definition={definition} />
             ))}
           </div>
+          )}
           </div>
         </section>
+      )}
+        </>
       )}
     </div>
   );
