@@ -101,7 +101,7 @@ export function AppShell() {
   const runDisabled =
     !workspace || !selectedEnvironment?.configured || !activePath;
   const runDisabledReason = !workspace
-    ? "Create a project to run code"
+    ? "Create a workspace to run code"
     : !selectedEnvironment
       ? "Add an environment in Settings"
       : !selectedEnvironment.configured

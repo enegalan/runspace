@@ -22,9 +22,9 @@ const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
 
 const CONCEPTS = [
   {
-    title: "Projects",
+    title: "Workspaces",
     description:
-      "Each project is a self-contained workspace for your code and files.",
+      "Each workspace is a self-contained area for your code and files.",
   },
   {
     title: "Environments",
@@ -49,7 +49,7 @@ export function WelcomeScreen() {
   const finishOnboarding = useWorkspaceStore((state) => state.finishOnboarding);
 
   const [step, setStep] = useState<WelcomeStep>("intro");
-  const [projectName, setProjectName] = useState("");
+  const [workspaceName, setWorkspaceName] = useState("");
   const [primaryRuntimeId, setPrimaryRuntimeId] =
     useState<EnvironmentId>(DEFAULT_ENVIRONMENT_ID);
   const [additionalRuntimeIds, setAdditionalRuntimeIds] = useState<Set<EnvironmentId>>(
@@ -116,14 +116,14 @@ export function WelcomeScreen() {
     }
   };
 
-  const handleCreateProject = async () => {
-    const trimmedName = projectName.trim();
+  const handleCreateWorkspace = async () => {
+    const trimmedName = workspaceName.trim();
     if (!trimmedName) {
-      setError("Enter a project name to continue.");
+      setError("Enter a workspace name to continue.");
       return;
     }
     if (!primaryDefinition) {
-      setError("Select a runtime for your first project.");
+      setError("Select a runtime for your first workspace.");
       return;
     }
 
@@ -231,7 +231,7 @@ export function WelcomeScreen() {
           <section className="welcome-screen__panel">
             <h1 className="welcome-screen__title">How Runspace works</h1>
             <p className="welcome-screen__lead">
-              Three ideas to keep in mind before you create your first project.
+              Three ideas to keep in mind before you create your first workspace.
             </p>
             <div className="welcome-screen__concepts">
               {CONCEPTS.map((concept) => (
@@ -250,7 +250,7 @@ export function WelcomeScreen() {
                 className="welcome-screen__btn"
                 onClick={() => setStep("setup")}
               >
-                Create my first project
+                Create my first workspace
               </Button>
             </div>
           </section>
@@ -258,26 +258,26 @@ export function WelcomeScreen() {
 
         {step === "setup" && (
           <section className="welcome-screen__panel welcome-screen__panel--setup">
-            <h1 className="welcome-screen__title">Create your first project</h1>
+            <h1 className="welcome-screen__title">Create your first workspace</h1>
             <p className="welcome-screen__lead">
-              Runspace needs at least one project to open the editor. Name your project, pick a primary runtime, and add any other environments you plan to use.
+              Runspace needs at least one workspace to open the editor. Name your workspace, pick a primary runtime, and add any other environments you plan to use.
             </p>
 
             <label className="welcome-screen__field">
-              <span className="welcome-screen__field-label">Project name</span>
+              <span className="welcome-screen__field-label">Workspace name</span>
               <input
                 className="welcome-screen__input"
-                value={projectName}
+                value={workspaceName}
                 placeholder="My sandbox"
                 autoFocus
-                onChange={(event) => setProjectName(event.target.value)}
+                onChange={(event) => setWorkspaceName(event.target.value)}
               />
             </label>
 
             <div className="welcome-screen__section">
               <h2 className="welcome-screen__section-title">Primary runtime</h2>
               <p className="welcome-screen__section-hint">
-                This runtime defines the entry file and template for your new project.
+                This runtime defines the entry file and template for your new workspace.
               </p>
               <div className="welcome-screen__runtime-groups">
                 {(Object.keys(groupedCatalog) as EnvironmentCategory[]).map((category) => {
@@ -440,10 +440,10 @@ export function WelcomeScreen() {
               <Button
                 variant="primary"
                 className="welcome-screen__btn"
-                onClick={() => void handleCreateProject()}
+                onClick={() => void handleCreateWorkspace()}
                 disabled={submitting}
               >
-                {submitting ? "Creating..." : "Open project"}
+                {submitting ? "Creating..." : "Open workspace"}
               </Button>
             </div>
           </section>

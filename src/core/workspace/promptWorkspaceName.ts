@@ -1,7 +1,7 @@
 import { useDialogStore } from "../../stores/dialogStore";
 
-export async function requireProjectName(
-  label = "Project name",
+export async function requireWorkspaceName(
+  label = "Workspace name",
   initialValue = "",
 ): Promise<string | null> {
   const currentLabel = label;
@@ -12,7 +12,7 @@ export async function requireProjectName(
       .getState()
       .askPrompt(currentLabel, {
         initialValue: currentInitial,
-        validate: (value) => (value.trim() ? null : "Project name cannot be empty."),
+        validate: (value) => (value.trim() ? null : "Workspace name cannot be empty."),
       });
     if (raw === null) {
       return null;

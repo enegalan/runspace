@@ -9,7 +9,7 @@ import { confirmEntryReplace } from "../core/workspace/confirmEntryReplace";
 import { readFileAsText } from "../core/workspace/externalFileDrop";
 import { movedPath, parentDir } from "../core/workspace/fileTreeDrag";
 import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
-import { requireProjectName } from "../core/workspace/promptProjectName";
+import { requireWorkspaceName } from "../core/workspace/promptWorkspaceName";
 import { syncActiveWorkspace } from "../core/workspace/syncActiveWorkspace";
 import { getAppSettings } from "./settingsStore";
 import type { FileEntry, SessionData, WorkspaceInfo } from "../core/types/workspace";
@@ -25,13 +25,13 @@ interface WorkspaceStore {
   onboardingRequired: boolean;
   onboardingComplete: boolean;
   initialize: (runtimeId: string | null) => Promise<void>;
-  finishOnboarding: (runtimeId: string, projectName: string) => Promise<void>;
+  finishOnboarding: (runtimeId: string, workspaceName: string) => Promise<void>;
   switchEnvironment: (runtimeId: string) => Promise<boolean>;
   switchWorkspace: (id: string) => Promise<void>;
   loadWorkspaces: (runtimeId: string) => Promise<void>;
-  createProject: (runtimeId: string, name?: string) => Promise<void>;
-  renameProject: (workspaceId: string, name: string) => Promise<void>;
-  deleteProject: (workspaceId: string) => Promise<void>;
+  createWorkspace: (runtimeId: string, name?: string) => Promise<void>;
+  renameWorkspace: (workspaceId: string, name: string) => Promise<void>;
+  deleteWorkspace: (workspaceId: string) => Promise<void>;
   refreshFiles: () => Promise<void>;
   listDirectory: (relativePath: string) => Promise<FileEntry[]>;
   createFile: (path: string, content?: string) => Promise<void>;
@@ -194,8 +194,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       .restoreForWorkspace(session, runtimeId, workspace.id);
   },
 
-  finishOnboarding: async (runtimeId, projectName) => {
-    await get().createProject(runtimeId, projectName);
+  finishOnboarding: async (runtimeId, workspaceName) => {
+    await get().createWorkspace(runtimeId, workspaceName);
   },
 
   switchEnvironment: async (runtimeId) => {
@@ -211,13 +211,13 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     });
 
     if (runtimeWorkspaces.length === 0) {
-      const projectName = await requireProjectName(
-        "Name for the first project in this environment",
+      const workspaceName = await requireWorkspaceName(
+        "Name for the first workspace in this environment",
       );
-      if (!projectName) {
+      if (!workspaceName) {
         return false;
       }
-      await get().createProject(runtimeId, projectName);
+      await get().createWorkspace(runtimeId, workspaceName);
       return get().workspace !== null;
     }
 
@@ -262,9 +262,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     set({ workspaces });
   },
 
-  createProject: async (runtimeId, name) => {
-    const projectName = name ?? (await requireProjectName("Name for the new project"));
-    if (!projectName) {
+  createWorkspace: async (runtimeId, name) => {
+    const workspaceName = name ?? (await requireWorkspaceName("Name for the new workspace"));
+    if (!workspaceName) {
       return;
     }
 
@@ -276,7 +276,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
 
     const workspace = await runspaceInvoke<WorkspaceInfo>("create_workspace", {
-      name: projectName,
+      name: workspaceName,
       runtimeId,
     });
     await syncIfNeeded(workspace);
@@ -298,7 +298,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     void markOnboardingComplete();
   },
 
-  renameProject: async (workspaceId, name) => {
+  renameWorkspace: async (workspaceId, name) => {
     const trimmed = name.trim();
     if (!trimmed) {
       return;
@@ -315,7 +315,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     await get().loadWorkspaces(workspace.runtime_id);
   },
 
-  deleteProject: async (workspaceId) => {
+  deleteWorkspace: async (workspaceId) => {
     const current = get().workspace;
     const runtimeId = current?.runtime_id;
     if (!runtimeId) {

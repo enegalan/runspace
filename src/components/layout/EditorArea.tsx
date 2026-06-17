@@ -24,7 +24,7 @@ interface EditorAreaProps {
 
 export function EditorArea({ onSave }: EditorAreaProps) {
   const workspace = useWorkspaceStore((state) => state.workspace);
-  const createProject = useWorkspaceStore((state) => state.createProject);
+  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const activePath = useEditorTabsStore((state) => state.activePath);
   const activeFile = useEditorTabsStore((state) =>
@@ -101,19 +101,19 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   if (!workspace) {
     body = (
       <div className="editor-area__empty">
-        <p className="editor-area__empty-title">No project open</p>
+        <p className="editor-area__empty-title">No workspace open</p>
         <p className="editor-area__empty-hint">
           {selectedRuntimeId
-            ? "Create a project to start editing and running code."
-            : "Add an environment in Settings before creating a project."}
+            ? "Create a workspace to start editing and running code."
+            : "Add an environment in Settings before creating a workspace."}
         </p>
         <div className="editor-area__empty-actions">
           <Button
             variant="primary"
-            onClick={() => selectedRuntimeId && void createProject(selectedRuntimeId)}
+            onClick={() => selectedRuntimeId && void createWorkspace(selectedRuntimeId)}
             disabled={!selectedRuntimeId}
           >
-            Create project
+            Create workspace
           </Button>
         </div>
       </div>

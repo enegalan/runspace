@@ -198,7 +198,7 @@ export function FileTree() {
       >
         {!workspace ? (
           <p className="file-tree__empty">
-            No projects yet — open the project menu and create a new project.
+            No workspaces yet — open the workspace menu and create a new workspace.
           </p>
         ) : rootFiles.length === 0 ? (
           <p className="file-tree__empty">

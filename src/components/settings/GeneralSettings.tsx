@@ -264,7 +264,7 @@ export function GeneralSettings() {
 
         <SettingsToggleRow
           label="Restore last workspace on launch"
-          description="Reopen your previous project when the app starts."
+          description="Reopen your previous workspace when the app starts."
           checked={settings.layout.restoreLastWorkspace}
           onChange={(event) =>
             void update({ layout: { restoreLastWorkspace: event.target.checked } })

@@ -129,7 +129,7 @@ describe("AppShell", () => {
     expect(screen.getByTestId("settings-button")).toBeInTheDocument();
   });
 
-  it("shows welcome onboarding when no projects exist", async () => {
+  it("shows welcome onboarding when no workspaces exist", async () => {
     vi.mocked(runspaceInvoke).mockReset();
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
       if (cmd === "read_settings") {
@@ -199,11 +199,11 @@ describe("AppShell", () => {
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
-    expect(screen.getByText("No project open")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
+    expect(screen.getByText("No workspace open")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create workspace" })).toBeInTheDocument();
   });
 
-  it("keeps the main shell visible after deleting the last project", async () => {
+  it("keeps the main shell visible after deleting the last workspace", async () => {
     localStorage.setItem("runspace.onboarding.complete", "1");
     useWorkspaceStore.setState({
       workspace: mockWorkspace,
@@ -272,15 +272,15 @@ describe("AppShell", () => {
       expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     });
 
-    await useWorkspaceStore.getState().deleteProject(mockWorkspace.id);
+    await useWorkspaceStore.getState().deleteWorkspace(mockWorkspace.id);
 
     await waitFor(() => {
-      expect(screen.getByText("No project open")).toBeInTheDocument();
+      expect(screen.getByText("No workspace open")).toBeInTheDocument();
     });
 
     expect(screen.queryByTestId("welcome-screen")).not.toBeInTheDocument();
     expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create workspace" })).toBeInTheDocument();
     expect(screen.getByTestId("run-button")).toBeDisabled();
   });
 });

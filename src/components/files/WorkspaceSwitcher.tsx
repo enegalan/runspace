@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { requireProjectName } from "../../core/workspace/promptProjectName";
+import { requireWorkspaceName } from "../../core/workspace/promptWorkspaceName";
 import type { WorkspaceInfo } from "../../core/types/workspace";
 import { useDialogStore } from "../../stores/dialogStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
@@ -7,7 +7,7 @@ import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconChevronDown, IconPlus } from "../ui/icons";
 
-interface ProjectMenuState {
+interface WorkspaceMenuState {
   x: number;
   y: number;
   item: WorkspaceInfo;
@@ -19,15 +19,15 @@ export function WorkspaceSwitcher() {
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const runtimeId = workspace?.runtime_id ?? selectedRuntimeId;
   const switchWorkspace = useWorkspaceStore((state) => state.switchWorkspace);
-  const createProject = useWorkspaceStore((state) => state.createProject);
-  const renameProject = useWorkspaceStore((state) => state.renameProject);
-  const deleteProject = useWorkspaceStore((state) => state.deleteProject);
+  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
+  const renameWorkspace = useWorkspaceStore((state) => state.renameWorkspace);
+  const deleteWorkspace = useWorkspaceStore((state) => state.deleteWorkspace);
   const loadWorkspaces = useWorkspaceStore((state) => state.loadWorkspaces);
   const askConfirm = useDialogStore((state) => state.askConfirm);
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [projectMenu, setProjectMenu] = useState<ProjectMenuState | null>(null);
+  const [workspaceMenu, setWorkspaceMenu] = useState<WorkspaceMenuState | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const filteredWorkspaces = search.trim()
@@ -68,36 +68,36 @@ export function WorkspaceSwitcher() {
     };
   }, [open]);
 
-  const handleCreateProject = async () => {
+  const handleCreateWorkspace = async () => {
     if (!runtimeId) {
       return;
     }
 
     try {
-      const projectName = await requireProjectName("Name for the new project");
-      if (!projectName) {
+      const workspaceName = await requireWorkspaceName("Name for the new workspace");
+      if (!workspaceName) {
         return;
       }
       setOpen(false);
-      await createProject(runtimeId, projectName);
+      await createWorkspace(runtimeId, workspaceName);
     } catch (error) {
-      console.error("Failed to create project:", error);
+      console.error("Failed to create workspace:", error);
       const message =
-        error instanceof Error ? error.message : "Failed to create project";
+        error instanceof Error ? error.message : "Failed to create workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
 
-  const handleRenameProject = async (item: WorkspaceInfo) => {
-    const name = await requireProjectName("Rename project", item.name);
+  const handleRenameWorkspace = async (item: WorkspaceInfo) => {
+    const name = await requireWorkspaceName("Rename workspace", item.name);
     if (!name || name === item.name) {
       return;
     }
-    await renameProject(item.id, name);
+    await renameWorkspace(item.id, name);
   };
 
-  const handleDeleteProject = async (item: WorkspaceInfo) => {
-    const confirmed = await askConfirm(`Delete project "${item.name}"?`, {
+  const handleDeleteWorkspace = async (item: WorkspaceInfo) => {
+    const confirmed = await askConfirm(`Delete workspace "${item.name}"?`, {
       confirmLabel: "Delete",
       danger: true,
     });
@@ -105,13 +105,13 @@ export function WorkspaceSwitcher() {
       return;
     }
     setOpen(false);
-    setProjectMenu(null);
+    setWorkspaceMenu(null);
     try {
-      await deleteProject(item.id);
+      await deleteWorkspace(item.id);
     } catch (error) {
-      console.error("Failed to delete project:", error);
+      console.error("Failed to delete workspace:", error);
       const message =
-        error instanceof Error ? error.message : "Failed to delete project";
+        error instanceof Error ? error.message : "Failed to delete workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
@@ -126,12 +126,12 @@ export function WorkspaceSwitcher() {
         type="button"
         className="workspace-switcher__trigger"
         onClick={() => setOpen((prev) => !prev)}
-        title={workspace?.name ?? "Create project..."}
+        title={workspace?.name ?? "Create workspace..."}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="workspace-switcher__label">
-          {workspace?.name ?? "Create project..."}
+          {workspace?.name ?? "Create workspace..."}
         </span>
         <IconChevronDown size={14} className="workspace-switcher__chevron" />
       </button>
@@ -143,14 +143,14 @@ export function WorkspaceSwitcher() {
               <input
                 type="search"
                 className="workspace-switcher__search-input"
-                placeholder="Filter projects..."
+                placeholder="Filter workspaces..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 autoFocus
               />
             </div>
           )}
-          <div className="workspace-switcher__heading">Projects</div>
+          <div className="workspace-switcher__heading">Workspaces</div>
           <ul className="workspace-switcher__list">
             {filteredWorkspaces.map((item) => (
               <li
@@ -161,7 +161,7 @@ export function WorkspaceSwitcher() {
                 onContextMenu={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  setProjectMenu({
+                  setWorkspaceMenu({
                     x: event.clientX,
                     y: event.clientY,
                     item,
@@ -190,34 +190,34 @@ export function WorkspaceSwitcher() {
           <button
             type="button"
             className="workspace-switcher__create"
-            onClick={() => void handleCreateProject()}
+            onClick={() => void handleCreateWorkspace()}
             disabled={!runtimeId}
             title={!runtimeId ? "Add an environment in Settings" : undefined}
           >
             <IconPlus size={14} />
-            <span>New project</span>
+            <span>New workspace</span>
           </button>
         </div>
       )}
 
-      {projectMenu && (
+      {workspaceMenu && (
         <ContextMenu
-          x={projectMenu.x}
-          y={projectMenu.y}
+          x={workspaceMenu.x}
+          y={workspaceMenu.y}
           items={[
             {
               id: "rename",
               label: "Rename",
-              onClick: () => void handleRenameProject(projectMenu.item),
+              onClick: () => void handleRenameWorkspace(workspaceMenu.item),
             },
             {
               id: "delete",
               label: "Delete",
               danger: true,
-              onClick: () => void handleDeleteProject(projectMenu.item),
+              onClick: () => void handleDeleteWorkspace(workspaceMenu.item),
             },
           ]}
-          onClose={() => setProjectMenu(null)}
+          onClose={() => setWorkspaceMenu(null)}
         />
       )}
     </div>
