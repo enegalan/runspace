@@ -109,11 +109,65 @@ impl Default for LayoutSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase", default)]
+pub struct ShortcutBinding {
+    pub key: String,
+    #[serde(rename = "mod")]
+    pub mod_key: bool,
+    #[serde(default)]
+    pub shift: bool,
+    #[serde(default)]
+    pub alt: bool,
+}
+
+impl ShortcutBinding {
+    fn normalized(key: &str, mod_key: bool, shift: bool, alt: bool) -> Self {
+        Self {
+            key: key.to_lowercase(),
+            mod_key,
+            shift,
+            alt,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct ShortcutSettings {
+    pub run: ShortcutBinding,
+    pub stop: ShortcutBinding,
+    pub save: ShortcutBinding,
+    pub new_file: ShortcutBinding,
+    pub new_folder: ShortcutBinding,
+    pub new_terminal: ShortcutBinding,
+    pub toggle_sidebar: ShortcutBinding,
+    pub toggle_output: ShortcutBinding,
+    pub open_settings: ShortcutBinding,
+}
+
+impl Default for ShortcutSettings {
+    fn default() -> Self {
+        Self {
+            run: ShortcutBinding::normalized("enter", true, false, false),
+            stop: ShortcutBinding::normalized(".", true, false, false),
+            save: ShortcutBinding::normalized("s", true, false, false),
+            new_file: ShortcutBinding::normalized("n", true, false, false),
+            new_folder: ShortcutBinding::normalized("n", true, true, false),
+            new_terminal: ShortcutBinding::normalized("t", true, true, false),
+            toggle_sidebar: ShortcutBinding::normalized("b", true, false, false),
+            toggle_output: ShortcutBinding::normalized("j", true, false, false),
+            open_settings: ShortcutBinding::normalized(",", true, false, false),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct AppSettings {
     pub appearance: AppearanceSettings,
     pub editor: EditorSettings,
     pub execution: ExecutionSettings,
     pub layout: LayoutSettings,
+    pub shortcuts: ShortcutSettings,
 }
 
 #[derive(Debug)]

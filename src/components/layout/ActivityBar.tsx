@@ -1,5 +1,7 @@
 import type { ExecutionStatus } from "../../core/types/execution";
+import { formatShortcutCompact } from "../../core/constants/keyboardShortcuts";
 import { isTauri } from "../../core/platform/isTauri";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { IconButton } from "../ui/IconButton";
 import { IconPlay, IconSettings, IconStop, IconTerminal } from "../ui/icons";
 
@@ -14,11 +16,6 @@ interface ActivityBarProps {
   onOpenSettings: () => void;
 }
 
-const isMac =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-const runShortcut = isMac ? "⌘↵" : "Ctrl+↵";
-const stopShortcut = isMac ? "⌘." : "Ctrl+.";
-
 export function ActivityBar({
   status,
   runDisabled,
@@ -29,8 +26,12 @@ export function ActivityBar({
   onToggleTerminal,
   onOpenSettings,
 }: ActivityBarProps) {
+  const shortcuts = useSettingsStore((state) => state.settings.shortcuts);
   const isRunning = status === "running";
   const runBlocked = isRunning || runDisabled;
+  const runShortcut = formatShortcutCompact(shortcuts.run);
+  const stopShortcut = formatShortcutCompact(shortcuts.stop);
+  const settingsShortcut = formatShortcutCompact(shortcuts.openSettings);
   const runTitle =
     runDisabled && runDisabledReason ? runDisabledReason : `Run (${runShortcut})`;
   const stopTitle = `Stop (${stopShortcut})`;
@@ -74,7 +75,7 @@ export function ActivityBar({
         </IconButton>
         <IconButton
           label="Settings"
-          title="Settings (⌘,)"
+          title={`Settings (${settingsShortcut})`}
           className="activity-bar__btn"
           onClick={onOpenSettings}
           data-testid="settings-button"

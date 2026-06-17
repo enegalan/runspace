@@ -1,4 +1,7 @@
 import { useEffect } from "react";
+import { matchesShortcut } from "../core/constants/keyboardShortcuts";
+import type { ShortcutActionId } from "../core/types/shortcuts";
+import { useSettingsStore } from "../stores/settingsStore";
 
 interface AppShortcutHandlers {
   onRun?: () => void;
@@ -14,96 +17,54 @@ interface AppShortcutHandlers {
   runDisabled?: boolean;
 }
 
-export function useAppShortcuts({
-  onRun,
-  onStop,
-  onSave,
-  onNewFile,
-  onNewFolder,
-  onNewTerminal,
-  onOpenSettings,
-  onToggleSidebar,
-  onToggleOutput,
-  isRunning = false,
-  runDisabled = false,
-}: AppShortcutHandlers) {
+const ACTION_HANDLERS: Record<
+  ShortcutActionId,
+  keyof AppShortcutHandlers
+> = {
+  run: "onRun",
+  stop: "onStop",
+  save: "onSave",
+  newFile: "onNewFile",
+  newFolder: "onNewFolder",
+  newTerminal: "onNewTerminal",
+  openSettings: "onOpenSettings",
+  toggleSidebar: "onToggleSidebar",
+  toggleOutput: "onToggleOutput",
+};
+
+export function useAppShortcuts(handlers: AppShortcutHandlers) {
+  const shortcuts = useSettingsStore((state) => state.settings.shortcuts);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      const mod = event.metaKey || event.ctrlKey;
-      if (!mod) {
-        return;
-      }
+      for (const [actionId, handlerKey] of Object.entries(ACTION_HANDLERS) as [
+        ShortcutActionId,
+        keyof AppShortcutHandlers,
+      ][]) {
+        const binding = shortcuts[actionId];
+        if (!binding || !matchesShortcut(event, binding)) {
+          continue;
+        }
 
-      const key = event.key.toLowerCase();
-      const shift = event.shiftKey;
+        if (actionId === "run" && (handlers.isRunning || handlers.runDisabled)) {
+          return;
+        }
+        if (actionId === "stop" && !handlers.isRunning) {
+          return;
+        }
 
-      if (key === "enter" && onRun && !isRunning && !runDisabled) {
+        const handler = handlers[handlerKey];
+        if (typeof handler !== "function") {
+          return;
+        }
+
         event.preventDefault();
-        onRun();
+        handler();
         return;
-      }
-
-      if (key === "." && onStop && isRunning) {
-        event.preventDefault();
-        onStop();
-        return;
-      }
-
-      if (key === "s" && onSave) {
-        event.preventDefault();
-        onSave();
-        return;
-      }
-
-      if (key === "n" && shift && onNewFolder) {
-        event.preventDefault();
-        onNewFolder();
-        return;
-      }
-
-      if (key === "n" && onNewFile) {
-        event.preventDefault();
-        onNewFile();
-        return;
-      }
-
-      if (key === "t" && shift && onNewTerminal) {
-        event.preventDefault();
-        onNewTerminal();
-        return;
-      }
-
-      if (key === "," && onOpenSettings) {
-        event.preventDefault();
-        onOpenSettings();
-        return;
-      }
-
-      if (key === "b" && onToggleSidebar) {
-        event.preventDefault();
-        onToggleSidebar();
-        return;
-      }
-
-      if (key === "j" && onToggleOutput) {
-        event.preventDefault();
-        onToggleOutput();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [
-    onRun,
-    onStop,
-    onSave,
-    onNewFile,
-    onNewFolder,
-    onNewTerminal,
-    onOpenSettings,
-    onToggleSidebar,
-    onToggleOutput,
-    isRunning,
-    runDisabled,
-  ]);
+  }, [handlers, shortcuts]);
 }
