@@ -30,6 +30,7 @@ import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useSettingsUiStore } from "../../stores/settingsUiStore";
 import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { AboutDialog } from "../about/AboutDialog";
@@ -68,9 +69,11 @@ export function AppShell() {
   const executionSettings = useSettingsStore((state) => state.settings.execution);
   const updateSettings = useSettingsStore((state) => state.update);
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const settingsOpen = useSettingsUiStore((state) => state.open);
+  const openSettings = useSettingsUiStore((state) => state.openSettings);
+  const closeSettings = useSettingsUiStore((state) => state.closeSettings);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   const { createAndOpenFile } = useNewFile();
@@ -331,7 +334,7 @@ export function AppShell() {
           setShortcutsOpen(true);
           break;
         case "settings":
-          setSettingsOpen(true);
+          openSettings();
           break;
         case "new_file":
           void createAndOpenFile();
@@ -377,6 +380,7 @@ export function AppShell() {
       handleToggleSidebar,
       handleToggleOutput,
       handleNewTerminal,
+      openSettings,
     ],
   );
 
@@ -389,7 +393,7 @@ export function AppShell() {
     onNewFile: () => void createAndOpenFile(),
     onNewFolder: () => void createNewFolder(),
     onNewTerminal: handleNewTerminal,
-    onOpenSettings: () => setSettingsOpen(true),
+    onOpenSettings: () => openSettings(),
     onToggleSidebar: handleToggleSidebar,
     onToggleOutput: handleToggleOutput,
     isRunning,
@@ -455,7 +459,7 @@ export function AppShell() {
           onRun={handleRun}
           onStop={stop}
           onToggleTerminal={handleToggleTerminal}
-          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenSettings={() => openSettings()}
         />
         {layoutSettings.sidebarVisible && (
           <Sidebar
@@ -502,7 +506,7 @@ export function AppShell() {
         timedOut={timedOut}
         lastRunDurationMs={lastRunDurationMs}
       />
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsPanel open={settingsOpen} onClose={closeSettings} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <KeyboardShortcutsDialog
         open={shortcutsOpen}

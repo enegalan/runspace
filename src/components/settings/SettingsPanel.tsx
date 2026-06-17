@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { IconButton } from "../ui/IconButton";
 import { IconClose, IconPlay, IconSettings } from "../ui/icons";
+import { useSettingsUiStore, type SettingsTab } from "../../stores/settingsUiStore";
 import { EnvironmentsSettings } from "./EnvironmentsSettings";
 import { GeneralSettings } from "./GeneralSettings";
 
@@ -8,8 +8,6 @@ interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
 }
-
-type SettingsTab = "general" | "environments";
 
 const NAV_ITEMS: {
   id: SettingsTab;
@@ -21,7 +19,8 @@ const NAV_ITEMS: {
 ];
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
-  const [tab, setTab] = useState<SettingsTab>("general");
+  const tab = useSettingsUiStore((state) => state.tab);
+  const setTab = useSettingsUiStore((state) => state.setTab);
 
   if (!open) {
     return null;

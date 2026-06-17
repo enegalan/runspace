@@ -336,6 +336,10 @@
   margin: 0;
 }
 
+.env-picker .environment-search {
+  margin-bottom: var(--rs-space-3);
+}
+
 .env-picker__empty {
   margin: 0 0 var(--rs-space-4);
   color: var(--rs-text-muted);
@@ -419,4 +423,27 @@
 .env-picker__badge--unconfigured {
   background: var(--rs-bg-overlay);
   color: var(--rs-text-muted);
+}
+
+.env-picker__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
+  margin-top: var(--rs-space-4);
+}
+
+.env-picker__settings-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--rs-accent);
+  font-size: var(--rs-font-size-sm);
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.env-picker__settings-link:hover {
+  text-decoration: underline;
 }
