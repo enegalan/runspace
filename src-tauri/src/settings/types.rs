@@ -45,6 +45,7 @@ pub struct EditorSettings {
     pub minimap: bool,
     pub scroll_beyond_last_line: bool,
     pub insert_spaces: bool,
+    pub auto_save: bool,
 }
 
 impl Default for EditorSettings {
@@ -55,6 +56,7 @@ impl Default for EditorSettings {
             minimap: false,
             scroll_beyond_last_line: false,
             insert_spaces: true,
+            auto_save: true,
         }
     }
 }

@@ -155,6 +155,15 @@ export function GeneralSettings() {
           }
           data-testid="setting-insert-spaces"
         />
+        <SettingsToggleRow
+          label="Auto-save"
+          description="Save the active file when the editor loses focus."
+          checked={settings.editor.autoSave}
+          onChange={(event) =>
+            void update({ editor: { autoSave: event.target.checked } })
+          }
+          data-testid="setting-auto-save"
+        />
       </SettingsCard>
 
       <SettingsCard title="Execution" description="Run behavior and output handling.">
