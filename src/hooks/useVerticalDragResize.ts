@@ -53,9 +53,14 @@ export function useVerticalDragResize(
       };
 
       const onPointerUp = (upEvent: PointerEvent) => {
-        target.releasePointerCapture(upEvent.pointerId);
-        target.classList.remove("resize-handle--active");
-        finish();
+        try {
+          if (target.hasPointerCapture(upEvent.pointerId)) {
+            target.releasePointerCapture(upEvent.pointerId);
+          }
+        } finally {
+          target.classList.remove("resize-handle--active");
+          finish();
+        }
       };
 
       target.addEventListener("pointermove", onPointerMove);
