@@ -205,7 +205,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         .getState()
         .persistForEnvironment(current.runtime_id, current.id);
     }
-    useEditorTabsStore.getState().clearTabs();
 
     const runtimeWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {
       runtimeId,
@@ -219,6 +218,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         return false;
       }
       await get().createWorkspace(runtimeId, workspaceName);
+      useEditorTabsStore.getState().clearTabs();
       return get().workspace !== null;
     }
 
@@ -226,6 +226,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     if (!workspace) {
       return false;
     }
+
+    useEditorTabsStore.getState().clearTabs();
 
     set({
       workspace,
