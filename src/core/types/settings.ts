@@ -17,6 +17,7 @@ export interface EditorSettings {
   minimap: boolean;
   scrollBeyondLastLine: boolean;
   insertSpaces: boolean;
+  autoSave: boolean;
 }
 
 export interface ExecutionSettings {

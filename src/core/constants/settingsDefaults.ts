@@ -34,6 +34,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     minimap: false,
     scrollBeyondLastLine: false,
     insertSpaces: true,
+    autoSave: true,
   },
   execution: {
     runTimeoutSecs: 30,

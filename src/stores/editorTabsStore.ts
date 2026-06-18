@@ -154,7 +154,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   saveFile: async (path) => {
     const file = get().openFiles.find((item) => item.path === path);
-    if (!file) {
+    if (!file || !file.dirty) {
       return;
     }
     await runspaceInvoke("write_file", { path, content: file.content });

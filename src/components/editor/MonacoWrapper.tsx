@@ -62,14 +62,25 @@ export default function MonacoWrapper({
   const settings = useSettingsStore((state) => state.settings);
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const onSaveRef = useRef(onSave);
+  const autoSaveRef = useRef(settings.editor.autoSave);
   const themeId = getMonacoThemeId(settings);
+
+  onSaveRef.current = onSave;
+  autoSaveRef.current = settings.editor.autoSave;
 
   const handleMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
     editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, () => {
-      void onSave();
+      void onSaveRef.current();
+    });
+
+    editor.onDidBlurEditorWidget(() => {
+      if (autoSaveRef.current) {
+        void onSaveRef.current();
+      }
     });
   };
 

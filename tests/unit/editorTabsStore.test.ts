@@ -76,6 +76,24 @@ describe("editorTabsStore", () => {
     });
   });
 
+  it("skips save when the file is not dirty", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.js",
+          content: "console.log(1);",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "main.js",
+    });
+
+    await useEditorTabsStore.getState().saveFile("main.js");
+
+    expect(runspaceInvoke).not.toHaveBeenCalled();
+  });
+
   it("starts with no tabs when the session has none", async () => {
     await useEditorTabsStore.getState().restoreForWorkspace(
       {
