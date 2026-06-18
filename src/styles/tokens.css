@@ -80,6 +80,9 @@
   --rs-icon-size-sm: 16px;
   --rs-icon-size-md: 20px;
 
+  /* Editor Columns */
+  --rs-editor-column-min-width: 320px;
+
   /* Editor Tabs */
   --rs-editor-tabs-height: 42px;
   --rs-editor-tabs-tab-height: 32px;
@@ -126,15 +129,21 @@
 }
 
 [data-density="compact"] {
-  --rs-space-1: 3px;
-  --rs-space-2: 6px;
-  --rs-space-3: 9px;
-  --rs-space-4: 12px;
-  --rs-space-5: 16px;
-  --rs-space-6: 18px;
-  --rs-space-8: 24px;
+  --rs-space-1: 2px;
+  --rs-space-2: 4px;
+  --rs-space-3: 8px;
+  --rs-space-4: 10px;
+  --rs-space-5: 14px;
+  --rs-space-6: 16px;
+  --rs-space-8: 20px;
 
-  --rs-editor-tabs-height: 36px;
-  --rs-editor-tabs-tab-height: 28px;
-  --rs-editor-tabs-tab-active-height: 32px;
+  --rs-radius-sm: 3px;
+  --rs-radius-md: 6px;
+
+  --rs-icon-size-sm: 14px;
+  --rs-icon-size-md: 18px;
+
+  --rs-editor-tabs-height: 32px;
+  --rs-editor-tabs-tab-height: 26px;
+  --rs-editor-tabs-tab-active-height: 28px;
 }

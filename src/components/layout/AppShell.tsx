@@ -15,8 +15,8 @@ import type { MenuAction } from "../../hooks/useMenuActions";
 import { useMenuActions } from "../../hooks/useMenuActions";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
+import { clamp } from "../../core/clamp";
 import {
-  clampPanelSize,
   OUTPUT_WIDTH_MAX,
   OUTPUT_WIDTH_MIN,
   SIDEBAR_WIDTH_MAX,
@@ -263,7 +263,7 @@ export function AppShell() {
     (width: number) => {
       void updateSettings({
         layout: {
-          sidebarWidth: clampPanelSize(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
+          sidebarWidth: clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
         },
       });
     },
@@ -274,7 +274,7 @@ export function AppShell() {
     (width: number) => {
       void updateSettings({
         layout: {
-          outputWidth: clampPanelSize(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
+          outputWidth: clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
         },
       });
     },
@@ -285,7 +285,7 @@ export function AppShell() {
     (height: number) => {
       void updateSettings({
         layout: {
-          terminalHeight: clampPanelSize(height, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
+          terminalHeight: clamp(height, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
         },
       });
     },

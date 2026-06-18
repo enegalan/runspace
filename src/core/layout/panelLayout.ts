@@ -9,7 +9,3 @@ export const OUTPUT_WIDTH_MAX = 560;
 export const TERMINAL_HEIGHT_DEFAULT = 200;
 export const TERMINAL_HEIGHT_MIN = 120;
 export const TERMINAL_HEIGHT_MAX = 480;
-
-export function clampPanelSize(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}

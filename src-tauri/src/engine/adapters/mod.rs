@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub use framework::{ensure_skeleton, framework_terminal_env, FrameworkSkeletonError};
+pub use framework::{framework_terminal_env, FrameworkSkeletonError};
 
 pub struct PrepareContext<'a> {
     pub workspace_path: &'a Path,
@@ -61,6 +61,13 @@ pub trait RuntimeAdapter: Send + Sync {
             extra_env: HashMap::new(),
         })
     }
+    fn post_install(
+        &self,
+        _target: &Path,
+        _extra_paths: &HashMap<String, String>,
+    ) -> Result<(), FrameworkSkeletonError> {
+        Ok(())
+    }
 }
 
 pub fn get_adapter(environment_id: &str) -> Result<Box<dyn RuntimeAdapter>, AdapterError> {
@@ -93,6 +100,17 @@ pub fn script_command(binary: &Path, script: &Path) -> Command {
     let mut cmd = Command::new(binary);
     cmd.arg(script);
     cmd
+}
+
+pub fn ensure_framework_ready(
+    adapter: &dyn RuntimeAdapter,
+    extra_paths: &HashMap<String, String>,
+) -> Result<PathBuf, FrameworkSkeletonError> {
+    let ready = framework::ensure_skeleton(adapter.runtime_id(), extra_paths)?;
+    if ready.installed_vendor {
+        adapter.post_install(&ready.path, extra_paths)?;
+    }
+    Ok(ready.path)
 }
 
 #[cfg(test)]

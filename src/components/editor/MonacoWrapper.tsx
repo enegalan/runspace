@@ -5,7 +5,7 @@ import Editor, {
 } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { KeyCode, KeyMod } from "monaco-editor";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { getMonacoThemeId } from "../../core/settings/applyAppSettings";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -53,21 +53,46 @@ export interface MonacoWrapperProps {
   onSave: () => void;
 }
 
-export default function MonacoWrapper({
+export default memo(function MonacoWrapper({
   value,
   onChange,
   language,
   onSave,
 }: MonacoWrapperProps) {
-  const settings = useSettingsStore((state) => state.settings);
+  const appearance = useSettingsStore((state) => state.settings.appearance);
+  const editorSettings = useSettingsStore((state) => state.settings.editor);
+  const theme = useSettingsStore((state) => state.settings.appearance.theme);
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const onSaveRef = useRef(onSave);
-  const autoSaveRef = useRef(settings.editor.autoSave);
-  const themeId = getMonacoThemeId(settings);
+  const autoSaveRef = useRef(editorSettings.autoSave);
+  const themeId = useMemo(() => getMonacoThemeId(theme), [theme]);
 
   onSaveRef.current = onSave;
-  autoSaveRef.current = settings.editor.autoSave;
+  autoSaveRef.current = editorSettings.autoSave;
+
+  const editorOptions = useMemo<MonacoEditor.IStandaloneEditorConstructionOptions>(
+    () => ({
+      fontSize: appearance.editorFontSize,
+      fontFamily: editorFontFamilyCss(appearance.editorFontFamily),
+      minimap: { enabled: editorSettings.minimap },
+      wordWrap: editorSettings.wordWrap ? "on" : "off",
+      tabSize: editorSettings.tabSize,
+      automaticLayout: true,
+      scrollBeyondLastLine: editorSettings.scrollBeyondLastLine,
+      insertSpaces: editorSettings.insertSpaces,
+      padding: { top: 12 },
+    }),
+    [
+      appearance.editorFontFamily,
+      appearance.editorFontSize,
+      editorSettings.insertSpaces,
+      editorSettings.minimap,
+      editorSettings.scrollBeyondLastLine,
+      editorSettings.tabSize,
+      editorSettings.wordWrap,
+    ],
+  );
 
   const handleMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -85,24 +110,23 @@ export default function MonacoWrapper({
   };
 
   useEffect(() => {
-    const editor = editorRef.current;
     const monaco = monacoRef.current;
-    if (!editor || !monaco) {
+    if (!monaco) {
       return;
     }
 
     defineMonacoThemes(monaco);
     monaco.editor.setTheme(themeId);
-    editor.updateOptions({
-      fontSize: settings.appearance.editorFontSize,
-      fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
-      tabSize: settings.editor.tabSize,
-      wordWrap: settings.editor.wordWrap ? "on" : "off",
-      minimap: { enabled: settings.editor.minimap },
-      scrollBeyondLastLine: settings.editor.scrollBeyondLastLine,
-      insertSpaces: settings.editor.insertSpaces,
-    });
-  }, [settings, themeId]);
+  }, [themeId]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    editor.updateOptions(editorOptions);
+  }, [editorOptions]);
 
   return (
     <Editor
@@ -112,18 +136,8 @@ export default function MonacoWrapper({
       beforeMount={handleBeforeMount}
       onChange={(next) => onChange(next ?? "")}
       onMount={handleMount}
-      options={{
-        fontSize: settings.appearance.editorFontSize,
-        fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
-        minimap: { enabled: settings.editor.minimap },
-        wordWrap: settings.editor.wordWrap ? "on" : "off",
-        tabSize: settings.editor.tabSize,
-        automaticLayout: true,
-        scrollBeyondLastLine: settings.editor.scrollBeyondLastLine,
-        insertSpaces: settings.editor.insertSpaces,
-        padding: { top: 12 },
-      }}
+      options={editorOptions}
       data-testid="monaco-editor"
     />
   );
-}
+});

@@ -7,13 +7,14 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
+import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { readTerminalTheme } from "../../core/settings/applyAppSettings";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 export interface XTermViewHandle {
   write: (data: string) => void;
   clear: () => void;
   fit: () => void;
-  focus: () => void;
   getCols: () => number;
   getRows: () => number;
 }
@@ -25,6 +26,7 @@ interface XTermViewProps {
 
 export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
   function XTermView({ onData, onResize }, ref) {
+    const settings = useSettingsStore((state) => state.settings);
     const containerRef = useRef<HTMLDivElement>(null);
     const terminalRef = useRef<Terminal | null>(null);
     const fitAddonRef = useRef<FitAddon | null>(null);
@@ -44,9 +46,6 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
       fit: () => {
         fitAddonRef.current?.fit();
       },
-      focus: () => {
-        terminalRef.current?.focus();
-      },
       getCols: () => terminalRef.current?.cols ?? 80,
       getRows: () => terminalRef.current?.rows ?? 24,
     }));
@@ -59,17 +58,14 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
 
       const terminal = new Terminal({
         cursorBlink: true,
-        fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
-        fontSize: 12,
-        lineHeight: 1.3,
+        fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
+        fontSize: settings.appearance.editorFontSize,
         theme: readTerminalTheme(),
-        scrollback: 1000,
       });
       const fitAddon = new FitAddon();
       terminal.loadAddon(fitAddon);
       terminal.open(container);
       fitAddon.fit();
-      terminal.focus();
 
       const applyTheme = () => {
         terminal.options.theme = readTerminalTheme();
@@ -106,6 +102,17 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
         fitAddonRef.current = null;
       };
     }, []);
+
+    useEffect(() => {
+      const terminal = terminalRef.current;
+      if (!terminal) {
+        return;
+      }
+
+      terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
+      terminal.options.fontSize = settings.appearance.editorFontSize;
+      fitAddonRef.current?.fit();
+    }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
 
     return (
       <div

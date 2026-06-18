@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useCallback, useState } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
@@ -34,6 +34,15 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   const updateContent = useEditorTabsStore((state) => state.updateContent);
   const { createAndOpenFile } = useNewFile();
   const [dropTarget, setDropTarget] = useState(false);
+
+  const handleEditorChange = useCallback(
+    (content: string) => {
+      if (activePath) {
+        updateContent(activePath, content);
+      }
+    },
+    [activePath, updateContent],
+  );
 
   const handleDragOver = (event: React.DragEvent) => {
     if (!workspace) {
@@ -137,7 +146,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
         <MonacoWrapper
           key={activePath}
           value={activeFile.content}
-          onChange={(content) => updateContent(activePath, content)}
+          onChange={handleEditorChange}
           language={activeFile.language}
           onSave={onSave}
         />

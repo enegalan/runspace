@@ -1,3 +1,4 @@
+import { clamp } from "../clamp";
 import { DEFAULT_SHORTCUT_SETTINGS, normalizeShortcutSettings } from "./keyboardShortcuts";
 import {
   OUTPUT_WIDTH_DEFAULT,
@@ -59,7 +60,7 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
   return {
     appearance: {
       ...settings.appearance,
-      editorFontSize: Math.min(24, Math.max(10, settings.appearance.editorFontSize)),
+      editorFontSize: clamp(settings.appearance.editorFontSize, 10, 20),
     },
     editor: {
       ...settings.editor,
@@ -67,23 +68,14 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
     },
     execution: {
       ...settings.execution,
-      runTimeoutSecs: Math.min(300, Math.max(5, settings.execution.runTimeoutSecs)),
-      compileTimeoutSecs: Math.min(120, Math.max(5, settings.execution.compileTimeoutSecs)),
+      runTimeoutSecs: clamp(settings.execution.runTimeoutSecs, 5, 300),
+      compileTimeoutSecs: clamp(settings.execution.compileTimeoutSecs, 5, 120),
     },
     layout: {
       ...settings.layout,
-      sidebarWidth: Math.min(
-        SIDEBAR_WIDTH_MAX,
-        Math.max(SIDEBAR_WIDTH_MIN, settings.layout.sidebarWidth),
-      ),
-      outputWidth: Math.min(
-        OUTPUT_WIDTH_MAX,
-        Math.max(OUTPUT_WIDTH_MIN, settings.layout.outputWidth),
-      ),
-      terminalHeight: Math.min(
-        TERMINAL_HEIGHT_MAX,
-        Math.max(TERMINAL_HEIGHT_MIN, settings.layout.terminalHeight),
-      ),
+      sidebarWidth: clamp(settings.layout.sidebarWidth, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
+      outputWidth: clamp(settings.layout.outputWidth, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
+      terminalHeight: clamp(settings.layout.terminalHeight, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
     },
     shortcuts: normalizeShortcutSettings(settings.shortcuts),
   };

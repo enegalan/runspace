@@ -60,6 +60,10 @@ with open(path, "w") as f:
     f.write("\n")
 PY
 
+echo "Refreshing composer.lock files after manifest edits..."
+(cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+(cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+
 python3 - <<'PY' "$SYMFONY_SRC/.env"
 import re, sys
 path = sys.argv[1]
@@ -84,7 +88,7 @@ PY
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
 
-SKELETON_VERSION="${SKELETON_VERSION:-4}"
+SKELETON_VERSION="${SKELETON_VERSION:-6}"
 echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
 echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
 

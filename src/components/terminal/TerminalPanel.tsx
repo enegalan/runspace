@@ -64,7 +64,7 @@ export function TerminalPanel({
     }
   }, [enabled, ensureDefaultTab, environmentId, workspaceId]);
 
-  const onResizePointerDown = useVerticalDragResize(height, onHeightChange, {
+  const { currentSize, onPointerDown } = useVerticalDragResize(height, onHeightChange, {
     min: TERMINAL_HEIGHT_MIN,
     max: TERMINAL_HEIGHT_MAX,
   });
@@ -116,13 +116,18 @@ export function TerminalPanel({
   return (
     <div
       className="terminal-shell"
-      style={{ height }}
+      style={{
+        height: currentSize,
+        minHeight: currentSize,
+        maxHeight: currentSize,
+        flex: `0 0 ${currentSize}px`,
+      }}
       data-testid="terminal-panel"
     >
       <ResizeHandle
         side="top"
         orientation="horizontal"
-        onPointerDown={onResizePointerDown}
+        onPointerDown={onPointerDown}
         data-testid="terminal-resize-handle"
       />
       <section className="terminal-panel">

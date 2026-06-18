@@ -120,7 +120,6 @@ export function useTerminal({
 
     window.setTimeout(() => {
       xtermRef.current?.fit();
-      xtermRef.current?.focus();
       const sessionId = sessionIdRef.current;
       if (!sessionId) {
         return;

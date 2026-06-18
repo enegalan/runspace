@@ -43,7 +43,7 @@ export function GeneralSettings() {
 
       <SettingsCard
         title="Appearance"
-        description="Theme, density, and editor typography."
+        description="Theme, density, and typography."
       >
         <SettingsRow label="Theme">
           <SettingsSegmented
@@ -73,7 +73,7 @@ export function GeneralSettings() {
           <SettingsNumberInput
             id="setting-editor-font-size"
             min={10}
-            max={24}
+            max={20}
             value={settings.appearance.editorFontSize}
             onChange={(event) =>
               void update({
@@ -220,38 +220,6 @@ export function GeneralSettings() {
       </SettingsCard>
 
       <SettingsCard title="Layout" description="Panels and workspace restore.">
-        <SettingsRow label="Sidebar width" hint="260–480 px">
-          <SettingsNumberInput
-            min={260}
-            max={480}
-            value={settings.layout.sidebarWidth}
-            onChange={(event) =>
-              void update({
-                layout: { sidebarWidth: Number(event.target.value) },
-              })
-            }
-            data-testid="setting-sidebar-width"
-          />
-        </SettingsRow>
-
-        <SettingsDivider />
-
-        <SettingsRow label="Output width" hint="200–560 px">
-          <SettingsNumberInput
-            min={200}
-            max={560}
-            value={settings.layout.outputWidth}
-            onChange={(event) =>
-              void update({
-                layout: { outputWidth: Number(event.target.value) },
-              })
-            }
-            data-testid="setting-output-width"
-          />
-        </SettingsRow>
-
-        <SettingsDivider />
-
         <SettingsToggleRow
           label="Show sidebar"
           checked={settings.layout.sidebarVisible}
