@@ -104,11 +104,11 @@ export default memo(function MonacoWrapper({
 
     editor.onDidBlurEditorWidget(() => {
       if (autoSaveRef.current) {
-        void onSaveRef.current();
+        void Promise.resolve(onSaveRef.current()).finally(() => {
+          editor.focus();
+        });
       }
     });
-
-    editor.focus();
   };
 
   useEffect(() => {
