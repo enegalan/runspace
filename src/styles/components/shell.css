@@ -39,7 +39,9 @@
   display: grid;
   flex: 1;
   min-height: 0;
-  grid-template-columns: 48px auto 1fr auto;
+  min-width: 0;
+  overflow: hidden;
+  grid-template-columns: 48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr) minmax(0, auto);
   grid-template-rows: 35px 1fr;
 }
 
@@ -79,7 +81,7 @@
 }
 
 .main-row--desktop.main-row--sidebar-hidden {
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 48px minmax(var(--rs-editor-column-min-width, 320px), 1fr) minmax(0, auto);
 }
 
 .main-row--desktop.main-row--sidebar-hidden .sidebar-titlebar-zone {
@@ -87,11 +89,11 @@
 }
 
 .main-row--desktop.main-row--output-hidden {
-  grid-template-columns: 48px auto 1fr;
+  grid-template-columns: 48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr);
 }
 
 .main-row--desktop.main-row--sidebar-hidden.main-row--output-hidden {
-  grid-template-columns: 48px 1fr;
+  grid-template-columns: 48px minmax(var(--rs-editor-column-min-width, 320px), 1fr);
 }
 
 .main-row--desktop.main-row--sidebar-hidden .editor-column {
@@ -107,11 +109,33 @@
 }
 
 .editor-column {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   flex: 1 1 auto;
-  min-width: 0;
+  min-width: min(100%, var(--rs-editor-column-min-width, 320px));
   min-height: 0;
+}
+
+.main-row:not(.main-row--terminal-hidden) .editor-column {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.main-row:not(.main-row--desktop) .editor-tabs {
+  grid-row: 1;
+  min-height: 0;
+}
+
+.main-row:not(.main-row--desktop) .editor-titlebar-zone {
+  grid-row: 1;
+}
+
+.main-row:not(.main-row--desktop) .editor-area {
+  grid-row: 2;
+  min-height: 0;
+}
+
+.main-row:not(.main-row--desktop):not(.main-row--terminal-hidden) .terminal-shell {
+  grid-row: 3;
 }
 
 .main-row--desktop .editor-column {
@@ -120,6 +144,7 @@
   display: grid;
   grid-template-rows: var(--rs-editor-tabs-height) minmax(0, 1fr) auto;
   flex: initial;
+  min-width: 0;
 }
 
 .main-row--desktop.main-row--terminal-hidden .editor-column {
@@ -133,6 +158,10 @@
 
 .app-shell--windows .editor-titlebar-zone {
   padding-right: var(--rs-titlebar-drag-inset-right);
+}
+
+.main-row--desktop .terminal-shell {
+  grid-row: 3;
 }
 
 .main-row--desktop .editor-area {

@@ -1,6 +1,5 @@
 import { getRuntimePresentation } from "../../core/constants/runtimePresentation";
 import { useEnvironmentStore } from "../../stores/environmentStore";
-import { Badge } from "../ui/Badge";
 import { IconChevronRight } from "../ui/icons";
 
 interface EnvironmentIndicatorProps {
@@ -16,7 +15,6 @@ export function EnvironmentIndicator({ onOpenPicker }: EnvironmentIndicatorProps
     : undefined;
   const presentation = getRuntimePresentation(selectedId ?? "nodejs");
   const name = environment?.definition.name ?? "No environment";
-  const category = environment?.definition.category === "framework" ? "Framework" : "Language";
 
   return (
     <button
@@ -31,11 +29,6 @@ export function EnvironmentIndicator({ onOpenPicker }: EnvironmentIndicatorProps
         <span className="env-indicator__label">Environment</span>
         <span className="env-indicator__name">{name}</span>
       </div>
-      {environment && (
-        <Badge variant={environment.configured ? "success" : "default"}>
-          {environment.configured ? category : "Not configured"}
-        </Badge>
-      )}
       <IconChevronRight size={14} className="env-indicator__chevron" />
     </button>
   );

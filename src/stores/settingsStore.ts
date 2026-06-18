@@ -13,12 +13,16 @@ interface SettingsStore {
   loaded: boolean;
   load: () => Promise<void>;
   update: (patch: AppSettingsPatch) => Promise<void>;
+  reset: () => Promise<void>;
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-async function persistSettings(patch: AppSettingsPatch): Promise<AppSettings> {
-  return runspaceInvoke<AppSettings>("update_settings", patch as Record<string, unknown>);
+async function persistSettings(patch: AppSettingsPatch | AppSettings): Promise<AppSettings> {
+  return runspaceInvoke<AppSettings>(
+    "update_settings",
+    patch as unknown as Record<string, unknown>,
+  );
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -41,7 +45,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   update: async (patch) => {
     const next = mergeAppSettings(get().settings, patch);
     set({ settings: next });
-    applyAppSettings(next);
+    if (patch.appearance !== undefined) {
+      applyAppSettings(next);
+    }
 
     if (saveTimer) {
       clearTimeout(saveTimer);
@@ -52,6 +58,26 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         set({ settings: normalizeAppSettings(saved) });
       });
     }, 300);
+  },
+
+  reset: async () => {
+    const next = normalizeAppSettings(DEFAULT_APP_SETTINGS);
+
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    set({ settings: next });
+    applyAppSettings(next);
+
+    try {
+      const saved = normalizeAppSettings(await persistSettings(DEFAULT_APP_SETTINGS));
+      set({ settings: saved });
+      applyAppSettings(saved);
+    } catch {
+      // Keep local defaults when persistence fails.
+    }
   },
 }));
 

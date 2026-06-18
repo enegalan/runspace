@@ -46,6 +46,26 @@ describe("settingsStore", () => {
     expect(useSettingsStore.getState().settings.editor.tabSize).toBe(4);
     expect(useSettingsStore.getState().settings.execution.runTimeoutSecs).toBe(30);
   });
+
+  it("resets all settings to defaults", async () => {
+    useSettingsStore.setState({
+      settings: mergeAppSettings(DEFAULT_APP_SETTINGS, {
+        appearance: { theme: "light" },
+        execution: { runTimeoutSecs: 99 },
+        editor: { tabSize: 8 },
+      }),
+      loaded: true,
+    });
+    mockedInvoke.mockResolvedValueOnce(DEFAULT_APP_SETTINGS);
+
+    await useSettingsStore.getState().reset();
+
+    expect(useSettingsStore.getState().settings).toEqual(DEFAULT_APP_SETTINGS);
+    expect(mockedInvoke).toHaveBeenCalledWith(
+      "update_settings",
+      DEFAULT_APP_SETTINGS,
+    );
+  });
 });
 
 describe("settingsDefaults", () => {
@@ -56,7 +76,7 @@ describe("settingsDefaults", () => {
       execution: { ...DEFAULT_APP_SETTINGS.execution, runTimeoutSecs: 999 },
     });
 
-    expect(normalized.appearance.editorFontSize).toBe(24);
+    expect(normalized.appearance.editorFontSize).toBe(20);
     expect(normalized.execution.runTimeoutSecs).toBe(300);
   });
 
@@ -83,5 +103,20 @@ describe("applyAppSettings", () => {
 
     expect(document.documentElement.dataset.theme).toBe("light");
     expect(document.documentElement.dataset.density).toBe("compact");
+  });
+
+  it("applies font size and family to the document root", () => {
+    applyAppSettings({
+      ...DEFAULT_APP_SETTINGS,
+      appearance: {
+        ...DEFAULT_APP_SETTINGS.appearance,
+        editorFontSize: 16,
+        editorFontFamily: "Fira Code",
+      },
+    });
+
+    const styles = getComputedStyle(document.documentElement);
+    expect(styles.getPropertyValue("--rs-font-size-md").trim()).toBe("17px");
+    expect(styles.getPropertyValue("--rs-font-mono")).toContain("Fira Code");
   });
 });

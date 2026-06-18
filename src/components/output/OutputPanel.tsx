@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
 import {
   OUTPUT_WIDTH_MAX,
@@ -43,7 +44,7 @@ export function OutputPanel({
     timedOut ||
     isRunning;
 
-  const onResizePointerDown = usePointerDragResize(width, onWidthChange, {
+  const { currentSize, onPointerDown } = usePointerDragResize(width, onWidthChange, {
     min: OUTPUT_WIDTH_MIN,
     max: OUTPUT_WIDTH_MAX,
     side: "left",
@@ -58,11 +59,13 @@ export function OutputPanel({
     }
   };
 
+  const panelStyle = { "--rs-panel-width": `${currentSize}px` } as CSSProperties;
+
   return (
-    <div className="output-shell" style={{ width }} data-testid="output-panel">
+    <div className="output-shell" style={panelStyle} data-testid="output-panel">
       <ResizeHandle
         side="left"
-        onPointerDown={onResizePointerDown}
+        onPointerDown={onPointerDown}
         data-testid="output-resize-handle"
       />
       <aside className="output-panel">

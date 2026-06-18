@@ -7,7 +7,9 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
+import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { readTerminalTheme } from "../../core/settings/applyAppSettings";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 export interface XTermViewHandle {
   write: (data: string) => void;
@@ -25,6 +27,7 @@ interface XTermViewProps {
 
 export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
   function XTermView({ onData, onResize }, ref) {
+    const settings = useSettingsStore((state) => state.settings);
     const containerRef = useRef<HTMLDivElement>(null);
     const terminalRef = useRef<Terminal | null>(null);
     const fitAddonRef = useRef<FitAddon | null>(null);
@@ -59,8 +62,8 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
 
       const terminal = new Terminal({
         cursorBlink: true,
-        fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
-        fontSize: 12,
+        fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
+        fontSize: settings.appearance.editorFontSize,
         lineHeight: 1.3,
         theme: readTerminalTheme(),
         scrollback: 1000,
@@ -106,6 +109,16 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
         fitAddonRef.current = null;
       };
     }, []);
+
+    useEffect(() => {
+      const terminal = terminalRef.current;
+      if (!terminal) {
+        return;
+      }
+
+      terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
+      terminal.options.fontSize = settings.appearance.editorFontSize;
+    }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
 
     return (
       <div

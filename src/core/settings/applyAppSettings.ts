@@ -1,4 +1,12 @@
+import { editorFontFamilyCss } from "../constants/settingsDefaults";
 import type { AppSettings, ThemeMode } from "../types/settings";
+
+const BASE_FONT_SIZES = {
+  xs: 11,
+  sm: 12,
+  md: 14,
+  lg: 16,
+};
 
 function resolveTheme(theme: ThemeMode): "dark" | "light" {
   if (theme === "system" && typeof window !== "undefined") {
@@ -32,15 +40,21 @@ export function applyAppSettings(settings: AppSettings): void {
 
   document.documentElement.dataset.theme = resolveTheme(settings.appearance.theme);
   document.documentElement.dataset.density = settings.appearance.uiDensity;
+
+  const scale = settings.appearance.editorFontSize / 13;
+  for (const [token, baseSize] of Object.entries(BASE_FONT_SIZES)) {
+    document.documentElement.style.setProperty(`--rs-font-size-${token}`, `${Math.round(baseSize * scale)}px`);
+  }
+  document.documentElement.style.setProperty(
+    "--rs-font-mono",
+    editorFontFamilyCss(settings.appearance.editorFontFamily),
+  );
+
   bindSystemThemeListener(settings);
 }
 
-export function getResolvedTheme(settings: AppSettings): "dark" | "light" {
-  return resolveTheme(settings.appearance.theme);
-}
-
 export function getMonacoThemeId(settings: AppSettings): string {
-  return getResolvedTheme(settings) === "light" ? "runspace-light" : "runspace-dark";
+  return resolveTheme(settings.appearance.theme) === "light" ? "runspace-light" : "runspace-dark";
 }
 
 export interface TerminalThemeColors {

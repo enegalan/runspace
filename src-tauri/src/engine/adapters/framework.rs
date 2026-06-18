@@ -40,6 +40,11 @@ const SKELETON_VERSION_FILE: &str = "skeleton.version";
 const SYNC_EXCLUDED_DIRS: &[&str] = &["vendor"];
 const SYNC_EXCLUDED_RELATIVE_FILES: &[&str] = &["database/database.sqlite"];
 
+pub struct SkeletonReady {
+    pub path: PathBuf,
+    pub installed_vendor: bool,
+}
+
 pub fn skeleton_home(framework_id: &str) -> Result<PathBuf, FrameworkSkeletonError> {
     let home = std::env::var("HOME").map_err(|_| {
         FrameworkSkeletonError::Copy("Could not resolve home directory".to_string())
@@ -66,10 +71,12 @@ fn find_composer(extra_paths: &HashMap<String, String>) -> Option<PathBuf> {
     which::which("composer").ok()
 }
 
+const COMPOSER_MANIFEST_FILES: &[&str] = &["composer.json", "composer.lock"];
+
 pub fn ensure_skeleton(
     framework_id: &str,
     extra_paths: &HashMap<String, String>,
-) -> Result<PathBuf, FrameworkSkeletonError> {
+) -> Result<SkeletonReady, FrameworkSkeletonError> {
     let target = skeleton_home(framework_id)?;
     let vendor_autoload = target.join("vendor").join("autoload.php");
     let source = bundled_skeleton_source(framework_id);
@@ -88,15 +95,18 @@ pub fn ensure_skeleton(
         needs_composer = true;
     } else if !skeleton_is_current(&source, &target) {
         sync_bundled_skeleton(&source, &target)?;
-        let lock_file = target.join("composer.lock");
-        if lock_file.is_file() {
-            fs::remove_file(lock_file).map_err(FrameworkSkeletonError::Io)?;
-        }
+        needs_composer = true;
+    } else if composer_manifests_differ(&source, &target) {
+        sync_bundled_skeleton(&source, &target)?;
+        remove_vendor_dir(&target)?;
         needs_composer = true;
     }
 
     if vendor_autoload.is_file() && !needs_composer {
-        return Ok(target);
+        return Ok(SkeletonReady {
+            path: target,
+            installed_vendor: false,
+        });
     }
 
     let composer = find_composer(extra_paths).ok_or(FrameworkSkeletonError::ComposerMissing)?;
@@ -104,6 +114,7 @@ pub fn ensure_skeleton(
         .arg("install")
         .arg("--no-interaction")
         .arg("--prefer-dist")
+        .arg("--no-scripts")
         .current_dir(&target)
         .output()
         .map_err(FrameworkSkeletonError::Io)?;
@@ -126,12 +137,13 @@ pub fn ensure_skeleton(
         return Err(FrameworkSkeletonError::VendorMissing);
     }
 
-    run_post_composer_setup(framework_id, &target, extra_paths)?;
-
-    Ok(target)
+    Ok(SkeletonReady {
+        path: target,
+        installed_vendor: true,
+    })
 }
 
-fn find_php(extra_paths: &HashMap<String, String>) -> Option<PathBuf> {
+pub(crate) fn find_php(extra_paths: &HashMap<String, String>) -> Option<PathBuf> {
     if let Some(path) = extra_paths.get("php_path") {
         if !path.trim().is_empty() {
             return Some(PathBuf::from(path));
@@ -140,46 +152,7 @@ fn find_php(extra_paths: &HashMap<String, String>) -> Option<PathBuf> {
     which::which("php").ok()
 }
 
-fn run_post_composer_setup(
-    framework_id: &str,
-    target: &Path,
-    extra_paths: &HashMap<String, String>,
-) -> Result<(), FrameworkSkeletonError> {
-    let php = find_php(extra_paths).ok_or(FrameworkSkeletonError::Copy(
-        "PHP binary not found for skeleton setup".to_string(),
-    ))?;
-
-    match framework_id {
-        "laravel" => {
-            let sqlite = target.join("database").join("database.sqlite");
-            if !sqlite.is_file() {
-                if let Some(parent) = sqlite.parent() {
-                    fs::create_dir_all(parent).map_err(FrameworkSkeletonError::Io)?;
-                }
-                fs::File::create(&sqlite).map_err(FrameworkSkeletonError::Io)?;
-            }
-            run_php_command(&php, target, &["artisan", "migrate", "--force", "--no-interaction"])?;
-        }
-        "symfony" => {
-            fs::create_dir_all(target.join("var")).map_err(FrameworkSkeletonError::Io)?;
-            run_php_command(
-                &php,
-                target,
-                &[
-                    "bin/console",
-                    "doctrine:migrations:migrate",
-                    "--no-interaction",
-                    "--allow-no-migration",
-                ],
-            )?;
-        }
-        _ => {}
-    }
-
-    Ok(())
-}
-
-fn run_php_command(
+pub(crate) fn run_php_command(
     php: &Path,
     target: &Path,
     args: &[&str],
@@ -206,6 +179,31 @@ fn run_php_command(
             format!("\n{}", stdout.trim())
         }
     )))
+}
+
+fn composer_manifests_differ(source: &Path, target: &Path) -> bool {
+    COMPOSER_MANIFEST_FILES.iter().any(|name| {
+        let src = source.join(name);
+        if !src.is_file() {
+            return false;
+        }
+        file_contents_differ(&src, &target.join(name))
+    })
+}
+
+fn remove_vendor_dir(target: &Path) -> Result<(), FrameworkSkeletonError> {
+    let vendor = target.join("vendor");
+    if vendor.is_dir() {
+        fs::remove_dir_all(&vendor).map_err(FrameworkSkeletonError::Io)?;
+    }
+    Ok(())
+}
+
+fn file_contents_differ(left: &Path, right: &Path) -> bool {
+    match (fs::read(left), fs::read(right)) {
+        (Ok(left_bytes), Ok(right_bytes)) => left_bytes != right_bytes,
+        _ => true,
+    }
 }
 
 fn read_skeleton_version(root: &Path) -> Option<String> {
@@ -347,6 +345,25 @@ mod tests {
 
         fs::write(target.join(SKELETON_VERSION_FILE), "0").unwrap();
         assert!(!skeleton_is_current(&source, &target));
+
+        let _ = fs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn composer_manifests_differ_detects_changed_lock() {
+        let temp = std::env::temp_dir().join(format!(
+            "runspace-composer-manifest-test-{}",
+            std::process::id()
+        ));
+        let source = temp.join("source");
+        let target = temp.join("target");
+        let _ = fs::remove_dir_all(&temp);
+        fs::create_dir_all(&source).unwrap();
+        fs::create_dir_all(&target).unwrap();
+        fs::write(source.join("composer.lock"), "a").unwrap();
+        fs::write(target.join("composer.lock"), "b").unwrap();
+
+        assert!(composer_manifests_differ(&source, &target));
 
         let _ = fs::remove_dir_all(&temp);
     }

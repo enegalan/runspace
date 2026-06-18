@@ -1,6 +1,7 @@
+import { useSettingsStore } from "../../stores/settingsStore";
+import { useSettingsUiStore, type SettingsTab } from "../../stores/settingsUiStore";
 import { IconButton } from "../ui/IconButton";
 import { IconClose, IconPlay, IconSettings } from "../ui/icons";
-import { useSettingsUiStore, type SettingsTab } from "../../stores/settingsUiStore";
 import { EnvironmentsSettings } from "./EnvironmentsSettings";
 import { GeneralSettings } from "./GeneralSettings";
 
@@ -21,6 +22,7 @@ const NAV_ITEMS: {
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const tab = useSettingsUiStore((state) => state.tab);
   const setTab = useSettingsUiStore((state) => state.setTab);
+  const reset = useSettingsStore((state) => state.reset);
 
   if (!open) {
     return null;
@@ -43,9 +45,10 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
                   tab === id ? " settings-panel__nav-item--active" : ""
                 }`}
                 onClick={() => setTab(id)}
+                title={label}
               >
                 <NavIcon size={16} className="settings-panel__nav-icon" />
-                {label}
+                <span className="settings-panel__nav-label">{label}</span>
               </button>
             ))}
           </nav>
@@ -53,6 +56,14 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
         <div className="settings-panel__main">
           <header className="settings-panel__toolbar">
+            <button
+              type="button"
+              className="settings-card__action"
+              onClick={() => void reset()}
+              data-testid="settings-reset-all"
+            >
+              Reset all defaults
+            </button>
             <span className="settings-panel__toolbar-spacer" aria-hidden="true" />
             <IconButton label="Close settings" onClick={onClose}>
               <IconClose size={18} />

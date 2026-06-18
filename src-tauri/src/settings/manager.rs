@@ -54,7 +54,7 @@ impl SettingsManager {
 
     fn normalize(&mut self) {
         self.settings.appearance.editor_font_size =
-            self.settings.appearance.editor_font_size.clamp(10, 24);
+            self.settings.appearance.editor_font_size.clamp(10, 20);
         self.settings.editor.tab_size = match self.settings.editor.tab_size {
             4 => 4,
             8 => 8,

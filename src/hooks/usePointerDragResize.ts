@@ -1,5 +1,5 @@
-import { useCallback, useRef } from "react";
-import { clampPanelSize } from "../core/layout/panelLayout";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { clamp } from "../core/clamp";
 
 type ResizeSide = "left" | "right";
 
@@ -11,13 +11,21 @@ interface PointerDragResizeOptions {
 
 export function usePointerDragResize(
   size: number,
-  setSize: (value: number) => void,
+  onCommit: (value: number) => void,
   options: PointerDragResizeOptions,
 ) {
+  const [currentSize, setCurrentSize] = useState(size);
   const sizeRef = useRef(size);
-  sizeRef.current = size;
+  const isDraggingRef = useRef(false);
 
-  return useCallback(
+  useEffect(() => {
+    if (!isDraggingRef.current) {
+      sizeRef.current = size;
+      setCurrentSize(size);
+    }
+  }, [size]);
+
+  const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if (event.button !== 0) {
         return;
@@ -28,6 +36,7 @@ export function usePointerDragResize(
       const startX = event.clientX;
       const startSize = sizeRef.current;
       const target = event.currentTarget;
+      isDraggingRef.current = true;
       target.setPointerCapture(event.pointerId);
       target.classList.add("resize-handle--active");
 
@@ -35,21 +44,31 @@ export function usePointerDragResize(
         const delta = moveEvent.clientX - startX;
         const next =
           options.side === "right" ? startSize + delta : startSize - delta;
-        setSize(clampPanelSize(next, options.min, options.max));
+        const clamped = clamp(next, options.min, options.max);
+        sizeRef.current = clamped;
+        setCurrentSize(clamped);
+      };
+
+      const finish = () => {
+        isDraggingRef.current = false;
+        onCommit(sizeRef.current);
+        target.removeEventListener("pointermove", onPointerMove);
+        target.removeEventListener("pointerup", onPointerUp);
+        target.removeEventListener("pointercancel", onPointerUp);
       };
 
       const onPointerUp = (upEvent: PointerEvent) => {
         target.releasePointerCapture(upEvent.pointerId);
         target.classList.remove("resize-handle--active");
-        target.removeEventListener("pointermove", onPointerMove);
-        target.removeEventListener("pointerup", onPointerUp);
-        target.removeEventListener("pointercancel", onPointerUp);
+        finish();
       };
 
       target.addEventListener("pointermove", onPointerMove);
       target.addEventListener("pointerup", onPointerUp);
       target.addEventListener("pointercancel", onPointerUp);
     },
-    [options.max, options.min, options.side, setSize],
+    [onCommit, options.max, options.min, options.side],
   );
+
+  return { currentSize, onPointerDown };
 }

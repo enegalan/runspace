@@ -106,6 +106,13 @@
   opacity: 0.85;
 }
 
+.settings-panel__nav-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .settings-panel__nav-item--active .settings-panel__nav-icon {
   opacity: 1;
 }
@@ -264,6 +271,13 @@
 .settings-row__control {
   flex-shrink: 0;
   width: min(100%, 220px);
+}
+
+.settings-row__control:has(.settings-segmented) {
+  display: flex;
+  justify-content: flex-end;
+  width: auto;
+  max-width: min(100%, 360px);
 }
 
 .settings-divider {
@@ -858,6 +872,11 @@
 
   .settings-row__control {
     width: 100%;
+  }
+
+  .settings-row__control:has(.settings-segmented) {
+    justify-content: flex-start;
+    max-width: none;
   }
 
   .shortcuts-settings__item {
