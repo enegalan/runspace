@@ -311,8 +311,12 @@ export function AppShell() {
   }, [layoutSettings.outputVisible, updateSettings]);
 
   const handleSave = useCallback(() => {
+    if (executionSettings.runOnSave && !runDisabled && !isRunning) {
+      handleRun();
+      return;
+    }
     void useEditorTabsStore.getState().saveActiveFile();
-  }, []);
+  }, [executionSettings.runOnSave, runDisabled, isRunning, handleRun]);
 
   const handleNewTerminal = useCallback(() => {
     if (!workspace || !selectedId || !selectedEnvironment?.configured) {

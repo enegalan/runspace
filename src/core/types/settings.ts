@@ -25,6 +25,7 @@ export interface ExecutionSettings {
   compileTimeoutSecs: number;
   autoClearOutput: boolean;
   autoScrollOutput: boolean;
+  runOnSave: boolean;
 }
 
 export interface LayoutSettings {
