@@ -68,6 +68,7 @@ pub struct ExecutionSettings {
     pub compile_timeout_secs: u64,
     pub auto_clear_output: bool,
     pub auto_scroll_output: bool,
+    pub run_on_save: bool,
 }
 
 impl Default for ExecutionSettings {
@@ -77,6 +78,7 @@ impl Default for ExecutionSettings {
             compile_timeout_secs: 15,
             auto_clear_output: true,
             auto_scroll_output: true,
+            run_on_save: true,
         }
     }
 }

@@ -217,6 +217,15 @@ export function GeneralSettings() {
           }
           data-testid="setting-auto-scroll-output"
         />
+        <SettingsToggleRow
+          label="Run on save"
+          description="Run the active file after saving."
+          checked={settings.execution.runOnSave}
+          onChange={(event) =>
+            void update({ execution: { runOnSave: event.target.checked } })
+          }
+          data-testid="setting-run-on-save"
+        />
       </SettingsCard>
 
       <SettingsCard title="Layout" description="Panels and workspace restore.">

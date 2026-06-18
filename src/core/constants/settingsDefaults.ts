@@ -42,6 +42,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     compileTimeoutSecs: 15,
     autoClearOutput: true,
     autoScrollOutput: true,
+    runOnSave: true,
   },
   layout: {
     sidebarWidth: SIDEBAR_WIDTH_DEFAULT,
