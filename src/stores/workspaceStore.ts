@@ -218,6 +218,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         return false;
       }
       await get().createWorkspace(runtimeId, workspaceName);
+      useEditorTabsStore.getState().clearTabs();
       return get().workspace !== null;
     }
 
@@ -225,6 +226,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     if (!workspace) {
       return false;
     }
+
+    useEditorTabsStore.getState().clearTabs();
 
     set({
       workspace,

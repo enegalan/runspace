@@ -31,8 +31,6 @@ export function useTabDragReorder({
   const [dragState, setDragState] = useState<TabDragState | null>(null);
   const dragStateRef = useRef<TabDragState | null>(null);
   const layoutSnapshotRef = useRef<TabLayoutSnapshot[]>([]);
-  const didDragRef = useRef(false);
-  const suppressNextClickRef = useRef(false);
   const startXRef = useRef(0);
   const pointerIdRef = useRef<number | null>(null);
   const captureTargetRef = useRef<HTMLElement | null>(null);
@@ -41,7 +39,6 @@ export function useTabDragReorder({
     dragStateRef.current = null;
     layoutSnapshotRef.current = [];
     setDragState(null);
-    didDragRef.current = false;
     pointerIdRef.current = null;
     captureTargetRef.current = null;
   }, []);
@@ -68,11 +65,10 @@ export function useTabDragReorder({
       }
 
       const target = event.currentTarget;
+      const ownerDocument = target.ownerDocument;
       startXRef.current = event.clientX;
-      didDragRef.current = false;
       pointerIdRef.current = event.pointerId;
       captureTargetRef.current = target;
-      target.setPointerCapture(event.pointerId);
 
       const onPointerMove = (moveEvent: PointerEvent) => {
         if (moveEvent.pointerId !== pointerIdRef.current) {
@@ -86,9 +82,9 @@ export function useTabDragReorder({
 
         if (!dragStateRef.current) {
           captureLayoutSnapshot();
+          target.setPointerCapture(moveEvent.pointerId);
         }
 
-        didDragRef.current = true;
         const snapshot = layoutSnapshotRef.current;
         const dropIndex = computeTabDropIndex(moveEvent.clientX, snapshot);
         const pointerDeltaX = moveEvent.clientX - startXRef.current;
@@ -113,35 +109,25 @@ export function useTabDragReorder({
         if (current && current.dragIndex !== current.dropIndex) {
           onReorder(current.dragIndex, current.dropIndex);
         }
-        if (didDragRef.current) {
-          suppressNextClickRef.current = true;
-        }
 
-        captureTargetRef.current?.releasePointerCapture(upEvent.pointerId);
-        captureTargetRef.current?.removeEventListener("pointermove", onPointerMove);
-        captureTargetRef.current?.removeEventListener("pointerup", onPointerUp);
-        captureTargetRef.current?.removeEventListener("pointercancel", onPointerUp);
+        if (target.hasPointerCapture(upEvent.pointerId)) {
+          target.releasePointerCapture(upEvent.pointerId);
+        }
+        ownerDocument.removeEventListener("pointermove", onPointerMove);
+        ownerDocument.removeEventListener("pointerup", onPointerUp);
+        ownerDocument.removeEventListener("pointercancel", onPointerUp);
         clearDrag();
       };
 
-      target.addEventListener("pointermove", onPointerMove);
-      target.addEventListener("pointerup", onPointerUp);
-      target.addEventListener("pointercancel", onPointerUp);
+      ownerDocument.addEventListener("pointermove", onPointerMove);
+      ownerDocument.addEventListener("pointerup", onPointerUp);
+      ownerDocument.addEventListener("pointercancel", onPointerUp);
     },
     [captureLayoutSnapshot, clearDrag, onReorder, tabCount],
   );
 
-  const shouldSuppressClick = useCallback(() => {
-    if (!suppressNextClickRef.current) {
-      return false;
-    }
-    suppressNextClickRef.current = false;
-    return true;
-  }, []);
-
   return {
     dragState,
     onTabPointerDown,
-    shouldSuppressClick,
   };
 }
