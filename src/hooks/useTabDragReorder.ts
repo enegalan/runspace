@@ -65,6 +65,7 @@ export function useTabDragReorder({
       }
 
       const target = event.currentTarget;
+      const ownerDocument = target.ownerDocument;
       startXRef.current = event.clientX;
       pointerIdRef.current = event.pointerId;
       captureTargetRef.current = target;
@@ -112,15 +113,15 @@ export function useTabDragReorder({
         if (target.hasPointerCapture(upEvent.pointerId)) {
           target.releasePointerCapture(upEvent.pointerId);
         }
-        target.removeEventListener("pointermove", onPointerMove);
-        target.removeEventListener("pointerup", onPointerUp);
-        target.removeEventListener("pointercancel", onPointerUp);
+        ownerDocument.removeEventListener("pointermove", onPointerMove);
+        ownerDocument.removeEventListener("pointerup", onPointerUp);
+        ownerDocument.removeEventListener("pointercancel", onPointerUp);
         clearDrag();
       };
 
-      target.addEventListener("pointermove", onPointerMove);
-      target.addEventListener("pointerup", onPointerUp);
-      target.addEventListener("pointercancel", onPointerUp);
+      ownerDocument.addEventListener("pointermove", onPointerMove);
+      ownerDocument.addEventListener("pointerup", onPointerUp);
+      ownerDocument.addEventListener("pointercancel", onPointerUp);
     },
     [captureLayoutSnapshot, clearDrag, onReorder, tabCount],
   );
