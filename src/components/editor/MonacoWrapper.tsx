@@ -8,7 +8,6 @@ import { KeyCode, KeyMod } from "monaco-editor";
 import { memo, useEffect, useMemo, useRef } from "react";
 import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { getMonacoThemeId } from "../../core/settings/applyAppSettings";
-import type { AppSettings } from "../../core/types/settings";
 import { useSettingsStore } from "../../stores/settingsStore";
 
 function readEditorBackground(): string {
@@ -67,10 +66,7 @@ export default memo(function MonacoWrapper({
   const monacoRef = useRef<Monaco | null>(null);
   const onSaveRef = useRef(onSave);
   const autoSaveRef = useRef(editorSettings.autoSave);
-  const themeId = useMemo(
-    () => getMonacoThemeId({ appearance: { theme } } as AppSettings),
-    [theme],
-  );
+  const themeId = useMemo(() => getMonacoThemeId(theme), [theme]);
 
   onSaveRef.current = onSave;
   autoSaveRef.current = editorSettings.autoSave;

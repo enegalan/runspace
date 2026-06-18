@@ -85,12 +85,12 @@ export function applyAppSettings(settings: AppSettings): void {
 }
 
 /**
- * Gets the Monaco theme ID based on the settings.
- * @param settings - The application settings.
+ * Gets the Monaco theme ID based on the theme mode.
+ * @param theme - The theme mode.
  * @returns The Monaco theme ID.
  */
-export function getMonacoThemeId(settings: AppSettings): string {
-  return resolveTheme(settings.appearance.theme) === "light" ? "runspace-light" : "runspace-dark";
+export function getMonacoThemeId(theme: ThemeMode): string {
+  return resolveTheme(theme) === "light" ? "runspace-light" : "runspace-dark";
 }
 
 export interface TerminalThemeColors {
