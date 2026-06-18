@@ -15,7 +15,6 @@ export interface XTermViewHandle {
   write: (data: string) => void;
   clear: () => void;
   fit: () => void;
-  focus: () => void;
   getCols: () => number;
   getRows: () => number;
 }
@@ -47,9 +46,6 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
       fit: () => {
         fitAddonRef.current?.fit();
       },
-      focus: () => {
-        terminalRef.current?.focus();
-      },
       getCols: () => terminalRef.current?.cols ?? 80,
       getRows: () => terminalRef.current?.rows ?? 24,
     }));
@@ -64,15 +60,12 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
         cursorBlink: true,
         fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
         fontSize: settings.appearance.editorFontSize,
-        lineHeight: 1.3,
         theme: readTerminalTheme(),
-        scrollback: 1000,
       });
       const fitAddon = new FitAddon();
       terminal.loadAddon(fitAddon);
       terminal.open(container);
       fitAddon.fit();
-      terminal.focus();
 
       const applyTheme = () => {
         terminal.options.theme = readTerminalTheme();
@@ -118,6 +111,7 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
 
       terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
       terminal.options.fontSize = settings.appearance.editorFontSize;
+      fitAddonRef.current?.fit();
     }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
 
     return (
