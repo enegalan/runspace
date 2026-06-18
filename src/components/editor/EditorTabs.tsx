@@ -42,7 +42,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
     [reorderTabs],
   );
 
-  const { dragState, onTabPointerDown, shouldSuppressClick } = useTabDragReorder({
+  const { dragState, onTabPointerDown } = useTabDragReorder({
     listRef,
     tabCount: openFiles.length,
     onReorder: handleReorder,
@@ -132,9 +132,6 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
                 type="button"
                 className="editor-tabs__tab-button"
                 onClick={() => {
-                  if (shouldSuppressClick()) {
-                    return;
-                  }
                   setActive(file.path);
                 }}
                 title={file.path}

@@ -107,6 +107,8 @@ export default memo(function MonacoWrapper({
         void onSaveRef.current();
       }
     });
+
+    editor.focus();
   };
 
   useEffect(() => {
