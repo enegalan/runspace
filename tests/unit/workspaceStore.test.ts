@@ -145,6 +145,54 @@ describe("workspaceStore", () => {
     expect(useWorkspaceStore.getState().rootFiles).toHaveLength(2);
   });
 
+  it("clears tabs before activating another environment", async () => {
+    const cWorkspace = { id: "ws-c", name: "C project", runtime_id: "c" };
+    const nodeWorkspace = { id: "ws-node", name: "Node project", runtime_id: "nodejs" };
+    useWorkspaceStore.setState({
+      workspace: cWorkspace,
+      workspaces: [cWorkspace],
+      loaded: true,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "test1.c",
+          content: "int main() {}",
+          dirty: false,
+          language: "c",
+        },
+      ],
+      activePath: "test1.c",
+      loaded: true,
+    });
+
+    vi.mocked(runspaceInvoke).mockImplementation(async (cmd) => {
+      if (cmd === "read_session") {
+        return { environments: {}, last_runtime_id: "nodejs" };
+      }
+      if (cmd === "write_session" || cmd === "set_selected_environment") {
+        return undefined;
+      }
+      if (cmd === "list_workspaces") {
+        return [nodeWorkspace];
+      }
+      if (cmd === "initialize_workspace" || cmd === "open_workspace") {
+        return nodeWorkspace;
+      }
+      if (cmd === "list_files") {
+        return [];
+      }
+      return undefined;
+    });
+
+    const switched = await useWorkspaceStore.getState().switchEnvironment("nodejs");
+
+    expect(switched).toBe(true);
+    expect(useEditorTabsStore.getState().openFiles).toHaveLength(0);
+    expect(useEditorTabsStore.getState().activePath).toBeNull();
+    expect(useWorkspaceStore.getState().workspace).toEqual(nodeWorkspace);
+  });
+
   it("clears active workspace and keeps onboarding complete after deleting the last workspace", async () => {
     markOnboardingComplete();
     useWorkspaceStore.setState({

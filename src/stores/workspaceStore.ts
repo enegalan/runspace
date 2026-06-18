@@ -205,6 +205,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         .getState()
         .persistForEnvironment(current.runtime_id, current.id);
     }
+    useEditorTabsStore.getState().clearTabs();
 
     const runtimeWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {
       runtimeId,
