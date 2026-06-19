@@ -1,4 +1,9 @@
 import { create } from "zustand";
+import {
+  pickNextActiveTab,
+  rememberTabFocus,
+  removeFromTabFocusHistory,
+} from "../core/editor/tabFocusHistory";
 import type { TerminalStatus } from "../core/types/terminal";
 import { createTerminalTabId, terminalContextKey } from "../core/types/terminal";
 
@@ -15,6 +20,7 @@ interface TerminalStoreState {
   tabs: Record<string, TerminalTabState>;
   tabOrderByContext: Record<string, string[]>;
   activeTabIdByContext: Record<string, string | undefined>;
+  focusHistoryByContext: Record<string, string[]>;
   addTab: (workspaceId: string, environmentId: string) => string;
   ensureDefaultTab: (workspaceId: string, environmentId: string) => string;
   setActiveTab: (workspaceId: string, environmentId: string, tabId: string) => void;
@@ -31,6 +37,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
   tabs: {},
   tabOrderByContext: {},
   activeTabIdByContext: {},
+  focusHistoryByContext: {},
 
   addTab: (workspaceId, environmentId) => {
     const tabId = createTerminalTabId();
@@ -38,6 +45,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
 
     set((state) => {
       const order = state.tabOrderByContext[contextKey] ?? [];
+      const previousActive = state.activeTabIdByContext[contextKey];
       return {
         tabs: {
           ...state.tabs,
@@ -57,6 +65,13 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
         activeTabIdByContext: {
           ...state.activeTabIdByContext,
           [contextKey]: tabId,
+        },
+        focusHistoryByContext: {
+          ...state.focusHistoryByContext,
+          [contextKey]: rememberTabFocus(
+            state.focusHistoryByContext[contextKey] ?? [],
+            previousActive ?? null,
+          ),
         },
       };
     });
@@ -82,12 +97,26 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
 
   setActiveTab: (workspaceId, environmentId, tabId) => {
     const contextKey = terminalContextKey(workspaceId, environmentId);
-    set((state) => ({
-      activeTabIdByContext: {
-        ...state.activeTabIdByContext,
-        [contextKey]: tabId,
-      },
-    }));
+    set((state) => {
+      const previousActive = state.activeTabIdByContext[contextKey];
+      if (previousActive === tabId) {
+        return state;
+      }
+
+      return {
+        activeTabIdByContext: {
+          ...state.activeTabIdByContext,
+          [contextKey]: tabId,
+        },
+        focusHistoryByContext: {
+          ...state.focusHistoryByContext,
+          [contextKey]: rememberTabFocus(
+            state.focusHistoryByContext[contextKey] ?? [],
+            previousActive ?? null,
+          ),
+        },
+      };
+    });
   },
 
   setConnecting: (tabId, workspaceId, environmentId) => {
@@ -165,13 +194,20 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
       }
 
       const contextKey = terminalContextKey(tab.workspaceId, tab.environmentId);
-      const order = (state.tabOrderByContext[contextKey] ?? []).filter((id) => id !== tabId);
+      const previousOrder = state.tabOrderByContext[contextKey] ?? [];
+      const closedIndex = previousOrder.indexOf(tabId);
+      const order = previousOrder.filter((id) => id !== tabId);
       const nextTabs = { ...state.tabs };
       delete nextTabs[tabId];
 
+      const focusHistory = removeFromTabFocusHistory(
+        state.focusHistoryByContext[contextKey] ?? [],
+        tabId,
+      );
+
       let nextActive = state.activeTabIdByContext[contextKey];
       if (nextActive === tabId) {
-        nextActive = order[order.length - 1];
+        nextActive = pickNextActiveTab(focusHistory, order, closedIndex) ?? order[order.length - 1];
       }
 
       return {
@@ -183,6 +219,10 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
         activeTabIdByContext: {
           ...state.activeTabIdByContext,
           [contextKey]: nextActive,
+        },
+        focusHistoryByContext: {
+          ...state.focusHistoryByContext,
+          [contextKey]: focusHistory,
         },
       };
     });

@@ -8,6 +8,7 @@ describe("terminalStore", () => {
       tabs: {},
       tabOrderByContext: {},
       activeTabIdByContext: {},
+      focusHistoryByContext: {},
     });
 
     const store = useTerminalStore.getState();
@@ -27,11 +28,39 @@ describe("terminalStore", () => {
     expect(terminalContextKey("ws-1", "nodejs")).toBe("ws-1:nodejs");
   });
 
+  it("activates the previously focused tab when closing the active tab", () => {
+    useTerminalStore.setState({
+      tabs: {},
+      tabOrderByContext: {},
+      activeTabIdByContext: {},
+      focusHistoryByContext: {},
+    });
+
+    const store = useTerminalStore.getState();
+    const firstTabId = store.addTab("ws-1", "nodejs");
+    const secondTabId = store.addTab("ws-1", "nodejs");
+    const thirdTabId = store.addTab("ws-1", "nodejs");
+
+    store.setActiveTab("ws-1", "nodejs", firstTabId);
+    store.removeTab(firstTabId);
+
+    expect(
+      useTerminalStore.getState().activeTabIdByContext[terminalContextKey("ws-1", "nodejs")],
+    ).toBe(thirdTabId);
+    expect(
+      useTerminalStore
+        .getState()
+        .getTabsForContext("ws-1", "nodejs")
+        .map((tab) => tab.tabId),
+    ).toEqual([secondTabId, thirdTabId]);
+  });
+
   it("marks session as exited and removes tab on demand", () => {
     useTerminalStore.setState({
       tabs: {},
       tabOrderByContext: {},
       activeTabIdByContext: {},
+      focusHistoryByContext: {},
     });
     const store = useTerminalStore.getState();
     const tabId = store.addTab("ws-1", "php");
@@ -50,6 +79,7 @@ describe("terminalStore", () => {
       tabs: {},
       tabOrderByContext: {},
       activeTabIdByContext: {},
+      focusHistoryByContext: {},
     });
 
     const tabId = useTerminalStore.getState().ensureDefaultTab("ws-2", "laravel");

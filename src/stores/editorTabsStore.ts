@@ -4,12 +4,18 @@ import { useDialogStore } from "./dialogStore";
 import { getAppSettings } from "./settingsStore";
 import { languageFromExtension } from "../core/languageFromExtension";
 import type { OpenFile, SessionData } from "../core/types/workspace";
+import {
+  pickNextActiveTab,
+  rememberTabFocus,
+  removeFromTabFocusHistory,
+} from "../core/editor/tabFocusHistory";
 import { reorderByIndex } from "../core/editor/tabReorder";
 import { getEnvironmentSession, uniquePaths } from "../core/workspace/session";
 
 interface EditorTabsStore {
   openFiles: OpenFile[];
   activePath: string | null;
+  focusHistory: string[];
   loaded: boolean;
   openFile: (path: string) => Promise<void>;
   closeFile: (path: string, force?: boolean) => Promise<boolean>;
@@ -38,25 +44,57 @@ function basename(path: string): string {
   return parts[parts.length - 1] ?? path;
 }
 
+let tabSessionPersistQueue = Promise.resolve();
+
+function queueTabSessionPersist(get: () => EditorTabsStore): void {
+  tabSessionPersistQueue = tabSessionPersistQueue
+    .then(async () => {
+      const { useWorkspaceStore } = await import("./workspaceStore");
+      const workspace = useWorkspaceStore.getState().workspace;
+      if (!workspace) {
+        return;
+      }
+      await get().persistForEnvironment(workspace.runtime_id, workspace.id);
+    })
+    .catch((error) => {
+      console.error("Failed to persist tab session:", error);
+    });
+}
+
 export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   openFiles: [],
   activePath: null,
+  focusHistory: [],
   loaded: false,
 
   openFile: async (path) => {
     const existing = get().openFiles.find((file) => file.path === path);
     if (existing) {
-      set({ activePath: path });
+      const currentActive = get().activePath;
+      if (currentActive === path) {
+        return;
+      }
+      set({
+        activePath: path,
+        focusHistory: rememberTabFocus(get().focusHistory, currentActive),
+      });
+      queueTabSessionPersist(get);
       return;
     }
 
     const content = await runspaceInvoke<string>("read_file", { path });
     const language = languageFromExtension(path);
+    const currentActive = get().activePath;
     const openFiles = [
       ...get().openFiles.filter((file) => file.path !== path),
       { path, content, dirty: false, language },
     ];
-    set({ openFiles, activePath: path });
+    set({
+      openFiles,
+      activePath: path,
+      focusHistory: rememberTabFocus(get().focusHistory, currentActive),
+    });
+    queueTabSessionPersist(get);
   },
 
   closeFile: async (path, force = false) => {
@@ -77,14 +115,19 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       }
     }
 
+    const closedIndex = get().openFiles.findIndex((item) => item.path === path);
     const openFiles = get().openFiles.filter((item) => item.path !== path);
+    const focusHistory = removeFromTabFocusHistory(get().focusHistory, path);
     let activePath = get().activePath;
     if (activePath === path) {
-      const index = get().openFiles.findIndex((item) => item.path === path);
-      const next = openFiles[index] ?? openFiles[index - 1] ?? null;
-      activePath = next?.path ?? null;
+      activePath = pickNextActiveTab(
+        focusHistory,
+        openFiles.map((file) => file.path),
+        closedIndex,
+      );
     }
-    set({ openFiles, activePath });
+    set({ openFiles, activePath, focusHistory });
+    queueTabSessionPersist(get);
     return true;
   },
 
@@ -129,9 +172,18 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   },
 
   setActive: (path) => {
-    if (get().openFiles.some((file) => file.path === path)) {
-      set({ activePath: path });
+    if (!get().openFiles.some((file) => file.path === path)) {
+      return;
     }
+    const currentActive = get().activePath;
+    if (currentActive === path) {
+      return;
+    }
+    set({
+      activePath: path,
+      focusHistory: rememberTabFocus(get().focusHistory, currentActive),
+    });
+    queueTabSessionPersist(get);
   },
 
   reorderTabs: (fromIndex, toIndex) => {
@@ -140,6 +192,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       return;
     }
     set({ openFiles });
+    queueTabSessionPersist(get);
   },
 
   updateContent: (path, content) => {
@@ -191,7 +244,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   },
 
   clearTabs: () => {
-    set({ openFiles: [], activePath: null });
+    set({ openFiles: [], activePath: null, focusHistory: [] });
   },
 
   restoreForWorkspace: async (session, runtimeId, workspaceId) => {
@@ -200,7 +253,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     const paths = uniquePaths(savedTabs?.open_files ?? []);
 
     if (paths.length === 0) {
-      set({ openFiles: [], activePath: null });
+      set({ openFiles: [], activePath: null, focusHistory: [] });
       return;
     }
 
@@ -224,7 +277,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
         ? savedTabs.active_file
         : (openFiles[0]?.path ?? null);
 
-    set({ openFiles, activePath });
+    set({ openFiles, activePath, focusHistory: [] });
   },
 
   persistForEnvironment: async (runtimeId, workspaceId) => {

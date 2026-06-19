@@ -15,6 +15,7 @@ describe("TerminalPanel", () => {
       tabs: {},
       tabOrderByContext: {},
       activeTabIdByContext: {},
+      focusHistoryByContext: {},
     });
   });
 

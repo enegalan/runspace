@@ -29,6 +29,7 @@ describe("workspaceStore", () => {
     useEditorTabsStore.setState({
       openFiles: [],
       activePath: null,
+      focusHistory: [],
       loaded: false,
     });
   });

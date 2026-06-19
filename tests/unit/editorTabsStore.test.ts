@@ -15,6 +15,7 @@ describe("editorTabsStore", () => {
     useEditorTabsStore.setState({
       openFiles: [],
       activePath: null,
+      focusHistory: [],
       loaded: false,
     });
   });
@@ -213,6 +214,28 @@ describe("editorTabsStore", () => {
     const state = useEditorTabsStore.getState();
     expect(state.openFiles.map((file) => file.path)).toEqual(["b.js", "c.js", "a.js"]);
     expect(state.activePath).toBe("b.js");
+  });
+
+  it("activates the previously focused tab when closing the active tab", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "a.js", content: "a", dirty: false, language: "javascript" },
+        { path: "b.js", content: "b", dirty: false, language: "javascript" },
+        { path: "c.js", content: "c", dirty: false, language: "javascript" },
+      ],
+      activePath: "c.js",
+      focusHistory: [],
+    });
+
+    useEditorTabsStore.getState().setActive("a.js");
+    const closed = await useEditorTabsStore.getState().closeFile("a.js");
+
+    expect(closed).toBe(true);
+    expect(useEditorTabsStore.getState().activePath).toBe("c.js");
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
+      "b.js",
+      "c.js",
+    ]);
   });
 
   it("closes dirty file without confirm when setting disabled", async () => {
