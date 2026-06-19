@@ -39,10 +39,10 @@ export function TerminalTabView({
   }, [active]);
 
   useEffect(() => {
-    if (! onClearReady) {
+    if (!onClearReady) {
       return;
     }
-    if (! active) {
+    if (!active) {
       onClearReady(null);
       return;
     }
@@ -50,7 +50,7 @@ export function TerminalTabView({
     return () => onClearReady(null);
   }, [active, clearTerminal, onClearReady]);
 
-  if (! xtermMounted) {
+  if (!xtermMounted) {
     return null;
   }
 
@@ -58,7 +58,7 @@ export function TerminalTabView({
     <div
       className={`terminal-tab-pane${active ? "" : " terminal-tab-pane--hidden"}`}
       data-testid={`terminal-tab-pane-${tabId}`}
-      aria-hidden={! active}
+      aria-hidden={!active}
     >
       {tab?.error && active && <p className="terminal-panel__error">{tab.error}</p>}
       <XTermView ref={xtermRef} onData={handleData} onResize={handleResize} />

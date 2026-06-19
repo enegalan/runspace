@@ -70,7 +70,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   }, []);
 
   const scheduleAutoExpand = useCallback(() => {
-    if (! entry.is_directory || expanded || autoExpandTimerRef.current !== null) {
+    if (!entry.is_directory || expanded || autoExpandTimerRef.current !== null) {
       return;
     }
     autoExpandTimerRef.current = setTimeout(() => {
@@ -128,13 +128,13 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     const external = hasExternalFileDrag(event.dataTransfer);
     const internal = hasFileDrag(event.dataTransfer.types);
 
-    if (! external && ! internal) {
+    if (!external && !internal) {
       return;
     }
 
     if (internal) {
       const payload = getActiveDragPayload();
-      if (! payload || isInvalidMove(payload.path, entry.path)) {
+      if (!payload || isInvalidMove(payload.path, entry.path)) {
         event.stopPropagation();
         return;
       }
@@ -145,13 +145,13 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     event.dataTransfer.dropEffect = external ? "copy" : "move";
     setFileTreeDropTarget(entry.path);
 
-    if (options.fromRow || ! expanded) {
+    if (options.fromRow || !expanded) {
       scheduleAutoExpand();
     }
   };
 
   const handleFolderDragLeave = (event: React.DragEvent) => {
-    if (! event.currentTarget.contains(event.relatedTarget as Node | null)) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
       clearAutoExpandTimer();
     }
   };
@@ -169,7 +169,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
 
     const payload = readFileDragData(event.dataTransfer);
     clearFileDragData();
-    if (! payload || isInvalidMove(payload.path, entry.path)) {
+    if (!payload || isInvalidMove(payload.path, entry.path)) {
       return;
     }
 
@@ -180,19 +180,19 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     if (hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
-    if (! hasFileDrag(event.dataTransfer.types)) {
+    if (!hasFileDrag(event.dataTransfer.types)) {
       return;
     }
 
     const containingFolder = (event.currentTarget as HTMLElement).closest(`[${DROP_TARGET_ATTR}]`);
-    if (! containingFolder) {
+    if (!containingFolder) {
       event.stopPropagation();
       return;
     }
 
     const payload = getActiveDragPayload();
     const targetDir = containingFolder.getAttribute(DROP_TARGET_ATTR) ?? "";
-    if (! payload || isInvalidMove(payload.path, targetDir)) {
+    if (!payload || isInvalidMove(payload.path, targetDir)) {
       event.stopPropagation();
       return;
     }
@@ -203,7 +203,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
 
   const handleRename = async () => {
     const trimmed = renameValue.trim();
-    if (! trimmed || trimmed === entry.name) {
+    if (!trimmed || trimmed === entry.name) {
       setRenaming(false);
       setRenameValue(entry.name);
       return;
@@ -227,7 +227,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
       confirmLabel: "Delete",
       danger: true,
     });
-    if (! confirmed) {
+    if (!confirmed) {
       return;
     }
     removeOpenFile(entry.path);
@@ -243,7 +243,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   const buildContextMenuItems = () => {
     const items = [];
 
-    if (! entry.is_directory) {
+    if (!entry.is_directory) {
       items.push({
         id: "open",
         label: "Open",
@@ -280,7 +280,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     <div
       className={`file-tree__row${expanded ? " file-tree__row--expanded" : ""}`}
       style={{ paddingLeft: `${8 + depth * 14}px` }}
-      draggable={! renaming}
+      draggable={!renaming}
       onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}

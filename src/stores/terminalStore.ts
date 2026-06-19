@@ -109,7 +109,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
   setSession: (tabId, sessionId) => {
     set((state) => {
       const existing = state.tabs[tabId];
-      if (! existing) {
+      if (!existing) {
         return state;
       }
       return {
@@ -141,7 +141,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
   setError: (tabId, message) => {
     set((state) => {
       const existing = state.tabs[tabId];
-      if (! existing) {
+      if (!existing) {
         return state;
       }
       return {
@@ -160,7 +160,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
   removeTab: (tabId) => {
     set((state) => {
       const tab = state.tabs[tabId];
-      if (! tab) {
+      if (!tab) {
         return state;
       }
 

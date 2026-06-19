@@ -109,7 +109,7 @@ export default memo(function MonacoWrapper({
 
   useEffect(() => {
     const monaco = monacoRef.current;
-    if (! monaco) {
+    if (!monaco) {
       return;
     }
 
@@ -119,7 +119,7 @@ export default memo(function MonacoWrapper({
 
   useEffect(() => {
     const editor = editorRef.current;
-    if (! editor) {
+    if (!editor) {
       return;
     }
 

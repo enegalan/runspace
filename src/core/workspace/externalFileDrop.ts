@@ -29,7 +29,7 @@ export function readFileAsText(file: File): Promise<string> {
 }
 
 export function pickImportedFileToOpen(paths: string[]): string | null {
-  const file = paths.find((path) => ! path.endsWith("/"));
+  const file = paths.find((path) => !path.endsWith("/"));
   return file ?? null;
 }
 
@@ -38,12 +38,12 @@ export async function importDroppedExternalFiles(
   targetDir: string,
   options: { openFile?: boolean } = {},
 ): Promise<void> {
-  if (! hasExternalFileDrag(dataTransfer)) {
+  if (!hasExternalFileDrag(dataTransfer)) {
     return;
   }
 
   const files = getExternalFiles(dataTransfer);
-  if (files.length === 0 || ! useWorkspaceStore.getState().workspace) {
+  if (files.length === 0 || !useWorkspaceStore.getState().workspace) {
     return;
   }
 

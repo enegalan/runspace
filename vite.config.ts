@@ -55,7 +55,7 @@ function proxyApiRequest(clientReq: IncomingMessage, clientRes: ServerResponse):
   );
 
   proxyReq.on("error", () => {
-    if (! clientRes.headersSent) {
+    if (!clientRes.headersSent) {
       clientRes.writeHead(503, { "Content-Type": "application/json" });
       clientRes.end(JSON.stringify({ error: "Backend starting" }));
       return;

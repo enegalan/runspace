@@ -7,7 +7,7 @@ export function getRuntimeFileExtension(environmentId: string): string {
 export function normalizeFileName(input: string, environmentId: string): string {
   const trimmed = input.trim();
   const baseName = trimmed.split("/").pop() ?? trimmed;
-  if (! baseName.includes(".")) {
+  if (!baseName.includes(".")) {
     return `${trimmed}.${getRuntimeFileExtension(environmentId)}`;
   }
   return trimmed;

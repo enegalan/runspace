@@ -60,10 +60,10 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   closeFile: async (path, force = false) => {
     const file = get().openFiles.find((item) => item.path === path);
-    if (! file) {
+    if (!file) {
       return true;
     }
-    if (file.dirty && ! force && getAppSettings().layout.confirmCloseUnsavedTab) {
+    if (file.dirty && !force && getAppSettings().layout.confirmCloseUnsavedTab) {
       const name = basename(path);
       const confirmed = await useDialogStore
         .getState()
@@ -71,7 +71,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
           confirmLabel: "Close",
           danger: true,
         });
-      if (! confirmed) {
+      if (!confirmed) {
         return false;
       }
     }
@@ -93,7 +93,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       .map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (! closed) {
+      if (!closed) {
         return false;
       }
     }
@@ -109,7 +109,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     const paths = openFiles.slice(index + 1).map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (! closed) {
+      if (!closed) {
         return false;
       }
     }
@@ -120,7 +120,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     const paths = get().openFiles.map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (! closed) {
+      if (!closed) {
         return false;
       }
     }
@@ -150,7 +150,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   saveFile: async (path) => {
     const file = get().openFiles.find((item) => item.path === path);
-    if (! file || ! file.dirty) {
+    if (!file || !file.dirty) {
       return;
     }
     await runspaceInvoke("write_file", { path, content: file.content });
@@ -162,7 +162,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   saveActiveFile: async () => {
     const activePath = get().activePath;
-    if (! activePath) {
+    if (!activePath) {
       return;
     }
     await get().saveFile(activePath);

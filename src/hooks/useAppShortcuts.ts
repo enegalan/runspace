@@ -39,14 +39,14 @@ export function useAppShortcuts(handlers: AppShortcutHandlers) {
         keyof AppShortcutHandlers,
       ][]) {
         const binding = shortcuts[actionId];
-        if (! binding || ! matchesShortcut(event, binding)) {
+        if (!binding || !matchesShortcut(event, binding)) {
           continue;
         }
 
         if (actionId === "run" && (handlers.isRunning || handlers.runDisabled)) {
           return;
         }
-        if (actionId === "stop" && ! handlers.isRunning) {
+        if (actionId === "stop" && !handlers.isRunning) {
           return;
         }
 

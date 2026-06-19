@@ -19,7 +19,7 @@ async function invokeHttp<T>(cmd: string, args: Record<string, unknown>): Promis
   });
 
   const body = (await response.json()) as InvokeResponse<T> | ErrorResponse;
-  if (! response.ok) {
+  if (!response.ok) {
     const message = "error" in body ? body.error : response.statusText;
     throw new Error(message || "Request failed");
   }

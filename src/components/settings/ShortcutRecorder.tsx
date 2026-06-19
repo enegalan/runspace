@@ -21,7 +21,7 @@ export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderPr
   }, []);
 
   useEffect(() => {
-    if (! recording) {
+    if (!recording) {
       return;
     }
 
@@ -35,7 +35,7 @@ export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderPr
       }
 
       const binding = bindingFromKeyboardEvent(event);
-      if (! binding) {
+      if (!binding) {
         return;
       }
 

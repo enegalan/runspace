@@ -41,7 +41,7 @@ export function useTabDragReorder({ listRef, tabCount, onReorder }: UseTabDragRe
 
   const captureLayoutSnapshot = useCallback(() => {
     const list = listRef.current;
-    if (! list) {
+    if (!list) {
       layoutSnapshotRef.current = [];
       return;
     }
@@ -72,11 +72,11 @@ export function useTabDragReorder({ listRef, tabCount, onReorder }: UseTabDragRe
         }
 
         const delta = Math.abs(moveEvent.clientX - startXRef.current);
-        if (! dragStateRef.current && delta < TAB_DRAG_THRESHOLD_PX) {
+        if (!dragStateRef.current && delta < TAB_DRAG_THRESHOLD_PX) {
           return;
         }
 
-        if (! dragStateRef.current) {
+        if (!dragStateRef.current) {
           captureLayoutSnapshot();
           target.setPointerCapture(moveEvent.pointerId);
         }

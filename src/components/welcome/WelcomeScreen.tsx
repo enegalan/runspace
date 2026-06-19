@@ -114,11 +114,11 @@ export function WelcomeScreen() {
 
   const handleCreateWorkspace = async () => {
     const trimmedName = workspaceName.trim();
-    if (! trimmedName) {
+    if (!trimmedName) {
       setError("Enter a workspace name to continue.");
       return;
     }
-    if (! primaryDefinition) {
+    if (!primaryDefinition) {
       setError("Select a runtime for your first workspace.");
       return;
     }
@@ -128,7 +128,7 @@ export function WelcomeScreen() {
 
     try {
       const toInstall = new Set<EnvironmentId>(additionalRuntimeIds);
-      if (! installedIds.has(primaryRuntimeId)) {
+      if (!installedIds.has(primaryRuntimeId)) {
         toInstall.add(primaryRuntimeId);
       }
 
@@ -147,11 +147,11 @@ export function WelcomeScreen() {
       };
 
       for (const field of primaryDefinition.config_fields) {
-        if (! field.required) {
+        if (!field.required) {
           continue;
         }
         const value = mergedPaths[field.key]?.trim() ?? "";
-        if (! value) {
+        if (!value) {
           setError(`Set ${field.label.toLowerCase()} for ${primaryDefinition.name}.`);
           return;
         }
@@ -397,7 +397,7 @@ export function WelcomeScreen() {
                         {isInstalled && (
                           <span className="welcome-screen__runtime-badge">Installed</span>
                         )}
-                        {! isInstalled && (
+                        {!isInstalled && (
                           <a
                             href={definition.install_guide_url}
                             className="welcome-screen__guide-link"

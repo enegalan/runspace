@@ -13,7 +13,7 @@ const negationSpacing = {
       words: true,
       nonwords: false,
       overrides: {
-        "!": true,
+        "!": false,
         "!!": false,
       },
     },

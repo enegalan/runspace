@@ -33,7 +33,7 @@ export function OutputStream({
   const hasContent = stdout.length > 0 || stderr.length > 0 || error !== null || timedOut;
 
   useEffect(() => {
-    if (! autoScrollEnabled || ! autoScroll || ! containerRef.current) {
+    if (!autoScrollEnabled || !autoScroll || !containerRef.current) {
       return;
     }
     containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -41,7 +41,7 @@ export function OutputStream({
 
   const handleScroll = () => {
     const el = containerRef.current;
-    if (! el) {
+    if (!el) {
       return;
     }
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
@@ -70,7 +70,7 @@ export function OutputStream({
       {stdout.length > 0 && <span className="output-stdout">{stdout}</span>}
       {stdout.length > 0 && stderr.length > 0 && "\n"}
       {stderr.length > 0 && <span className="output-stderr">{stderr}</span>}
-      {isRunning && ! hasContent && (
+      {isRunning && !hasContent && (
         <span className="output-stream__running">
           {phase === "compile" ? "Compiling..." : "Running..."}
         </span>

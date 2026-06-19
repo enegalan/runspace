@@ -49,14 +49,15 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XT
 
   useEffect(() => {
     const container = containerRef.current;
-    if (! container) {
+    if (!container) {
       return;
     }
 
+    const { editorFontFamily, editorFontSize } = useSettingsStore.getState().settings.appearance;
     const terminal = new Terminal({
       cursorBlink: true,
-      fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
-      fontSize: settings.appearance.editorFontSize,
+      fontFamily: editorFontFamilyCss(editorFontFamily),
+      fontSize: editorFontSize,
       theme: readTerminalTheme(),
     });
     const fitAddon = new FitAddon();
@@ -102,7 +103,7 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XT
 
   useEffect(() => {
     const terminal = terminalRef.current;
-    if (! terminal) {
+    if (!terminal) {
       return;
     }
 

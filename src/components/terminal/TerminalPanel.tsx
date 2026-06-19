@@ -35,7 +35,7 @@ export function TerminalPanel({
   const setActiveTab = useTerminalStore((state) => state.setActiveTab);
   const tabs = useTerminalStore(
     useShallow((state) => {
-      if (! workspaceId || ! environmentId) {
+      if (!workspaceId || !environmentId) {
         return [] as TerminalTabState[];
       }
       const contextKey = terminalContextKey(workspaceId, environmentId);
@@ -46,7 +46,7 @@ export function TerminalPanel({
     }),
   );
   const activeTabId = useTerminalStore((state) => {
-    if (! workspaceId || ! environmentId) {
+    if (!workspaceId || !environmentId) {
       return undefined;
     }
     return state.activeTabIdByContext[terminalContextKey(workspaceId, environmentId)];
@@ -65,7 +65,7 @@ export function TerminalPanel({
   });
 
   const handleAddTab = useCallback(() => {
-    if (! workspaceId || ! environmentId) {
+    if (!workspaceId || !environmentId) {
       return;
     }
     addTab(workspaceId, environmentId);
@@ -73,7 +73,7 @@ export function TerminalPanel({
 
   const closeTab = useCallback(
     async (tabId: string) => {
-      if (! workspaceId || ! environmentId) {
+      if (!workspaceId || !environmentId) {
         return;
       }
 
@@ -104,7 +104,7 @@ export function TerminalPanel({
     clearActiveRef.current = clear;
   }, []);
 
-  const showPlaceholder = ! enabled;
+  const showPlaceholder = !enabled;
 
   return (
     <div
@@ -125,7 +125,7 @@ export function TerminalPanel({
       />
       <section className="terminal-panel">
         <div className="terminal-panel__header">
-          {! showPlaceholder && (
+          {!showPlaceholder && (
             <div className="terminal-tabs__list" role="tablist" data-testid="terminal-tabs">
               {tabs.map((tab, index) => {
                 const isActive = tab.tabId === activeTab?.tabId;
@@ -187,7 +187,7 @@ export function TerminalPanel({
             <IconButton
               label="Clear terminal"
               onClick={handleClearActive}
-              disabled={showPlaceholder || ! activeTabId}
+              disabled={showPlaceholder || !activeTabId}
               data-testid="terminal-clear-button"
             >
               <IconClear size={16} />
@@ -201,7 +201,7 @@ export function TerminalPanel({
               }}
               disabled={
                 showPlaceholder ||
-                ! activeTab ||
+                !activeTab ||
                 (activeTab.status !== "running" && activeTab.status !== "connecting")
               }
               data-testid="terminal-kill-button"
@@ -220,8 +220,8 @@ export function TerminalPanel({
               <TerminalTabView
                 key={tab.tabId}
                 tabId={tab.tabId}
-                workspaceId={workspaceId !}
-                environmentId={environmentId !}
+                workspaceId={workspaceId!}
+                environmentId={environmentId!}
                 configured={configured}
                 enabled={enabled}
                 active={tab.tabId === activeTab?.tabId}

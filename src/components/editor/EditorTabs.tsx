@@ -49,7 +49,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   });
 
   const handleWheel = (event: React.WheelEvent) => {
-    if (! listRef.current) {
+    if (!listRef.current) {
       return;
     }
     if (event.deltaY !== 0) {
@@ -64,7 +64,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   };
 
   const buildContextMenuItems = (): ContextMenuItem[] => {
-    if (! contextMenu) {
+    if (!contextMenu) {
       return [];
     }
     const { path, index } = contextMenu;
@@ -85,7 +85,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
       {
         id: "close-right",
         label: "Close right",
-        disabled: ! hasTabsToRight,
+        disabled: !hasTabsToRight,
         onClick: () => void closeRight(path),
       },
       {
@@ -162,7 +162,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
         onClick={() => void createAndOpenFile()}
         title={hasWorkspace ? "New file" : "Create a workspace first"}
         aria-label="New file"
-        disabled={! hasWorkspace}
+        disabled={!hasWorkspace}
       >
         <IconPlus size={16} />
       </button>

@@ -121,7 +121,7 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
       <button
         type="button"
         className="env-card__header"
-        onClick={() => setExpanded((prev) => ! prev)}
+        onClick={() => setExpanded((prev) => !prev)}
         aria-expanded={expanded}
       >
         <span className="env-card__chevron" aria-hidden="true">
@@ -219,7 +219,7 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
 
           {message && (
             <div
-              className={`env-card__message${testResult && ! testResult.valid ? " env-card__message--error" : ""}`}
+              className={`env-card__message${testResult && !testResult.valid ? " env-card__message--error" : ""}`}
             >
               {message}
             </div>
@@ -315,7 +315,7 @@ export function EnvironmentsSettings() {
         />
       </div>
 
-      {hasSearch && ! hasVisibleResults ? (
+      {hasSearch && !hasVisibleResults ? (
         <p className="environments-settings__empty" data-testid="environments-no-results">
           No environments match your search.
         </p>

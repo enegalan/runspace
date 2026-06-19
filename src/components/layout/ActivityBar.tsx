@@ -53,7 +53,7 @@ export function ActivityBar({
           title={stopTitle}
           className={`activity-bar__btn activity-bar__btn--stop${isRunning ? " activity-bar__btn--stop-active" : ""}`}
           onClick={onStop}
-          disabled={! isRunning}
+          disabled={!isRunning}
           data-testid="stop-button"
         >
           <IconStop size={20} />

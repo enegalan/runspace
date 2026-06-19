@@ -97,14 +97,14 @@ export function useExecution() {
   const run = useCallback(
     async (options?: ExecutionOptions) => {
       const executionSettings = getAppSettings().execution;
-      setRunning({ preserveOutput: ! executionSettings.autoClearOutput });
+      setRunning({ preserveOutput: !executionSettings.autoClearOutput });
 
       const { environmentId, file, timeoutSecs, compileTimeoutSecs } = options ?? {};
-      if (! environmentId) {
+      if (!environmentId) {
         setError("No environment selected. Add one in Settings → Environments.");
         return;
       }
-      if (! file) {
+      if (!file) {
         setError("Open a file to run.");
         return;
       }

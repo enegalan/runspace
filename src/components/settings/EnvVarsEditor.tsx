@@ -103,7 +103,7 @@ export function validateEnvVarRows(rows: EnvVarRow[]): string | null {
   const seen = new Set<string>();
   for (const row of rows) {
     const key = row.key.trim();
-    if (! key) {
+    if (!key) {
       return "Environment variable keys cannot be empty";
     }
     if (seen.has(key)) {

@@ -65,7 +65,7 @@ export function OutputPanel({
             <IconButton
               label="Clear output"
               onClick={onClear}
-              disabled={! hasContent}
+              disabled={!hasContent}
               data-testid="clear-button"
             >
               <IconClear size={16} />

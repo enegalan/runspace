@@ -41,7 +41,7 @@ export function subscribeFileTreeDropTarget(listener: Listener): () => void {
 
 export function resolveFileTreeDropTargetFromElement(element: Element | null): string | null {
   const target = element?.closest(`[${DROP_TARGET_ATTR}]`);
-  if (! target) {
+  if (!target) {
     return null;
   }
   return target.getAttribute(DROP_TARGET_ATTR) ?? "";
@@ -53,7 +53,7 @@ export function updateFileTreeDropTargetFromDrag(event: {
 }): void {
   const external = hasExternalFileDrag(event.dataTransfer);
   const internal = hasFileDrag(event.dataTransfer.types);
-  if (! external && ! internal) {
+  if (!external && !internal) {
     return;
   }
 
@@ -67,12 +67,12 @@ export function updateFileTreeDropTargetFromDrag(event: {
 
   if (internal) {
     const payload = getActiveDragPayload();
-    if (! payload) {
+    if (!payload) {
       clearFileTreeDropTarget();
       return;
     }
     if (target === "") {
-      if (! canMoveToRoot(payload.path)) {
+      if (!canMoveToRoot(payload.path)) {
         clearFileTreeDropTarget();
         return;
       }

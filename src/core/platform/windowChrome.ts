@@ -9,7 +9,7 @@ export function isWindows(): boolean {
 }
 
 export function appShellDesktopClass(): string {
-  if (! isTauri()) {
+  if (!isTauri()) {
     return "";
   }
 

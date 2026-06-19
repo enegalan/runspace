@@ -3,7 +3,7 @@ import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 export async function flushSessionState(): Promise<void> {
   const workspace = useWorkspaceStore.getState().workspace;
-  if (! workspace) {
+  if (!workspace) {
     return;
   }
 

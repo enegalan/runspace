@@ -82,7 +82,7 @@ describe("keyboardShortcuts", () => {
       shift: false,
       alt: false,
     });
-    expect(normalizeShortcutBinding(bindingFromKeyboardEvent(twoKeyEvent) !)).not.toEqual(
+    expect(normalizeShortcutBinding(bindingFromKeyboardEvent(twoKeyEvent)!)).not.toEqual(
       threeKeyBinding,
     );
   });

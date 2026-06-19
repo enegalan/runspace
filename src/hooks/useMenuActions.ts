@@ -22,7 +22,7 @@ interface MenuActionHandlers {
 
 export function useMenuActions({ onAction }: MenuActionHandlers) {
   useEffect(() => {
-    if (! isTauri()) {
+    if (!isTauri()) {
       return;
     }
 

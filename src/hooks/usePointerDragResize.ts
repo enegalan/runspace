@@ -19,7 +19,7 @@ export function usePointerDragResize(
   const isDraggingRef = useRef(false);
 
   useEffect(() => {
-    if (! isDraggingRef.current) {
+    if (!isDraggingRef.current) {
       sizeRef.current = size;
       setCurrentSize(size);
     }

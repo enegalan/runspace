@@ -27,7 +27,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
         attachHandlers();
       })
       .catch(() => {
-        if (! closed) {
+        if (!closed) {
           retryTimer = window.setTimeout(() => {
             connect();
           }, RETRY_DELAY_MS);
@@ -36,7 +36,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
   };
 
   const attachHandlers = () => {
-    if (! source) {
+    if (!source) {
       return;
     }
 
@@ -68,7 +68,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
         return;
       }
       retryTimer = window.setTimeout(() => {
-        if (! closed) {
+        if (!closed) {
           connect();
         }
       }, RETRY_DELAY_MS);

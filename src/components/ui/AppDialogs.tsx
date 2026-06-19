@@ -26,7 +26,7 @@ export function AppDialogs() {
 
     const frame = window.requestAnimationFrame(() => {
       const input = promptInputRef.current;
-      if (! input) {
+      if (!input) {
         return;
       }
       input.focus({ preventScroll: true });
@@ -56,7 +56,7 @@ export function AppDialogs() {
   }, [promptKey, cancelPrompt]);
 
   useEffect(() => {
-    if (! confirm) {
+    if (!confirm) {
       return;
     }
 

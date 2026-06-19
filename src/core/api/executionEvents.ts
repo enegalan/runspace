@@ -35,7 +35,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
         attachHandlers();
       })
       .catch(() => {
-        if (! closed) {
+        if (!closed) {
           retryTimer = window.setTimeout(() => {
             connect();
           }, RETRY_DELAY_MS);
@@ -44,7 +44,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
   };
 
   const attachHandlers = () => {
-    if (! source) {
+    if (!source) {
       return;
     }
 
@@ -80,7 +80,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
         return;
       }
       retryTimer = window.setTimeout(() => {
-        if (! closed) {
+        if (!closed) {
           connect();
         }
       }, RETRY_DELAY_MS);

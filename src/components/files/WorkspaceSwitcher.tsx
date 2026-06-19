@@ -35,19 +35,19 @@ export function WorkspaceSwitcher() {
     : workspaces;
 
   useEffect(() => {
-    if (! runtimeId) {
+    if (!runtimeId) {
       return;
     }
     void loadWorkspaces(runtimeId);
   }, [runtimeId, workspace?.id, loadWorkspaces]);
 
   useEffect(() => {
-    if (! open) {
+    if (!open) {
       return;
     }
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (! rootRef.current?.contains(event.target as Node)) {
+      if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     };
@@ -67,13 +67,13 @@ export function WorkspaceSwitcher() {
   }, [open]);
 
   const handleCreateWorkspace = async () => {
-    if (! runtimeId) {
+    if (!runtimeId) {
       return;
     }
 
     try {
       const workspaceName = await requireWorkspaceName("Name for the new workspace");
-      if (! workspaceName) {
+      if (!workspaceName) {
         return;
       }
       setOpen(false);
@@ -87,7 +87,7 @@ export function WorkspaceSwitcher() {
 
   const handleRenameWorkspace = async (item: WorkspaceInfo) => {
     const name = await requireWorkspaceName("Rename workspace", item.name);
-    if (! name || name === item.name) {
+    if (!name || name === item.name) {
       return;
     }
     await renameWorkspace(item.id, name);
@@ -98,7 +98,7 @@ export function WorkspaceSwitcher() {
       confirmLabel: "Delete",
       danger: true,
     });
-    if (! confirmed) {
+    if (!confirmed) {
       return;
     }
     setOpen(false);
@@ -121,7 +121,7 @@ export function WorkspaceSwitcher() {
       <button
         type="button"
         className="workspace-switcher__trigger"
-        onClick={() => setOpen((prev) => ! prev)}
+        onClick={() => setOpen((prev) => !prev)}
         title={workspace?.name ?? "Create workspace..."}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -185,8 +185,8 @@ export function WorkspaceSwitcher() {
             type="button"
             className="workspace-switcher__create"
             onClick={() => void handleCreateWorkspace()}
-            disabled={! runtimeId}
-            title={! runtimeId ? "Add an environment in Settings" : undefined}
+            disabled={!runtimeId}
+            title={!runtimeId ? "Add an environment in Settings" : undefined}
           >
             <IconPlus size={14} />
             <span>New workspace</span>

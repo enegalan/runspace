@@ -30,7 +30,7 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
   const aboutInfo = useAboutInfo(open);
 
   useEffect(() => {
-    if (! open) {
+    if (!open) {
       return;
     }
 
@@ -47,7 +47,7 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
     };
   }, [open, onClose]);
 
-  if (! open || typeof document === "undefined") {
+  if (!open || typeof document === "undefined") {
     return null;
   }
 

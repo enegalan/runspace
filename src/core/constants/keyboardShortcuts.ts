@@ -67,7 +67,7 @@ export function bindingFromKeyboardEvent(event: KeyboardEvent): ShortcutBinding 
   }
 
   const mod = event.metaKey || event.ctrlKey;
-  if (! mod) {
+  if (!mod) {
     return null;
   }
 
@@ -156,7 +156,7 @@ export function normalizeShortcutSettings(
   shortcuts: Partial<ShortcutSettings> | undefined,
 ): ShortcutSettings {
   const next = { ...DEFAULT_SHORTCUT_SETTINGS };
-  if (! shortcuts) {
+  if (!shortcuts) {
     return next;
   }
 

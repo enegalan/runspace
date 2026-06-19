@@ -21,7 +21,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      if (! menuRef.current?.contains(event.target as Node)) {
+      if (!menuRef.current?.contains(event.target as Node)) {
         onClose();
       }
     };
@@ -60,7 +60,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
           className={`context-menu__item${item.danger ? " context-menu__item--danger" : ""}`}
           disabled={item.disabled}
           onClick={() => {
-            if (! item.disabled) {
+            if (!item.disabled) {
               item.onClick();
               onClose();
             }

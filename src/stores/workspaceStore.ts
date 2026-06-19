@@ -49,11 +49,11 @@ async function replaceEntryIfConfirmed(
   relativePath: string,
   deleteFile: (path: string) => Promise<void>,
 ): Promise<boolean> {
-  if (! (await workspaceEntryExists(workspaceId, relativePath))) {
+  if (!(await workspaceEntryExists(workspaceId, relativePath))) {
     return true;
   }
   if (
-    ! (await useDialogStore
+    !(await useDialogStore
       .getState()
       .askConfirm(
         `A file or folder named "${entryName(relativePath)}" already exists in the destination folder. Do you want to replace it?`,
@@ -116,14 +116,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   initialize: async (runtimeId) => {
     const onboardingComplete = get().onboardingComplete || isOnboardingComplete();
 
-    if (! runtimeId) {
+    if (!runtimeId) {
       set({
         workspace: null,
         workspaces: [],
         rootFiles: [],
         expandedDirs: new Set<string>(),
         onboardingComplete,
-        onboardingRequired: ! onboardingComplete,
+        onboardingRequired: !onboardingComplete,
         loaded: true,
       });
       return;
@@ -138,7 +138,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         rootFiles: [],
         expandedDirs: new Set<string>(),
         onboardingComplete,
-        onboardingRequired: ! onboardingComplete,
+        onboardingRequired: !onboardingComplete,
         loaded: true,
       });
       return;
@@ -151,7 +151,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       runtimeId,
       getAppSettings().layout.restoreLastWorkspace,
     );
-    if (! workspace) {
+    if (!workspace) {
       set({
         workspace: null,
         workspaces: [],
@@ -200,7 +200,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       const workspaceName = await requireWorkspaceName(
         "Name for the first workspace in this environment",
       );
-      if (! workspaceName) {
+      if (!workspaceName) {
         return false;
       }
       await get().createWorkspace(runtimeId, workspaceName);
@@ -209,7 +209,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
 
     const workspace = await activateRuntime(runtimeId);
-    if (! workspace) {
+    if (!workspace) {
       return false;
     }
 
@@ -249,7 +249,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   createWorkspace: async (runtimeId, name) => {
     const workspaceName = name ?? (await requireWorkspaceName("Name for the new workspace"));
-    if (! workspaceName) {
+    if (!workspaceName) {
       return;
     }
 
@@ -281,7 +281,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   renameWorkspace: async (workspaceId, name) => {
     const trimmed = name.trim();
-    if (! trimmed) {
+    if (!trimmed) {
       return;
     }
 
@@ -299,7 +299,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   deleteWorkspace: async (workspaceId) => {
     const current = get().workspace;
     const runtimeId = current?.runtime_id;
-    if (! runtimeId) {
+    if (!runtimeId) {
       return;
     }
 
@@ -334,7 +334,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   refreshFiles: async () => {
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       set({ rootFiles: [], filesRevision: get().filesRevision + 1 });
       return;
     }
@@ -356,7 +356,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   createFile: async (path, content = "") => {
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       throw new Error("No active workspace.");
     }
     if (await workspaceEntryExists(workspace.id, path)) {
@@ -373,7 +373,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   createFolder: async (path) => {
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       throw new Error("No active workspace.");
     }
     if (await workspaceEntryExists(workspace.id, path)) {
@@ -400,7 +400,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   renameFile: async (oldPath, newPath) => {
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       throw new Error("No active workspace.");
     }
     if (oldPath !== newPath && (await workspaceEntryExists(workspace.id, newPath))) {
@@ -417,11 +417,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return;
     }
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       return;
     }
     await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
-    if (! (await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
+    if (!(await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
       return;
     }
     await get().renameFile(sourcePath, newPath);
@@ -430,7 +430,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
   importExternalFiles: async (sources, targetDir = "") => {
     const workspace = get().workspace;
-    if (! workspace) {
+    if (!workspace) {
       return [];
     }
     await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
@@ -442,7 +442,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         const relativePath = targetDir
           ? `${targetDir}/${entryName(sourcePath)}`
           : entryName(sourcePath);
-        if (! (await replaceEntryIfConfirmed(workspace.id, relativePath, get().deleteFile))) {
+        if (!(await replaceEntryIfConfirmed(workspace.id, relativePath, get().deleteFile))) {
           continue;
         }
         sourcePaths.push(sourcePath);
@@ -457,7 +457,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     } else {
       for (const file of sources as File[]) {
         const relativePath = targetDir ? `${targetDir}/${file.name}` : file.name;
-        if (! (await replaceEntryIfConfirmed(workspace.id, relativePath, get().deleteFile))) {
+        if (!(await replaceEntryIfConfirmed(workspace.id, relativePath, get().deleteFile))) {
           continue;
         }
         const content = await readFileAsText(file);

@@ -110,5 +110,5 @@ export function movedPath(sourcePath: string, targetDir: string): string {
 }
 
 export function canMoveToRoot(sourcePath: string): boolean {
-  return sourcePath.includes("/") && ! isInvalidMove(sourcePath, "");
+  return sourcePath.includes("/") && !isInvalidMove(sourcePath, "");
 }
