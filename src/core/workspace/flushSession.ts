@@ -8,7 +8,5 @@ export async function flushSessionState(): Promise<void> {
   }
 
   await useEditorTabsStore.getState().saveActiveFile();
-  await useEditorTabsStore
-    .getState()
-    .persistForEnvironment(workspace.runtime_id, workspace.id);
+  await useEditorTabsStore.getState().persistForEnvironment(workspace.runtime_id, workspace.id);
 }

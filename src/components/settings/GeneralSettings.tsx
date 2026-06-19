@@ -41,10 +41,7 @@ export function GeneralSettings() {
         description="Appearance, editor, execution, and layout preferences."
       />
 
-      <SettingsCard
-        title="Appearance"
-        description="Theme, density, and typography."
-      >
+      <SettingsCard title="Appearance" description="Theme, density, and typography.">
         <SettingsRow label="Theme">
           <SettingsSegmented
             name="Theme"
@@ -123,18 +120,14 @@ export function GeneralSettings() {
           label="Word wrap"
           description="Wrap long lines in the editor."
           checked={settings.editor.wordWrap}
-          onChange={(event) =>
-            void update({ editor: { wordWrap: event.target.checked } })
-          }
+          onChange={(event) => void update({ editor: { wordWrap: event.target.checked } })}
           data-testid="setting-word-wrap"
         />
         <SettingsToggleRow
           label="Minimap"
           description="Show the code overview strip on the right."
           checked={settings.editor.minimap}
-          onChange={(event) =>
-            void update({ editor: { minimap: event.target.checked } })
-          }
+          onChange={(event) => void update({ editor: { minimap: event.target.checked } })}
           data-testid="setting-minimap"
         />
         <SettingsToggleRow
@@ -150,18 +143,14 @@ export function GeneralSettings() {
           label="Insert spaces"
           description="Use spaces instead of tab characters."
           checked={settings.editor.insertSpaces}
-          onChange={(event) =>
-            void update({ editor: { insertSpaces: event.target.checked } })
-          }
+          onChange={(event) => void update({ editor: { insertSpaces: event.target.checked } })}
           data-testid="setting-insert-spaces"
         />
         <SettingsToggleRow
           label="Auto-save"
           description="Save the active file when the editor loses focus."
           checked={settings.editor.autoSave}
-          onChange={(event) =>
-            void update({ editor: { autoSave: event.target.checked } })
-          }
+          onChange={(event) => void update({ editor: { autoSave: event.target.checked } })}
           data-testid="setting-auto-save"
         />
       </SettingsCard>
@@ -221,9 +210,7 @@ export function GeneralSettings() {
           label="Run on save"
           description="Run the active file after saving."
           checked={settings.execution.runOnSave}
-          onChange={(event) =>
-            void update({ execution: { runOnSave: event.target.checked } })
-          }
+          onChange={(event) => void update({ execution: { runOnSave: event.target.checked } })}
           data-testid="setting-run-on-save"
         />
       </SettingsCard>
@@ -232,17 +219,13 @@ export function GeneralSettings() {
         <SettingsToggleRow
           label="Show sidebar"
           checked={settings.layout.sidebarVisible}
-          onChange={(event) =>
-            void update({ layout: { sidebarVisible: event.target.checked } })
-          }
+          onChange={(event) => void update({ layout: { sidebarVisible: event.target.checked } })}
           data-testid="setting-sidebar-visible"
         />
         <SettingsToggleRow
           label="Show output panel"
           checked={settings.layout.outputVisible}
-          onChange={(event) =>
-            void update({ layout: { outputVisible: event.target.checked } })
-          }
+          onChange={(event) => void update({ layout: { outputVisible: event.target.checked } })}
           data-testid="setting-output-visible"
         />
 

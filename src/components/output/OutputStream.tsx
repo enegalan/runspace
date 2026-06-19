@@ -30,11 +30,7 @@ export function OutputStream({
     }
   }, [autoScrollEnabled, isRunning]);
 
-  const hasContent =
-    stdout.length > 0 ||
-    stderr.length > 0 ||
-    error !== null ||
-    timedOut;
+  const hasContent = stdout.length > 0 || stderr.length > 0 || error !== null || timedOut;
 
   useEffect(() => {
     if (!autoScrollEnabled || !autoScroll || !containerRef.current) {

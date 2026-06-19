@@ -17,10 +17,7 @@ interface AppShortcutHandlers {
   runDisabled?: boolean;
 }
 
-const ACTION_HANDLERS: Record<
-  ShortcutActionId,
-  keyof AppShortcutHandlers
-> = {
+const ACTION_HANDLERS: Record<ShortcutActionId, keyof AppShortcutHandlers> = {
   run: "onRun",
   stop: "onStop",
   save: "onSave",

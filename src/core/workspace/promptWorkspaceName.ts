@@ -8,12 +8,10 @@ export async function requireWorkspaceName(
   const currentInitial = initialValue;
 
   while (true) {
-    const raw = await useDialogStore
-      .getState()
-      .askPrompt(currentLabel, {
-        initialValue: currentInitial,
-        validate: (value) => (value.trim() ? null : "Workspace name cannot be empty."),
-      });
+    const raw = await useDialogStore.getState().askPrompt(currentLabel, {
+      initialValue: currentInitial,
+      validate: (value) => (value.trim() ? null : "Workspace name cannot be empty."),
+    });
     if (raw === null) {
       return null;
     }

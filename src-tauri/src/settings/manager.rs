@@ -113,7 +113,9 @@ fn normalize_shortcut_settings(settings: &ShortcutSettings) -> ShortcutSettings 
         } else {
             defaults.new_terminal
         },
-        toggle_sidebar: if settings.toggle_sidebar.mod_key && !settings.toggle_sidebar.key.is_empty() {
+        toggle_sidebar: if settings.toggle_sidebar.mod_key
+            && !settings.toggle_sidebar.key.is_empty()
+        {
             normalize_shortcut_binding(&settings.toggle_sidebar)
         } else {
             defaults.toggle_sidebar
@@ -153,10 +155,7 @@ mod tests {
     use crate::test_home_lock::home_test_lock;
 
     fn temp_settings_path() -> PathBuf {
-        std::env::temp_dir().join(format!(
-            "runspace-settings-test-{}",
-            std::process::id()
-        ))
+        std::env::temp_dir().join(format!("runspace-settings-test-{}", std::process::id()))
     }
 
     #[test]

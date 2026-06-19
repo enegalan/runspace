@@ -76,16 +76,17 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
       ...settings.layout,
       sidebarWidth: clamp(settings.layout.sidebarWidth, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
       outputWidth: clamp(settings.layout.outputWidth, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
-      terminalHeight: clamp(settings.layout.terminalHeight, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
+      terminalHeight: clamp(
+        settings.layout.terminalHeight,
+        TERMINAL_HEIGHT_MIN,
+        TERMINAL_HEIGHT_MAX,
+      ),
     },
     shortcuts: normalizeShortcutSettings(settings.shortcuts),
   };
 }
 
-export function mergeAppSettings(
-  current: AppSettings,
-  patch: AppSettingsPatch,
-): AppSettings {
+export function mergeAppSettings(current: AppSettings, patch: AppSettingsPatch): AppSettings {
   return normalizeAppSettings({
     appearance: { ...current.appearance, ...patch.appearance },
     editor: { ...current.editor, ...patch.editor },

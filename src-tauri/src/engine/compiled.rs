@@ -199,7 +199,9 @@ mod tests {
         let stdout: String = events
             .iter()
             .filter_map(|event| match event {
-                ExecutionEvent::Output { stream, chunk } if stream == "stdout" => Some(chunk.as_str()),
+                ExecutionEvent::Output { stream, chunk } if stream == "stdout" => {
+                    Some(chunk.as_str())
+                }
                 _ => None,
             })
             .collect();

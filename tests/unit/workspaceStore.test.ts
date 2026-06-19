@@ -59,9 +59,7 @@ describe("workspaceStore", () => {
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce(["utils.js"])
       .mockResolvedValueOnce(mockWorkspace)
-      .mockResolvedValueOnce([
-        { name: "utils.js", path: "lib/utils.js", is_directory: false },
-      ]);
+      .mockResolvedValueOnce([{ name: "utils.js", path: "lib/utils.js", is_directory: false }]);
 
     const imported = await useWorkspaceStore
       .getState()
@@ -81,9 +79,7 @@ describe("workspaceStore", () => {
     vi.mocked(useDialogStore.getState().askConfirm).mockResolvedValue(true);
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce(mockWorkspace)
-      .mockResolvedValueOnce([
-        { name: "utils.js", path: "lib/utils.js", is_directory: false },
-      ])
+      .mockResolvedValueOnce([{ name: "utils.js", path: "lib/utils.js", is_directory: false }])
       .mockResolvedValueOnce(mockWorkspace)
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(mockWorkspace)
@@ -109,19 +105,14 @@ describe("workspaceStore", () => {
     vi.mocked(useDialogStore.getState().askConfirm).mockResolvedValue(false);
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce(mockWorkspace)
-      .mockResolvedValueOnce([
-        { name: "utils.js", path: "lib/utils.js", is_directory: false },
-      ]);
+      .mockResolvedValueOnce([{ name: "utils.js", path: "lib/utils.js", is_directory: false }]);
 
     const imported = await useWorkspaceStore
       .getState()
       .importExternalFiles(["/tmp/utils.js"], "lib");
 
     expect(imported).toEqual([]);
-    expect(runspaceInvoke).not.toHaveBeenCalledWith(
-      "import_external",
-      expect.anything(),
-    );
+    expect(runspaceInvoke).not.toHaveBeenCalledWith("import_external", expect.anything());
   });
 
   it("creates a file and refreshes the tree", async () => {

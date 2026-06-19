@@ -16,10 +16,7 @@ export interface TerminalExitEvent {
   exit_code: number | null;
 }
 
-export function terminalContextKey(
-  workspaceId: string,
-  environmentId: string,
-): string {
+export function terminalContextKey(workspaceId: string, environmentId: string): string {
   return `${workspaceId}:${environmentId}`;
 }
 

@@ -32,8 +32,7 @@ export function ActivityBar({
   const runShortcut = formatShortcutCompact(shortcuts.run);
   const stopShortcut = formatShortcutCompact(shortcuts.stop);
   const settingsShortcut = formatShortcutCompact(shortcuts.openSettings);
-  const runTitle =
-    runDisabled && runDisabledReason ? runDisabledReason : `Run (${runShortcut})`;
+  const runTitle = runDisabled && runDisabledReason ? runDisabledReason : `Run (${runShortcut})`;
   const stopTitle = `Stop (${stopShortcut})`;
 
   return (

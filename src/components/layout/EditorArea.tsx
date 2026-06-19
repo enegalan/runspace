@@ -27,8 +27,8 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const activePath = useEditorTabsStore((state) => state.activePath);
-  const activeFile = useEditorTabsStore((state) =>
-    state.openFiles.find((file) => file.path === state.activePath) ?? null,
+  const activeFile = useEditorTabsStore(
+    (state) => state.openFiles.find((file) => file.path === state.activePath) ?? null,
   );
   const openFile = useEditorTabsStore((state) => state.openFile);
   const updateContent = useEditorTabsStore((state) => state.updateContent);

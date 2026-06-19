@@ -1,9 +1,6 @@
 import type { EnvironmentSession, SessionData, WorkspaceTabs } from "../types/workspace";
 
-export function getEnvironmentSession(
-  session: SessionData,
-  runtimeId: string,
-): EnvironmentSession {
+export function getEnvironmentSession(session: SessionData, runtimeId: string): EnvironmentSession {
   const stored = session.environments?.[runtimeId];
   if (stored) {
     return {

@@ -1,11 +1,7 @@
 import { create } from "zustand";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { DEFAULT_ENVIRONMENT_ID } from "../core/constants/environmentCatalog";
-import type {
-  Environment,
-  EnvironmentDefinition,
-  EnvironmentId,
-} from "../core/types/environment";
+import type { Environment, EnvironmentDefinition, EnvironmentId } from "../core/types/environment";
 import { useEditorTabsStore } from "./editorTabsStore";
 import { useWorkspaceStore } from "./workspaceStore";
 

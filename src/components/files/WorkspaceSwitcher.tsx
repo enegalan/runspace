@@ -31,9 +31,7 @@ export function WorkspaceSwitcher() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const filteredWorkspaces = search.trim()
-    ? workspaces.filter((item) =>
-        item.name.toLowerCase().includes(search.trim().toLowerCase()),
-      )
+    ? workspaces.filter((item) => item.name.toLowerCase().includes(search.trim().toLowerCase()))
     : workspaces;
 
   useEffect(() => {
@@ -82,8 +80,7 @@ export function WorkspaceSwitcher() {
       await createWorkspace(runtimeId, workspaceName);
     } catch (error) {
       console.error("Failed to create workspace:", error);
-      const message =
-        error instanceof Error ? error.message : "Failed to create workspace";
+      const message = error instanceof Error ? error.message : "Failed to create workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
@@ -110,8 +107,7 @@ export function WorkspaceSwitcher() {
       await deleteWorkspace(item.id);
     } catch (error) {
       console.error("Failed to delete workspace:", error);
-      const message =
-        error instanceof Error ? error.message : "Failed to delete workspace";
+      const message = error instanceof Error ? error.message : "Failed to delete workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
@@ -171,9 +167,7 @@ export function WorkspaceSwitcher() {
                 <button
                   type="button"
                   className={`workspace-switcher__option${
-                    item.id === workspace?.id
-                      ? " workspace-switcher__option--active"
-                      : ""
+                    item.id === workspace?.id ? " workspace-switcher__option--active" : ""
                   }`}
                   onClick={() => {
                     setOpen(false);

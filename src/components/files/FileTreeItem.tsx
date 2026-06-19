@@ -124,10 +124,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     clearFileTreeDropTarget();
   };
 
-  const handleFolderDragOver = (
-    event: React.DragEvent,
-    options: { fromRow?: boolean } = {},
-  ) => {
+  const handleFolderDragOver = (event: React.DragEvent, options: { fromRow?: boolean } = {}) => {
     const external = hasExternalFileDrag(event.dataTransfer);
     const internal = hasFileDrag(event.dataTransfer.types);
 
@@ -187,9 +184,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
       return;
     }
 
-    const containingFolder = (event.currentTarget as HTMLElement).closest(
-      `[${DROP_TARGET_ATTR}]`,
-    );
+    const containingFolder = (event.currentTarget as HTMLElement).closest(`[${DROP_TARGET_ATTR}]`);
     if (!containingFolder) {
       event.stopPropagation();
       return;
@@ -215,7 +210,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     }
 
     const newPath = siblingPath(parentDir(entry.path), trimmed);
-    if (await workspaceEntryExists(newPath)) {
+    if (await workspaceEntryExists(workspaceId, newPath)) {
       setRenameValue(entry.name);
       setRenaming(false);
       return;
@@ -326,17 +321,8 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
           }}
         />
       ) : (
-        <button
-          type="button"
-          className="file-tree__label"
-          onClick={handleOpen}
-          title={entry.path}
-        >
-          <FileIcon
-            path={entry.path}
-            isDirectory={entry.is_directory}
-            isExpanded={expanded}
-          />
+        <button type="button" className="file-tree__label" onClick={handleOpen} title={entry.path}>
+          <FileIcon path={entry.path} isDirectory={entry.is_directory} isExpanded={expanded} />
           <span className="file-tree__name">{entry.name}</span>
         </button>
       )}

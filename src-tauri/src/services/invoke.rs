@@ -148,9 +148,7 @@ pub async fn dispatch_invoke(
                 .settings_manager
                 .lock()
                 .map_err(|_| "Settings manager lock poisoned".to_string())?;
-            let updated = manager
-                .update(args)
-                .map_err(|e| e.to_string())?;
+            let updated = manager.update(args).map_err(|e| e.to_string())?;
             Ok(json!(updated))
         }
         "execute_code" => {
@@ -187,11 +185,9 @@ pub async fn dispatch_invoke(
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            Ok(json!(
-                manager
-                    .list_workspaces_for_runtime(runtime_id.as_deref())
-                    .map_err(|e| e.to_string())?
-            ))
+            Ok(json!(manager
+                .list_workspaces_for_runtime(runtime_id.as_deref())
+                .map_err(|e| e.to_string())?))
         }
         "open_workspace" => {
             let id: String = args
@@ -204,7 +200,9 @@ pub async fn dispatch_invoke(
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
             let workspace = manager.open_workspace(&id).map_err(|e| e.to_string())?;
-            let info = manager.workspace_info(&workspace).map_err(|e| e.to_string())?;
+            let info = manager
+                .workspace_info(&workspace)
+                .map_err(|e| e.to_string())?;
             {
                 let mut active = state
                     .active_workspace
@@ -232,7 +230,9 @@ pub async fn dispatch_invoke(
             let workspace = manager
                 .create_named_workspace(&name, &runtime_id)
                 .map_err(|e| e.to_string())?;
-            let info = manager.workspace_info(&workspace).map_err(|e| e.to_string())?;
+            let info = manager
+                .workspace_info(&workspace)
+                .map_err(|e| e.to_string())?;
             {
                 let mut active = state
                     .active_workspace
@@ -253,7 +253,9 @@ pub async fn dispatch_invoke(
                 .map_err(|_| "Active workspace lock poisoned".to_string())?;
             match active.as_ref() {
                 Some(workspace) => {
-                    let info = manager.workspace_info(workspace).map_err(|e| e.to_string())?;
+                    let info = manager
+                        .workspace_info(workspace)
+                        .map_err(|e| e.to_string())?;
                     Ok(json!(info))
                 }
                 None => Ok(Value::Null),
@@ -291,19 +293,25 @@ pub async fn dispatch_invoke(
                 .get("relativePath")
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
+            let workspace_id = args.get("id").and_then(|v| v.as_str());
             let manager = state
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
+            let workspace = if let Some(id) = workspace_id {
+                manager.open_workspace(id).map_err(|e| e.to_string())?
+            } else {
+                let active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                active
+                    .as_ref()
+                    .ok_or_else(|| "No active workspace".to_string())?
+                    .clone()
+            };
             let files = manager
-                .list_files(workspace, relative_path.as_deref())
+                .list_files(&workspace, relative_path.as_deref())
                 .map_err(|e| e.to_string())?;
             Ok(json!(files))
         }
@@ -475,9 +483,7 @@ pub async fn dispatch_invoke(
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            manager
-                .delete_workspace(&id)
-                .map_err(|e| e.to_string())?;
+            manager.delete_workspace(&id).map_err(|e| e.to_string())?;
             let mut session = manager.load_session().map_err(|e| e.to_string())?;
             manager
                 .purge_workspace_from_session(&mut session, &id)
@@ -536,7 +542,10 @@ pub async fn dispatch_invoke(
             Ok(json!(info))
         }
         "update_manifest" => {
-            let name = args.get("name").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let name = args
+                .get("name")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
             let manager = state
                 .workspace_manager
                 .lock()
@@ -570,10 +579,7 @@ pub async fn dispatch_invoke(
             Ok(json!(info))
         }
         "write_session" => {
-            let payload = args
-                .get("session")
-                .cloned()
-                .unwrap_or(args);
+            let payload = args.get("session").cloned().unwrap_or(args);
             let session: crate::workspace::SessionData = serde_json::from_value(payload)
                 .map_err(|e| format!("Invalid write_session args: {e}"))?;
             let manager = state
@@ -584,10 +590,7 @@ pub async fn dispatch_invoke(
             Ok(Value::Null)
         }
         "kill_process" => {
-            state
-                .execution_engine
-                .kill()
-                .map_err(|e| e.to_string())?;
+            state.execution_engine.kill().map_err(|e| e.to_string())?;
             Ok(Value::Null)
         }
         "spawn_terminal" => {

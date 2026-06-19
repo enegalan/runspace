@@ -23,11 +23,7 @@ interface UseTabDragReorderOptions {
   onReorder: (fromIndex: number, toIndex: number) => void;
 }
 
-export function useTabDragReorder({
-  listRef,
-  tabCount,
-  onReorder,
-}: UseTabDragReorderOptions) {
+export function useTabDragReorder({ listRef, tabCount, onReorder }: UseTabDragReorderOptions) {
   const [dragState, setDragState] = useState<TabDragState | null>(null);
   const dragStateRef = useRef<TabDragState | null>(null);
   const layoutSnapshotRef = useRef<TabLayoutSnapshot[]>([]);

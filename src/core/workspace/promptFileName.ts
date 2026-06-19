@@ -2,7 +2,10 @@ import { useDialogStore } from "../../stores/dialogStore";
 import { getRuntimeFileExtension, normalizeFileName } from "./fileExtension";
 import { workspaceEntryExists } from "./workspaceEntryExists";
 
-export async function requireFileName(environmentId: string): Promise<string | null> {
+export async function requireFileName(
+  environmentId: string,
+  workspaceId: string,
+): Promise<string | null> {
   const ext = getRuntimeFileExtension(environmentId);
   let label = `New file name (.${ext})`;
   let initialValue = "";
@@ -20,7 +23,7 @@ export async function requireFileName(environmentId: string): Promise<string | n
     const trimmed = raw.trim();
 
     const path = normalizeFileName(trimmed, environmentId);
-    if (await workspaceEntryExists(path)) {
+    if (await workspaceEntryExists(workspaceId, path)) {
       label = `"${path}" already exists.`;
       initialValue = trimmed;
       continue;

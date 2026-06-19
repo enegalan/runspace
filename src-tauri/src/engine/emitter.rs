@@ -24,8 +24,7 @@ impl ExecutionEmitter {
         if let Some(app) = &self.app {
             let _ = app.emit("execution-started", StartedPayload { pid });
         }
-        self.bus
-            .publish(ExecutionEvent::Started { pid });
+        self.bus.publish(ExecutionEvent::Started { pid });
     }
 
     pub fn emit_output(&self, stream: &str, chunk: &str) {
@@ -53,18 +52,12 @@ impl ExecutionEmitter {
                 },
             );
         }
-        self.bus
-            .publish(ExecutionEvent::Phase {
-                phase: phase.to_string(),
-            });
+        self.bus.publish(ExecutionEvent::Phase {
+            phase: phase.to_string(),
+        });
     }
 
-    pub fn emit_finished(
-        &self,
-        exit_code: Option<i32>,
-        timed_out: bool,
-        compile_failed: bool,
-    ) {
+    pub fn emit_finished(&self, exit_code: Option<i32>, timed_out: bool, compile_failed: bool) {
         if let Some(app) = &self.app {
             let _ = app.emit(
                 "execution-finished",

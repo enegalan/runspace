@@ -1,12 +1,7 @@
 import "@xterm/xterm/css/xterm.css";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { readTerminalTheme } from "../../core/settings/applyAppSettings";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -24,102 +19,98 @@ interface XTermViewProps {
   onResize?: (cols: number, rows: number) => void;
 }
 
-export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(
-  function XTermView({ onData, onResize }, ref) {
-    const settings = useSettingsStore((state) => state.settings);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const terminalRef = useRef<Terminal | null>(null);
-    const fitAddonRef = useRef<FitAddon | null>(null);
-    const onDataRef = useRef(onData);
-    const onResizeRef = useRef(onResize);
+export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XTermView(
+  { onData, onResize },
+  ref,
+) {
+  const settings = useSettingsStore((state) => state.settings);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const terminalRef = useRef<Terminal | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
+  const onDataRef = useRef(onData);
+  const onResizeRef = useRef(onResize);
 
-    onDataRef.current = onData;
-    onResizeRef.current = onResize;
+  onDataRef.current = onData;
+  onResizeRef.current = onResize;
 
-    useImperativeHandle(ref, () => ({
-      write: (data: string) => {
-        terminalRef.current?.write(data);
-      },
-      clear: () => {
-        terminalRef.current?.clear();
-      },
-      fit: () => {
-        fitAddonRef.current?.fit();
-      },
-      getCols: () => terminalRef.current?.cols ?? 80,
-      getRows: () => terminalRef.current?.rows ?? 24,
-    }));
-
-    useEffect(() => {
-      const container = containerRef.current;
-      if (!container) {
-        return;
-      }
-
-      const terminal = new Terminal({
-        cursorBlink: true,
-        fontFamily: editorFontFamilyCss(settings.appearance.editorFontFamily),
-        fontSize: settings.appearance.editorFontSize,
-        theme: readTerminalTheme(),
-      });
-      const fitAddon = new FitAddon();
-      terminal.loadAddon(fitAddon);
-      terminal.open(container);
-      fitAddon.fit();
-
-      const applyTheme = () => {
-        terminal.options.theme = readTerminalTheme();
-      };
-      const themeObserver = new MutationObserver(applyTheme);
-      themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["data-theme"],
-      });
-
-      const dataDisposable = terminal.onData((data) => {
-        onDataRef.current(data);
-      });
-      const resizeDisposable = terminal.onResize(({ cols, rows }) => {
-        onResizeRef.current?.(cols, rows);
-      });
-
-      terminalRef.current = terminal;
-      fitAddonRef.current = fitAddon;
-
-      const resizeObserver = new ResizeObserver(() => {
-        fitAddon.fit();
-        onResizeRef.current?.(terminal.cols, terminal.rows);
-      });
-      resizeObserver.observe(container);
-
-      return () => {
-        themeObserver.disconnect();
-        resizeObserver.disconnect();
-        dataDisposable.dispose();
-        resizeDisposable.dispose();
-        terminal.dispose();
-        terminalRef.current = null;
-        fitAddonRef.current = null;
-      };
-    }, []);
-
-    useEffect(() => {
-      const terminal = terminalRef.current;
-      if (!terminal) {
-        return;
-      }
-
-      terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
-      terminal.options.fontSize = settings.appearance.editorFontSize;
+  useImperativeHandle(ref, () => ({
+    write: (data: string) => {
+      terminalRef.current?.write(data);
+    },
+    clear: () => {
+      terminalRef.current?.clear();
+    },
+    fit: () => {
       fitAddonRef.current?.fit();
-    }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
+    },
+    getCols: () => terminalRef.current?.cols ?? 80,
+    getRows: () => terminalRef.current?.rows ?? 24,
+  }));
 
-    return (
-      <div
-        ref={containerRef}
-        className="xterm-view"
-        data-testid="xterm-view"
-      />
-    );
-  },
-);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const { editorFontFamily, editorFontSize } = useSettingsStore.getState().settings.appearance;
+    const terminal = new Terminal({
+      cursorBlink: true,
+      fontFamily: editorFontFamilyCss(editorFontFamily),
+      fontSize: editorFontSize,
+      theme: readTerminalTheme(),
+    });
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    terminal.open(container);
+    fitAddon.fit();
+
+    const applyTheme = () => {
+      terminal.options.theme = readTerminalTheme();
+    };
+    const themeObserver = new MutationObserver(applyTheme);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    const dataDisposable = terminal.onData((data) => {
+      onDataRef.current(data);
+    });
+    const resizeDisposable = terminal.onResize(({ cols, rows }) => {
+      onResizeRef.current?.(cols, rows);
+    });
+
+    terminalRef.current = terminal;
+    fitAddonRef.current = fitAddon;
+
+    const resizeObserver = new ResizeObserver(() => {
+      fitAddon.fit();
+      onResizeRef.current?.(terminal.cols, terminal.rows);
+    });
+    resizeObserver.observe(container);
+
+    return () => {
+      themeObserver.disconnect();
+      resizeObserver.disconnect();
+      dataDisposable.dispose();
+      resizeDisposable.dispose();
+      terminal.dispose();
+      terminalRef.current = null;
+      fitAddonRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const terminal = terminalRef.current;
+    if (!terminal) {
+      return;
+    }
+
+    terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
+    terminal.options.fontSize = settings.appearance.editorFontSize;
+    fitAddonRef.current?.fit();
+  }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
+
+  return <div ref={containerRef} className="xterm-view" data-testid="xterm-view" />;
+});

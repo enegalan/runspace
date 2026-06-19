@@ -6,8 +6,7 @@
   padding: var(--rs-space-8) var(--rs-space-6);
   overflow-y: auto;
   background:
-    radial-gradient(ellipse at top, rgba(88, 101, 242, 0.12), transparent 55%),
-    var(--rs-bg-base);
+    radial-gradient(ellipse at top, rgba(88, 101, 242, 0.12), transparent 55%), var(--rs-bg-base);
 }
 
 .welcome-screen__frame {

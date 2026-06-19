@@ -61,10 +61,7 @@ describe("settingsStore", () => {
     await useSettingsStore.getState().reset();
 
     expect(useSettingsStore.getState().settings).toEqual(DEFAULT_APP_SETTINGS);
-    expect(mockedInvoke).toHaveBeenCalledWith(
-      "update_settings",
-      DEFAULT_APP_SETTINGS,
-    );
+    expect(mockedInvoke).toHaveBeenCalledWith("update_settings", DEFAULT_APP_SETTINGS);
   });
 });
 

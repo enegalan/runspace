@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import type { TerminalStatus } from "../core/types/terminal";
-import {
-  createTerminalTabId,
-  terminalContextKey,
-} from "../core/types/terminal";
+import { createTerminalTabId, terminalContextKey } from "../core/types/terminal";
 
 export interface TerminalTabState {
   tabId: string;
@@ -20,21 +17,14 @@ interface TerminalStoreState {
   activeTabIdByContext: Record<string, string | undefined>;
   addTab: (workspaceId: string, environmentId: string) => string;
   ensureDefaultTab: (workspaceId: string, environmentId: string) => string;
-  setActiveTab: (
-    workspaceId: string,
-    environmentId: string,
-    tabId: string,
-  ) => void;
+  setActiveTab: (workspaceId: string, environmentId: string, tabId: string) => void;
   setConnecting: (tabId: string, workspaceId: string, environmentId: string) => void;
   setSession: (tabId: string, sessionId: string) => void;
   setExited: (sessionId: string) => void;
   setError: (tabId: string, message: string) => void;
   removeTab: (tabId: string) => void;
   getTab: (tabId: string) => TerminalTabState | undefined;
-  getTabsForContext: (
-    workspaceId: string,
-    environmentId: string,
-  ) => TerminalTabState[];
+  getTabsForContext: (workspaceId: string, environmentId: string) => TerminalTabState[];
 }
 
 export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
@@ -175,9 +165,7 @@ export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
       }
 
       const contextKey = terminalContextKey(tab.workspaceId, tab.environmentId);
-      const order = (state.tabOrderByContext[contextKey] ?? []).filter(
-        (id) => id !== tabId,
-      );
+      const order = (state.tabOrderByContext[contextKey] ?? []).filter((id) => id !== tabId);
       const nextTabs = { ...state.tabs };
       delete nextTabs[tabId];
 

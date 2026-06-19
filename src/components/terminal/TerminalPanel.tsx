@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  TERMINAL_HEIGHT_MAX,
-  TERMINAL_HEIGHT_MIN,
-} from "../../core/layout/panelLayout";
+import { TERMINAL_HEIGHT_MAX, TERMINAL_HEIGHT_MIN } from "../../core/layout/panelLayout";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { terminalContextKey } from "../../core/types/terminal";
 import { useVerticalDragResize } from "../../hooks/useVerticalDragResize";
@@ -52,9 +49,7 @@ export function TerminalPanel({
     if (!workspaceId || !environmentId) {
       return undefined;
     }
-    return state.activeTabIdByContext[
-      terminalContextKey(workspaceId, environmentId)
-    ];
+    return state.activeTabIdByContext[terminalContextKey(workspaceId, environmentId)];
   });
   const activeTab = tabs.find((tab) => tab.tabId === activeTabId) ?? tabs[0];
 
@@ -93,9 +88,7 @@ export function TerminalPanel({
 
       removeTab(tabId);
 
-      const remaining = useTerminalStore
-        .getState()
-        .getTabsForContext(workspaceId, environmentId);
+      const remaining = useTerminalStore.getState().getTabsForContext(workspaceId, environmentId);
       if (remaining.length === 0) {
         addTab(workspaceId, environmentId);
       }
@@ -133,11 +126,7 @@ export function TerminalPanel({
       <section className="terminal-panel">
         <div className="terminal-panel__header">
           {!showPlaceholder && (
-            <div
-              className="terminal-tabs__list"
-              role="tablist"
-              data-testid="terminal-tabs"
-            >
+            <div className="terminal-tabs__list" role="tablist" data-testid="terminal-tabs">
               {tabs.map((tab, index) => {
                 const isActive = tab.tabId === activeTab?.tabId;
                 const statusSuffix =
@@ -236,9 +225,7 @@ export function TerminalPanel({
                 configured={configured}
                 enabled={enabled}
                 active={tab.tabId === activeTab?.tabId}
-                onClearReady={
-                  tab.tabId === activeTab?.tabId ? bindClearActive : undefined
-                }
+                onClearReady={tab.tabId === activeTab?.tabId ? bindClearActive : undefined}
               />
             ))
           )}

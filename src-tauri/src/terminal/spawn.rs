@@ -27,9 +27,8 @@ pub fn build_shell_context(
         EnvironmentCategory::Framework => {
             let adapter = crate::engine::adapters::get_adapter(&resolved.id)
                 .map_err(|error| error.to_string())?;
-            let skeleton_root =
-                ensure_framework_ready(adapter.as_ref(), &resolved.extra_paths)
-                    .map_err(|error| error.to_string())?;
+            let skeleton_root = ensure_framework_ready(adapter.as_ref(), &resolved.extra_paths)
+                .map_err(|error| error.to_string())?;
             let framework_env = framework_terminal_env(&skeleton_root, &workspace.path);
 
             let mut env_vars = build_env_vars(resolved);
@@ -106,15 +105,7 @@ fn minimal_system_path_dirs() -> Vec<String> {
 
 fn inherited_shell_env() -> Vec<(String, String)> {
     [
-        "HOME",
-        "USER",
-        "LOGNAME",
-        "SHELL",
-        "TERM",
-        "LANG",
-        "LC_ALL",
-        "LC_CTYPE",
-        "TMPDIR",
+        "HOME", "USER", "LOGNAME", "SHELL", "TERM", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR",
     ]
     .iter()
     .filter_map(|key| {

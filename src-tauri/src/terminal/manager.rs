@@ -169,13 +169,9 @@ impl Default for TerminalManager {
     }
 }
 
-pub fn make_emitter(
-    app: Option<tauri::AppHandle>,
-    bus: TerminalEventBus,
-) -> TerminalEmitter {
+pub fn make_emitter(app: Option<tauri::AppHandle>, bus: TerminalEventBus) -> TerminalEmitter {
     match app {
         Some(handle) => TerminalEmitter::tauri(handle, bus),
         None => TerminalEmitter::bus_only(bus),
     }
 }
-

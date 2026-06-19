@@ -1,5 +1,4 @@
 import { runspaceInvoke } from "../api/runspaceInvoke";
-import { syncActiveWorkspace } from "./syncActiveWorkspace";
 import type { WorkspaceInfo } from "../types/workspace";
 
 export async function activateRuntime(
@@ -19,7 +18,7 @@ export async function activateRuntime(
       runtimeId,
       useSession,
     });
-    await syncActiveWorkspace(workspace);
+    await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
     return workspace;
   } catch {
     return null;

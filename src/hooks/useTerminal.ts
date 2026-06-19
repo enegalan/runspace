@@ -39,8 +39,7 @@ export function useTerminal({
 
   useEffect(() => {
     const sessionId = tab?.sessionId;
-    sessionIdRef.current =
-      sessionId && tab?.status === "running" ? sessionId : null;
+    sessionIdRef.current = sessionId && tab?.status === "running" ? sessionId : null;
   }, [tab?.sessionId, tab?.status]);
 
   useEffect(() => {
@@ -79,10 +78,7 @@ export function useTerminal({
         }, 0);
       } catch (error) {
         if (!cancelled) {
-          setError(
-            tabId,
-            error instanceof Error ? error.message : String(error),
-          );
+          setError(tabId, error instanceof Error ? error.message : String(error));
         }
       }
     };
@@ -102,16 +98,7 @@ export function useTerminal({
     return () => {
       cancelled = true;
     };
-  }, [
-    configured,
-    enabled,
-    environmentId,
-    setConnecting,
-    setError,
-    setSession,
-    tabId,
-    workspaceId,
-  ]);
+  }, [configured, enabled, environmentId, setConnecting, setError, setSession, tabId, workspaceId]);
 
   useEffect(() => {
     if (!active || tab?.status !== "running" || !sessionIdRef.current) {

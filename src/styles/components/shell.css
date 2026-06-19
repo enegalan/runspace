@@ -97,7 +97,9 @@
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  grid-template-columns: 48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr) minmax(0, auto);
+  grid-template-columns:
+    48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr)
+    minmax(0, auto);
   grid-template-rows: 35px 1fr;
 }
 

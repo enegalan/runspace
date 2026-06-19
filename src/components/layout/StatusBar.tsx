@@ -60,10 +60,7 @@ export function StatusBar({
 }: StatusBarProps) {
   return (
     <footer className="status-bar" data-testid="status-bar">
-      <span
-        className={`status-bar__item ${statusClass(status)}`}
-        data-testid="status-bar-state"
-      >
+      <span className={`status-bar__item ${statusClass(status)}`} data-testid="status-bar-state">
         {statusLabel(status, phase, exitCode, timedOut)}
       </span>
       {lastRunDurationMs !== null && (

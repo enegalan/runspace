@@ -57,11 +57,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
     }
   };
 
-  const handleContextMenu = (
-    event: React.MouseEvent,
-    path: string,
-    index: number,
-  ) => {
+  const handleContextMenu = (event: React.MouseEvent, path: string, index: number) => {
     event.preventDefault();
     event.stopPropagation();
     setContextMenu({ x: event.clientX, y: event.clientY, path, index });
@@ -115,8 +111,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
           const isActive = file.path === activePath;
           const isDragging = dragState?.dragIndex === index;
           const offsetX = dragState?.offsets[index] ?? 0;
-          const tabStyle =
-            offsetX !== 0 ? { transform: `translateX(${offsetX}px)` } : undefined;
+          const tabStyle = offsetX !== 0 ? { transform: `translateX(${offsetX}px)` } : undefined;
           return (
             <div
               key={file.path}
@@ -158,11 +153,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
           );
         })}
         {inTitlebar && (
-          <div
-            className="editor-tabs__drag-fill"
-            data-tauri-drag-region
-            aria-hidden="true"
-          />
+          <div className="editor-tabs__drag-fill" data-tauri-drag-region aria-hidden="true" />
         )}
       </div>
       <button

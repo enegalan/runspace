@@ -4,7 +4,7 @@ use serde::Serialize;
 use tokio::sync::broadcast;
 
 #[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "kebab-case", tag = "event")]
+#[serde(tag = "event", rename_all = "lowercase")]
 pub enum ExecutionEvent {
     Started {
         pid: u32,

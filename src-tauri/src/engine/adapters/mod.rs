@@ -139,7 +139,11 @@ mod tests {
                 .map(|arg| arg.to_string_lossy().to_string())
                 .collect();
             assert_eq!(cmd.get_program(), binary, "{id} program");
-            assert_eq!(args, vec![script.to_string_lossy().to_string()], "{id} args");
+            assert_eq!(
+                args,
+                vec![script.to_string_lossy().to_string()],
+                "{id} args"
+            );
         }
     }
 }

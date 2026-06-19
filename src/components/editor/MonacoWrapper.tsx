@@ -1,8 +1,4 @@
-import Editor, {
-  type BeforeMount,
-  type OnMount,
-  type Monaco,
-} from "@monaco-editor/react";
+import Editor, { type BeforeMount, type OnMount, type Monaco } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { KeyCode, KeyMod } from "monaco-editor";
 import { memo, useEffect, useMemo, useRef } from "react";

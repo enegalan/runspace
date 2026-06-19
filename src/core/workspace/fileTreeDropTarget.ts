@@ -1,13 +1,5 @@
-import {
-  DROP_TARGET_ATTR,
-  hasExternalFileDrag,
-} from "./externalFileDrop";
-import {
-  canMoveToRoot,
-  getActiveDragPayload,
-  hasFileDrag,
-  isInvalidMove,
-} from "./fileTreeDrag";
+import { DROP_TARGET_ATTR, hasExternalFileDrag } from "./externalFileDrop";
+import { canMoveToRoot, getActiveDragPayload, hasFileDrag, isInvalidMove } from "./fileTreeDrag";
 
 type Listener = () => void;
 
@@ -47,9 +39,7 @@ export function subscribeFileTreeDropTarget(listener: Listener): () => void {
   };
 }
 
-export function resolveFileTreeDropTargetFromElement(
-  element: Element | null,
-): string | null {
+export function resolveFileTreeDropTargetFromElement(element: Element | null): string | null {
   const target = element?.closest(`[${DROP_TARGET_ATTR}]`);
   if (!target) {
     return null;

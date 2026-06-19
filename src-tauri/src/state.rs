@@ -25,8 +25,8 @@ impl AppState {
         let workspace_manager =
             WorkspaceManager::new().map_err(|e| format!("Workspace init failed: {e}"))?;
 
-        let home = std::env::var("HOME")
-            .map_err(|_| "Could not resolve home directory".to_string())?;
+        let home =
+            std::env::var("HOME").map_err(|_| "Could not resolve home directory".to_string())?;
         let runspace_dir = PathBuf::from(&home).join(".runspace");
         let environments_path = runspace_dir.join("environments.json");
         let settings_path = runspace_dir.join("settings.json");

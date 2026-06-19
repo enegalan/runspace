@@ -70,13 +70,7 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
 
         <div className="app-dialog__body about-dialog__body">
           <div className="about-dialog__hero">
-            <img
-              className="about-dialog__icon"
-              src={APP_ICON_URL}
-              alt=""
-              width={64}
-              height={64}
-            />
+            <img className="about-dialog__icon" src={APP_ICON_URL} alt="" width={64} height={64} />
             <p className="about-dialog__title">
               {aboutInfo.appName}{" "}
               <span className="about-dialog__version">v{aboutInfo.version}</span>

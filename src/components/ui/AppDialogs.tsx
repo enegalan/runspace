@@ -94,11 +94,7 @@ export function AppDialogs() {
               <h2 id={promptTitleId} className="app-dialog__title">
                 {prompt.title}
               </h2>
-              <IconButton
-                label="Close"
-                className="app-dialog__close"
-                onClick={cancelPrompt}
-              >
+              <IconButton label="Close" className="app-dialog__close" onClick={cancelPrompt}>
                 <IconClose size={16} />
               </IconButton>
             </header>

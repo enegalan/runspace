@@ -60,14 +60,8 @@ export function TerminalTabView({
       data-testid={`terminal-tab-pane-${tabId}`}
       aria-hidden={!active}
     >
-      {tab?.error && active && (
-        <p className="terminal-panel__error">{tab.error}</p>
-      )}
-      <XTermView
-        ref={xtermRef}
-        onData={handleData}
-        onResize={handleResize}
-      />
+      {tab?.error && active && <p className="terminal-panel__error">{tab.error}</p>}
+      <XTermView ref={xtermRef} onData={handleData} onResize={handleResize} />
     </div>
   );
 }

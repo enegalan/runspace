@@ -60,20 +60,14 @@ export function FileTree() {
   }, []);
 
   const handleTreeDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    if (
-      hasExternalFileDrag(event.dataTransfer) ||
-      hasFileDrag(event.dataTransfer.types)
-    ) {
+    if (hasExternalFileDrag(event.dataTransfer) || hasFileDrag(event.dataTransfer.types)) {
       setFileTreeDragActive(true);
     }
   };
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
-    return (
-      target === event.currentTarget ||
-      target.classList.contains("file-tree__empty")
-    );
+    return target === event.currentTarget || target.classList.contains("file-tree__empty");
   };
 
   const handleBodyDragOver = (event: React.DragEvent<HTMLDivElement>) => {

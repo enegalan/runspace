@@ -78,9 +78,7 @@ describe("AppShell", () => {
         return Promise.resolve([mockWorkspace]);
       }
       if (cmd === "list_files") {
-        return Promise.resolve([
-          { name: "main.js", path: "main.js", is_directory: false },
-        ]);
+        return Promise.resolve([{ name: "main.js", path: "main.js", is_directory: false }]);
       }
       if (cmd === "read_session") {
         return Promise.resolve({ environments: {}, last_runtime_id: "nodejs" });

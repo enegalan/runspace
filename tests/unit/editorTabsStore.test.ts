@@ -171,11 +171,7 @@ describe("editorTabsStore", () => {
     useEditorTabsStore.getState().reorderTabs(0, 2);
 
     const state = useEditorTabsStore.getState();
-    expect(state.openFiles.map((file) => file.path)).toEqual([
-      "b.js",
-      "c.js",
-      "a.js",
-    ]);
+    expect(state.openFiles.map((file) => file.path)).toEqual(["b.js", "c.js", "a.js"]);
     expect(state.activePath).toBe("b.js");
   });
 
@@ -220,9 +216,7 @@ describe("editorTabsStore", () => {
     const closed = await useEditorTabsStore.getState().closeOthers("b.js");
 
     expect(closed).toBe(true);
-    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
-      "b.js",
-    ]);
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual(["b.js"]);
     expect(useEditorTabsStore.getState().activePath).toBe("b.js");
   });
 
@@ -239,9 +233,7 @@ describe("editorTabsStore", () => {
     const closed = await useEditorTabsStore.getState().closeRight("a.js");
 
     expect(closed).toBe(true);
-    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
-      "a.js",
-    ]);
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual(["a.js"]);
   });
 
   it("closes all tabs", async () => {

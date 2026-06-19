@@ -32,41 +32,25 @@ describe("tabReorder", () => {
 
   describe("computeTabVisualOffsets", () => {
     it("shifts tabs to the left when dragging right", () => {
-      expect(
-        computeTabVisualOffsets(0, 2, [100, 100, 100], 4, 50),
-      ).toEqual([50, -104, -104]);
+      expect(computeTabVisualOffsets(0, 2, [100, 100, 100], 4, 50)).toEqual([50, -104, -104]);
     });
 
     it("shifts tabs to the right when dragging left", () => {
-      expect(
-        computeTabVisualOffsets(2, 0, [100, 100, 100], 4, -80),
-      ).toEqual([104, 104, -80]);
+      expect(computeTabVisualOffsets(2, 0, [100, 100, 100], 4, -80)).toEqual([104, 104, -80]);
     });
 
     it("only moves the dragged tab when drop index matches", () => {
-      expect(
-        computeTabVisualOffsets(1, 1, [100, 100, 100], 4, 20),
-      ).toEqual([0, 20, 0]);
+      expect(computeTabVisualOffsets(1, 1, [100, 100, 100], 4, 20)).toEqual([0, 20, 0]);
     });
   });
 
   describe("reorderByIndex", () => {
     it("moves an item to a new position", () => {
-      expect(reorderByIndex(["a", "b", "c", "d"], 1, 3)).toEqual([
-        "a",
-        "c",
-        "d",
-        "b",
-      ]);
+      expect(reorderByIndex(["a", "b", "c", "d"], 1, 3)).toEqual(["a", "c", "d", "b"]);
     });
 
     it("moves an item to an earlier position", () => {
-      expect(reorderByIndex(["a", "b", "c", "d"], 3, 0)).toEqual([
-        "d",
-        "a",
-        "b",
-        "c",
-      ]);
+      expect(reorderByIndex(["a", "b", "c", "d"], 3, 0)).toEqual(["d", "a", "b", "c"]);
     });
 
     it("returns the same array when indices match", () => {

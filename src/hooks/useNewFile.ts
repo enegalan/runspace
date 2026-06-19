@@ -6,18 +6,19 @@ import { useWorkspaceStore } from "../stores/workspaceStore";
 
 export function useNewFile() {
   const workspaceRuntimeId = useWorkspaceStore((state) => state.workspace?.runtime_id);
+  const workspaceId = useWorkspaceStore((state) => state.workspace?.id);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const runtimeId = workspaceRuntimeId ?? selectedRuntimeId;
   const createFile = useWorkspaceStore((state) => state.createFile);
   const openFile = useEditorTabsStore((state) => state.openFile);
 
   const createAndOpenFile = useCallback(async () => {
-    if (!runtimeId) {
+    if (!runtimeId || !workspaceId) {
       return;
     }
 
     try {
-      const path = await requireFileName(runtimeId);
+      const path = await requireFileName(runtimeId, workspaceId);
       if (!path) {
         return;
       }
@@ -26,7 +27,7 @@ export function useNewFile() {
     } catch (error) {
       console.error("Failed to create file:", error);
     }
-  }, [createFile, openFile, runtimeId]);
+  }, [createFile, openFile, runtimeId, workspaceId]);
 
   return { createAndOpenFile, runtimeId };
 }

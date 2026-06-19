@@ -99,8 +99,7 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled =
-    !workspace || !selectedEnvironment?.configured || !activePath;
+  const runDisabled = !workspace || !selectedEnvironment?.configured || !activePath;
   const runDisabledReason = !workspace
     ? "Create a workspace to run code"
     : !selectedEnvironment
@@ -165,8 +164,7 @@ export function AppShell() {
         const storedRuntimeId = session.last_runtime_id;
         const { selectedId, environments } = useEnvironmentStore.getState();
         const runtimeId =
-          storedRuntimeId &&
-          environments.some((env) => env.definition.id === storedRuntimeId)
+          storedRuntimeId && environments.some((env) => env.definition.id === storedRuntimeId)
             ? (storedRuntimeId as EnvironmentId)
             : selectedId;
 
@@ -179,9 +177,7 @@ export function AppShell() {
         console.error("App bootstrap failed:", error);
         try {
           const runtimeId = useEnvironmentStore.getState().selectedId;
-          const active = await runspaceInvoke<WorkspaceInfo | null>(
-            "get_active_workspace",
-          );
+          const active = await runspaceInvoke<WorkspaceInfo | null>("get_active_workspace");
           if (active) {
             useWorkspaceStore.setState({ workspace: active, loaded: true });
             if (runtimeId) {
@@ -449,10 +445,7 @@ export function AppShell() {
     .join(" ");
 
   return (
-    <div
-      className={`app-shell${appShellDesktopClass()}`}
-      data-testid="app-shell"
-    >
+    <div className={`app-shell${appShellDesktopClass()}`} data-testid="app-shell">
       <div className={mainRowClass}>
         {isTauri() && isMacOS() && (
           <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
@@ -471,10 +464,7 @@ export function AppShell() {
           onOpenSettings={() => openSettings()}
         />
         {layoutSettings.sidebarVisible && (
-          <Sidebar
-            width={layoutSettings.sidebarWidth}
-            onWidthChange={handleSidebarWidthChange}
-          />
+          <Sidebar width={layoutSettings.sidebarWidth} onWidthChange={handleSidebarWidthChange} />
         )}
         <div className="editor-column">
           {workspace && <EditorTabs inTitlebar={isTauri()} />}
@@ -517,10 +507,7 @@ export function AppShell() {
       />
       <SettingsPanel open={settingsOpen} onClose={closeSettings} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <KeyboardShortcutsDialog
-        open={shortcutsOpen}
-        onClose={() => setShortcutsOpen(false)}
-      />
+      <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <AppDialogs />
     </div>
   );

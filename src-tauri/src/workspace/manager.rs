@@ -7,9 +7,7 @@ use uuid::Uuid;
 use crate::engine::adapters::get_adapter;
 use crate::security::layer::{validate_path_in_workspace, SecurityError};
 
-use super::types::{
-    FileEntry, SessionData, WorkspaceInfo, WorkspaceManifest, MANIFEST_FILENAME,
-};
+use super::types::{FileEntry, SessionData, WorkspaceInfo, WorkspaceManifest, MANIFEST_FILENAME};
 
 #[derive(Debug)]
 pub enum WorkspaceError {
@@ -144,9 +142,8 @@ impl WorkspaceManager {
         let path = self.workspaces_dir().join(&id);
         fs::create_dir_all(&path)?;
 
-        get_adapter(runtime_id).map_err(|e| {
-            WorkspaceError::InvalidPath(format!("Unsupported runtime: {e}"))
-        })?;
+        get_adapter(runtime_id)
+            .map_err(|e| WorkspaceError::InvalidPath(format!("Unsupported runtime: {e}")))?;
         let now = Utc::now().to_rfc3339();
 
         let workspace = Workspace {
@@ -165,12 +162,14 @@ impl WorkspaceManager {
         Ok(workspace)
     }
 
-    pub fn read_manifest(&self, workspace: &Workspace) -> Result<WorkspaceManifest, WorkspaceError> {
+    pub fn read_manifest(
+        &self,
+        workspace: &Workspace,
+    ) -> Result<WorkspaceManifest, WorkspaceError> {
         let path = workspace.path.join(MANIFEST_FILENAME);
         let content = fs::read_to_string(&path)?;
-        serde_json::from_str(&content).map_err(|e| {
-            WorkspaceError::InvalidPath(format!("Invalid manifest: {e}"))
-        })
+        serde_json::from_str(&content)
+            .map_err(|e| WorkspaceError::InvalidPath(format!("Invalid manifest: {e}")))
     }
 
     pub fn write_manifest(
@@ -326,12 +325,10 @@ impl WorkspaceManager {
             });
         }
 
-        entries.sort_by(|a, b| {
-            match (a.is_directory, b.is_directory) {
-                (true, false) => std::cmp::Ordering::Less,
-                (false, true) => std::cmp::Ordering::Greater,
-                _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-            }
+        entries.sort_by(|a, b| match (a.is_directory, b.is_directory) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
         });
 
         Ok(entries)
@@ -445,9 +442,7 @@ impl WorkspaceManager {
         let file_name = source
             .file_name()
             .and_then(|name| name.to_str())
-            .ok_or_else(|| {
-                WorkspaceError::InvalidPath("Invalid source file name".to_string())
-            })?;
+            .ok_or_else(|| WorkspaceError::InvalidPath("Invalid source file name".to_string()))?;
 
         if file_name == MANIFEST_FILENAME {
             return Err(WorkspaceError::InvalidPath(
@@ -513,9 +508,8 @@ impl WorkspaceManager {
             return Ok(SessionData::default());
         }
         let content = fs::read_to_string(&path)?;
-        let mut session: SessionData = serde_json::from_str(&content).map_err(|e| {
-            WorkspaceError::InvalidPath(format!("Invalid session: {e}"))
-        })?;
+        let mut session: SessionData = serde_json::from_str(&content)
+            .map_err(|e| WorkspaceError::InvalidPath(format!("Invalid session: {e}")))?;
         session.normalize_legacy("nodejs");
         Ok(session)
     }
@@ -618,10 +612,7 @@ mod tests {
 
     fn temp_manager() -> (WorkspaceManager, PathBuf) {
         let _home_lock = crate::test_home_lock::home_test_lock();
-        let temp_home = env::temp_dir().join(format!(
-            "runspace-ws-test-{}",
-            uuid::Uuid::new_v4()
-        ));
+        let temp_home = env::temp_dir().join(format!("runspace-ws-test-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&temp_home).expect("temp home");
         let _guard = HomeGuard::set(&temp_home);
         let manager = WorkspaceManager::new().expect("manager");
@@ -653,7 +644,9 @@ mod tests {
     #[test]
     fn list_files_excludes_manifest() {
         let (manager, _temp) = temp_manager();
-        let workspace = manager.create_named_workspace("Test", "nodejs").expect("ws");
+        let workspace = manager
+            .create_named_workspace("Test", "nodejs")
+            .expect("ws");
         let files = manager.list_files(&workspace, None).expect("list");
         assert!(files.is_empty());
         assert!(!files.iter().any(|f| f.name == MANIFEST_FILENAME));
@@ -760,17 +753,18 @@ mod tests {
         let workspace = manager
             .create_named_workspace("Import test", "nodejs")
             .expect("workspace");
-        let source = env::temp_dir().join(format!(
-            "runspace-import-source-{}",
-            uuid::Uuid::new_v4()
-        ));
+        let source =
+            env::temp_dir().join(format!("runspace-import-source-{}", uuid::Uuid::new_v4()));
         fs::write(&source, "console.log('imported');").expect("source file");
 
         let imported = manager
             .import_external(&workspace, &[source.display().to_string()], None)
             .expect("import");
 
-        assert_eq!(imported, vec![source.file_name().unwrap().to_str().unwrap()]);
+        assert_eq!(
+            imported,
+            vec![source.file_name().unwrap().to_str().unwrap()]
+        );
         let dest = workspace.path.join(imported[0].as_str());
         assert!(dest.is_file());
         assert_eq!(
@@ -791,10 +785,8 @@ mod tests {
             .write_file(&workspace, "notes.txt", "existing")
             .expect("existing file");
 
-        let source_dir = env::temp_dir().join(format!(
-            "runspace-import-conflict-{}",
-            uuid::Uuid::new_v4()
-        ));
+        let source_dir =
+            env::temp_dir().join(format!("runspace-import-conflict-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&source_dir).expect("source dir");
         let source = source_dir.join("notes.txt");
         fs::write(&source, "incoming").expect("source file");

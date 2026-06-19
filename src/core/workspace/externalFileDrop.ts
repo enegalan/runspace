@@ -8,10 +8,7 @@ export function hasExternalFileDrag(dataTransfer: DataTransfer): boolean {
   if (hasFileDrag(dataTransfer.types)) {
     return false;
   }
-  return (
-    Array.from(dataTransfer.types).includes("Files") ||
-    dataTransfer.files.length > 0
-  );
+  return Array.from(dataTransfer.types).includes("Files") || dataTransfer.files.length > 0;
 }
 
 export function getExternalFiles(dataTransfer: DataTransfer): File[] {
@@ -51,9 +48,7 @@ export async function importDroppedExternalFiles(
   }
 
   try {
-    const imported = await useWorkspaceStore
-      .getState()
-      .importExternalFiles(files, targetDir);
+    const imported = await useWorkspaceStore.getState().importExternalFiles(files, targetDir);
     if (options.openFile) {
       const fileToOpen = pickImportedFileToOpen(imported);
       if (fileToOpen) {

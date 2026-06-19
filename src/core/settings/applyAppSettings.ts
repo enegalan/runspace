@@ -74,7 +74,10 @@ export function applyAppSettings(settings: AppSettings): void {
 
   const scale = settings.appearance.editorFontSize / 13;
   for (const [token, baseSize] of Object.entries(BASE_FONT_SIZES)) {
-    document.documentElement.style.setProperty(`--rs-font-size-${token}`, `${Math.round(baseSize * scale)}px`);
+    document.documentElement.style.setProperty(
+      `--rs-font-size-${token}`,
+      `${Math.round(baseSize * scale)}px`,
+    );
   }
   document.documentElement.style.setProperty(
     "--rs-font-mono",
@@ -119,17 +122,13 @@ export function readTerminalTheme(): TerminalThemeColors {
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const read = (name: string, fallback: string) =>
-    styles.getPropertyValue(name).trim() || fallback;
+  const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
 
   return {
     background: read("--rs-terminal-bg", DEFAULT_TERMINAL_THEME.background),
     foreground: read("--rs-terminal-fg", DEFAULT_TERMINAL_THEME.foreground),
     cursor: read("--rs-terminal-cursor", DEFAULT_TERMINAL_THEME.cursor),
-    cursorAccent: read(
-      "--rs-terminal-cursor-accent",
-      DEFAULT_TERMINAL_THEME.cursorAccent,
-    ),
+    cursorAccent: read("--rs-terminal-cursor-accent", DEFAULT_TERMINAL_THEME.cursorAccent),
     selectionBackground: read(
       "--rs-terminal-selection",
       DEFAULT_TERMINAL_THEME.selectionBackground,

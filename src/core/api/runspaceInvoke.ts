@@ -11,10 +11,7 @@ interface ErrorResponse {
   error: string;
 }
 
-async function invokeHttp<T>(
-  cmd: string,
-  args: Record<string, unknown>,
-): Promise<T> {
+async function invokeHttp<T>(cmd: string, args: Record<string, unknown>): Promise<T> {
   const response = await fetchBackend("/api/invoke", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

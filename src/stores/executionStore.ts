@@ -17,11 +17,7 @@ export interface ExecutionState {
   setRunning: (options?: { preserveOutput?: boolean }) => void;
   setStarted: () => void;
   setPhase: (phase: ExecutionPhase) => void;
-  setFinished: (
-    exitCode: number | null,
-    timedOut: boolean,
-    compileFailed?: boolean,
-  ) => void;
+  setFinished: (exitCode: number | null, timedOut: boolean, compileFailed?: boolean) => void;
   setError: (message: string) => void;
 }
 

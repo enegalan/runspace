@@ -5,13 +5,7 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
-export function IconButton({
-  label,
-  children,
-  className = "",
-  title,
-  ...props
-}: IconButtonProps) {
+export function IconButton({ label, children, className = "", title, ...props }: IconButtonProps) {
   return (
     <button
       type="button"

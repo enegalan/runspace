@@ -1,11 +1,6 @@
 import { getName, getTauriVersion, getVersion } from "@tauri-apps/api/app";
 import { useEffect, useState } from "react";
-import {
-  APP_AUTHOR,
-  APP_LICENSE,
-  APP_NAME,
-  APP_VERSION,
-} from "../core/constants/appMetadata";
+import { APP_AUTHOR, APP_LICENSE, APP_NAME, APP_VERSION } from "../core/constants/appMetadata";
 import { isTauri } from "../core/platform/isTauri";
 
 export interface AboutInfo {

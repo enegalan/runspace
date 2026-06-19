@@ -320,8 +320,7 @@ mod tests {
         for arg in &request.args {
             cmd.arg(arg);
         }
-        cmd.current_dir(&request.cwd)
-            .stdout(Stdio::piped());
+        cmd.current_dir(&request.cwd).stdout(Stdio::piped());
 
         let output = cmd.output().expect("node output");
         let stdout = String::from_utf8_lossy(&output.stdout);
