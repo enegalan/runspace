@@ -89,11 +89,7 @@ function applyNoActiveWorkspaceState(
 
 async function prepareForWorkspaceSwitch(): Promise<void> {
   await useEditorTabsStore.getState().saveDirtyFiles();
-  try {
-    await runspaceInvoke("kill_process");
-  } catch {
-    // No active run.
-  }
+  await runspaceInvoke("kill_process");
   useExecutionStore.getState().reset();
 }
 
