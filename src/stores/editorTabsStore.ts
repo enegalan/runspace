@@ -11,6 +11,14 @@ import {
 } from "../core/editor/tabFocusHistory";
 import { reorderByIndex } from "../core/editor/tabReorder";
 import { getEnvironmentSession, uniquePaths } from "../core/workspace/session";
+import { useWorkspaceStore } from "./workspaceStore";
+
+interface TabSessionSnapshot {
+  runtimeId: string;
+  workspaceId: string;
+  openFiles: OpenFile[];
+  activePath: string | null;
+}
 
 interface EditorTabsStore {
   openFiles: OpenFile[];
@@ -36,7 +44,11 @@ interface EditorTabsStore {
     runtimeId: string,
     workspaceId: string,
   ) => Promise<void>;
-  persistForEnvironment: (runtimeId: string, workspaceId: string | null) => Promise<void>;
+  persistForEnvironment: (
+    runtimeId: string,
+    workspaceId: string | null,
+    tabState?: Pick<TabSessionSnapshot, "openFiles" | "activePath">,
+  ) => Promise<void>;
 }
 
 function basename(path: string): string {
@@ -47,14 +59,24 @@ function basename(path: string): string {
 let tabSessionPersistQueue = Promise.resolve();
 
 function queueTabSessionPersist(get: () => EditorTabsStore): void {
+  const workspace = useWorkspaceStore.getState().workspace;
+  if (!workspace) {
+    return;
+  }
+
+  const snapshot: TabSessionSnapshot = {
+    runtimeId: workspace.runtime_id,
+    workspaceId: workspace.id,
+    openFiles: get().openFiles,
+    activePath: get().activePath,
+  };
+
   tabSessionPersistQueue = tabSessionPersistQueue
     .then(async () => {
-      const { useWorkspaceStore } = await import("./workspaceStore");
-      const workspace = useWorkspaceStore.getState().workspace;
-      if (!workspace) {
-        return;
-      }
-      await get().persistForEnvironment(workspace.runtime_id, workspace.id);
+      await get().persistForEnvironment(snapshot.runtimeId, snapshot.workspaceId, {
+        openFiles: snapshot.openFiles,
+        activePath: snapshot.activePath,
+      });
     })
     .catch((error) => {
       console.error("Failed to persist tab session:", error);
@@ -280,10 +302,11 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     set({ openFiles, activePath, focusHistory: [] });
   },
 
-  persistForEnvironment: async (runtimeId, workspaceId) => {
+  persistForEnvironment: async (runtimeId, workspaceId, tabState) => {
     const session = await runspaceInvoke<SessionData>("read_session");
     const envSession = getEnvironmentSession(session, runtimeId);
-    const { openFiles, activePath } = get();
+    const openFiles = tabState?.openFiles ?? get().openFiles;
+    const activePath = tabState?.activePath ?? get().activePath;
 
     if (workspaceId) {
       envSession.workspace_id = workspaceId;

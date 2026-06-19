@@ -184,6 +184,48 @@ describe("editorTabsStore", () => {
     expect(useEditorTabsStore.getState().activePath).toBe("main.js");
   });
 
+  it("persists a provided tab snapshot instead of the current store state", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "stale.js",
+          content: "stale",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "stale.js",
+    });
+    vi.mocked(runspaceInvoke).mockResolvedValue({ environments: {} });
+
+    await useEditorTabsStore.getState().persistForEnvironment("nodejs", "ws-1", {
+      openFiles: [
+        {
+          path: "saved.js",
+          content: "saved",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "saved.js",
+    });
+
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_session", {
+      session: expect.objectContaining({
+        environments: expect.objectContaining({
+          nodejs: expect.objectContaining({
+            workspace_tabs: expect.objectContaining({
+              "ws-1": {
+                open_files: ["saved.js"],
+                active_file: "saved.js",
+              },
+            }),
+          }),
+        }),
+      }),
+    });
+  });
+
   it("reorders open tabs", () => {
     useEditorTabsStore.setState({
       openFiles: [
