@@ -8,10 +8,7 @@ export function hasExternalFileDrag(dataTransfer: DataTransfer): boolean {
   if (hasFileDrag(dataTransfer.types)) {
     return false;
   }
-  return (
-    Array.from(dataTransfer.types).includes("Files") ||
-    dataTransfer.files.length > 0
-  );
+  return Array.from(dataTransfer.types).includes("Files") || dataTransfer.files.length > 0;
 }
 
 export function getExternalFiles(dataTransfer: DataTransfer): File[] {
@@ -32,7 +29,7 @@ export function readFileAsText(file: File): Promise<string> {
 }
 
 export function pickImportedFileToOpen(paths: string[]): string | null {
-  const file = paths.find((path) => !path.endsWith("/"));
+  const file = paths.find((path) => ! path.endsWith("/"));
   return file ?? null;
 }
 
@@ -41,19 +38,17 @@ export async function importDroppedExternalFiles(
   targetDir: string,
   options: { openFile?: boolean } = {},
 ): Promise<void> {
-  if (!hasExternalFileDrag(dataTransfer)) {
+  if (! hasExternalFileDrag(dataTransfer)) {
     return;
   }
 
   const files = getExternalFiles(dataTransfer);
-  if (files.length === 0 || !useWorkspaceStore.getState().workspace) {
+  if (files.length === 0 || ! useWorkspaceStore.getState().workspace) {
     return;
   }
 
   try {
-    const imported = await useWorkspaceStore
-      .getState()
-      .importExternalFiles(files, targetDir);
+    const imported = await useWorkspaceStore.getState().importExternalFiles(files, targetDir);
     if (options.openFile) {
       const fileToOpen = pickImportedFileToOpen(imported);
       if (fileToOpen) {

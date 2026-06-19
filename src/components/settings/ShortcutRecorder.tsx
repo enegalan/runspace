@@ -21,7 +21,7 @@ export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderPr
   }, []);
 
   useEffect(() => {
-    if (!recording) {
+    if (! recording) {
       return;
     }
 
@@ -35,7 +35,7 @@ export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderPr
       }
 
       const binding = bindingFromKeyboardEvent(event);
-      if (!binding) {
+      if (! binding) {
         return;
       }
 
@@ -59,9 +59,7 @@ export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderPr
     <button
       ref={buttonRef}
       type="button"
-      className={`shortcut-recorder${
-        recording ? " shortcut-recorder--recording" : ""
-      }`}
+      className={`shortcut-recorder${recording ? " shortcut-recorder--recording" : ""}`}
       onClick={() => setRecording(true)}
       aria-pressed={recording}
       aria-label={recording ? "Recording shortcut, press Escape to cancel" : "Change shortcut"}

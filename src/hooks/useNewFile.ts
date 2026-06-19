@@ -12,13 +12,13 @@ export function useNewFile() {
   const openFile = useEditorTabsStore((state) => state.openFile);
 
   const createAndOpenFile = useCallback(async () => {
-    if (!runtimeId) {
+    if (! runtimeId) {
       return;
     }
 
     try {
       const path = await requireFileName(runtimeId);
-      if (!path) {
+      if (! path) {
         return;
       }
       await createFile(path);

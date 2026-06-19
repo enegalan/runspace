@@ -6,7 +6,7 @@ import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = true) {
-  const definition = ENVIRONMENT_CATALOG.find((item) => item.id === id)!;
+  const definition = ENVIRONMENT_CATALOG.find((item) => item.id === id) !;
   return {
     definition,
     user_config: {

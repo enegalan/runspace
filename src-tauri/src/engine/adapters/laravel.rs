@@ -4,7 +4,10 @@ use std::path::Path;
 use std::process::Command;
 
 use super::framework::{find_php, run_php_command, FrameworkSkeletonError};
-use super::{ensure_framework_ready, script_command, AdapterError, PrepareContext, PrepareResult, RuntimeAdapter};
+use super::{
+    ensure_framework_ready, script_command, AdapterError, PrepareContext, PrepareResult,
+    RuntimeAdapter,
+};
 
 pub struct LaravelAdapter;
 
@@ -46,6 +49,10 @@ impl RuntimeAdapter for LaravelAdapter {
             fs::File::create(&sqlite).map_err(FrameworkSkeletonError::Io)?;
         }
 
-        run_php_command(&php, target, &["artisan", "migrate", "--force", "--no-interaction"])
+        run_php_command(
+            &php,
+            target,
+            &["artisan", "migrate", "--force", "--no-interaction"],
+        )
     }
 }

@@ -6,8 +6,8 @@ use std::process::Command;
 use super::catalog::{binary_field_key, get_catalog, get_definition};
 use super::detect::detect_missing_binary_paths;
 use super::types::{
-    Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore,
-    ResolvedEnvironment, ValidationResult,
+    Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore, ResolvedEnvironment,
+    ValidationResult,
 };
 
 const DEFAULT_SELECTED_ID: &str = "nodejs";
@@ -82,11 +82,17 @@ impl EnvironmentManager {
             return Err(EnvironmentError::NotInstalled(id.to_string()));
         }
 
-        self.store.installed_ids.retain(|installed_id| installed_id != id);
+        self.store
+            .installed_ids
+            .retain(|installed_id| installed_id != id);
         self.store.configs.remove(id);
         self.versions.remove(id);
 
-        if !self.store.installed_ids.contains(&self.store.selected_environment_id) {
+        if !self
+            .store
+            .installed_ids
+            .contains(&self.store.selected_environment_id)
+        {
             self.store.selected_environment_id = self
                 .store
                 .installed_ids
@@ -115,7 +121,8 @@ impl EnvironmentManager {
         paths: HashMap<String, String>,
     ) -> Result<(), EnvironmentError> {
         self.require_installed(id)?;
-        let definition = get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
+        let definition =
+            get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
         validate_path_fields(&definition, &paths)?;
         let config = self.store.configs.entry(id.to_string()).or_default();
         config.paths = paths;
@@ -139,13 +146,9 @@ impl EnvironmentManager {
 
     pub fn validate_environment(&mut self, id: &str) -> Result<ValidationResult, EnvironmentError> {
         self.require_installed(id)?;
-        let definition = get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
-        let user_config = self
-            .store
-            .configs
-            .get(id)
-            .cloned()
-            .unwrap_or_default();
+        let definition =
+            get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
+        let user_config = self.store.configs.get(id).cloned().unwrap_or_default();
 
         let mut errors = Vec::new();
         let mut version: Option<String> = None;
@@ -160,7 +163,11 @@ impl EnvironmentManager {
                     errors.push(format!("Missing required field: {}", field.label));
                 }
                 Some(path_str) => {
-                    if let Err(msg) = validate_path_value(path_str, &field.field_type, is_binary_field(&field.key)) {
+                    if let Err(msg) = validate_path_value(
+                        path_str,
+                        &field.field_type,
+                        is_binary_field(&field.key),
+                    ) {
                         errors.push(msg);
                     }
                 }
@@ -191,13 +198,9 @@ impl EnvironmentManager {
 
     pub fn resolve_for_execution(&self, id: &str) -> Result<ResolvedEnvironment, EnvironmentError> {
         self.require_installed(id)?;
-        let definition = get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
-        let user_config = self
-            .store
-            .configs
-            .get(id)
-            .cloned()
-            .unwrap_or_default();
+        let definition =
+            get_definition(id).ok_or_else(|| EnvironmentError::NotFound(id.to_string()))?;
+        let user_config = self.store.configs.get(id).cloned().unwrap_or_default();
 
         if !is_fully_configured(&definition, &user_config.paths) {
             return Err(EnvironmentError::NotConfigured(id.to_string()));
@@ -285,7 +288,10 @@ impl EnvironmentManager {
     }
 
     fn is_installed(&self, id: &str) -> bool {
-        self.store.installed_ids.iter().any(|installed_id| installed_id == id)
+        self.store
+            .installed_ids
+            .iter()
+            .any(|installed_id| installed_id == id)
     }
 
     fn require_installed(&self, id: &str) -> Result<(), EnvironmentError> {
@@ -315,21 +321,17 @@ impl EnvironmentManager {
 }
 
 fn migrate_store(store: &mut EnvironmentsStore) {
-    store.installed_ids.retain(|id| get_definition(id).is_some());
-    store.configs.retain(|id, _| get_definition(id).is_some());
-
     store
         .installed_ids
-        .sort_by_key(|id| catalog_index(id));
+        .retain(|id| get_definition(id).is_some());
+    store.configs.retain(|id, _| get_definition(id).is_some());
+
+    store.installed_ids.sort_by_key(|id| catalog_index(id));
 
     if store.installed_ids.is_empty() {
         store.selected_environment_id.clear();
     } else if !store.installed_ids.contains(&store.selected_environment_id) {
-        store.selected_environment_id = store
-            .installed_ids
-            .first()
-            .cloned()
-            .unwrap_or_default();
+        store.selected_environment_id = store.installed_ids.first().cloned().unwrap_or_default();
     }
 }
 

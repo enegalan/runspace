@@ -21,7 +21,7 @@ export async function pickNativePath(directory: boolean): Promise<string | null>
     body: JSON.stringify({ directory }),
   });
 
-  if (!response.ok) {
+  if (! response.ok) {
     throw new Error("Failed to open file picker");
   }
 

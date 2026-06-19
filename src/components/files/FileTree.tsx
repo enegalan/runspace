@@ -60,24 +60,18 @@ export function FileTree() {
   }, []);
 
   const handleTreeDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    if (
-      hasExternalFileDrag(event.dataTransfer) ||
-      hasFileDrag(event.dataTransfer.types)
-    ) {
+    if (hasExternalFileDrag(event.dataTransfer) || hasFileDrag(event.dataTransfer.types)) {
       setFileTreeDragActive(true);
     }
   };
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
-    return (
-      target === event.currentTarget ||
-      target.classList.contains("file-tree__empty")
-    );
+    return target === event.currentTarget || target.classList.contains("file-tree__empty");
   };
 
   const handleBodyDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isDirectBodyTarget(event) || !workspace) {
+    if (! isDirectBodyTarget(event) || ! workspace) {
       return;
     }
 
@@ -87,11 +81,11 @@ export function FileTree() {
       return;
     }
 
-    if (!hasFileDrag(event.dataTransfer.types)) {
+    if (! hasFileDrag(event.dataTransfer.types)) {
       return;
     }
     const payload = getActiveDragPayload();
-    if (!payload || !canMoveToRoot(payload.path)) {
+    if (! payload || ! canMoveToRoot(payload.path)) {
       return;
     }
     event.preventDefault();
@@ -99,20 +93,20 @@ export function FileTree() {
   };
 
   const handleTreeDragOverCapture = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!workspace) {
+    if (! workspace) {
       return;
     }
     updateFileTreeDropTargetFromDrag(event);
   };
 
   const handleTreeDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+    if (! event.currentTarget.contains(event.relatedTarget as Node | null)) {
       clearFileTreeDropTarget();
     }
   };
 
   const handleBodyDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isDirectBodyTarget(event)) {
+    if (! isDirectBodyTarget(event)) {
       return;
     }
     event.preventDefault();
@@ -125,14 +119,14 @@ export function FileTree() {
 
     const payload = readFileDragData(event.dataTransfer);
     clearFileDragData();
-    if (!payload || !canMoveToRoot(payload.path)) {
+    if (! payload || ! canMoveToRoot(payload.path)) {
       return;
     }
     void moveFile(payload.path, "");
   };
 
   const openSidebarMenu = (event: React.MouseEvent) => {
-    if (!workspace) {
+    if (! workspace) {
       return;
     }
     event.preventDefault();
@@ -161,7 +155,7 @@ export function FileTree() {
             onClick={() => void createAndOpenFile()}
             title="New file"
             aria-label="New file"
-            disabled={!workspace}
+            disabled={! workspace}
           >
             <IconFilePlus size={18} />
           </button>
@@ -171,7 +165,7 @@ export function FileTree() {
             onClick={() => void createNewFolder()}
             title="New folder"
             aria-label="New folder"
-            disabled={!workspace}
+            disabled={! workspace}
           >
             <IconFolderPlus size={18} />
           </button>
@@ -181,7 +175,7 @@ export function FileTree() {
             onClick={() => void refreshFiles()}
             title="Refresh"
             aria-label="Refresh"
-            disabled={!workspace}
+            disabled={! workspace}
           >
             <IconRefresh size={18} />
           </button>
@@ -196,7 +190,7 @@ export function FileTree() {
         onDrop={handleBodyDrop}
         role="presentation"
       >
-        {!workspace ? (
+        {! workspace ? (
           <p className="file-tree__empty">
             No workspaces yet — open the workspace menu and create a new workspace.
           </p>

@@ -24,7 +24,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const setTab = useSettingsUiStore((state) => state.setTab);
   const reset = useSettingsStore((state) => state.reset);
 
-  if (!open) {
+  if (! open) {
     return null;
   }
 

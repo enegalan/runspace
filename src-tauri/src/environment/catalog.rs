@@ -29,11 +29,7 @@ fn language_definition(
     }
 }
 
-fn framework_definition(
-    id: &str,
-    name: &str,
-    install_guide_url: &str,
-) -> EnvironmentDefinition {
+fn framework_definition(id: &str, name: &str, install_guide_url: &str) -> EnvironmentDefinition {
     EnvironmentDefinition {
         id: id.to_string(),
         name: name.to_string(),
@@ -91,11 +87,7 @@ pub fn get_catalog() -> Vec<EnvironmentDefinition> {
             "Laravel",
             "https://laravel.com/docs/installation",
         ),
-        framework_definition(
-            "symfony",
-            "Symfony",
-            "https://symfony.com/download",
-        ),
+        framework_definition("symfony", "Symfony", "https://symfony.com/download"),
         language_definition(
             "gcc",
             "GCC (C)",

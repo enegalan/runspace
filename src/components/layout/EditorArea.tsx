@@ -27,8 +27,8 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
   const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
   const activePath = useEditorTabsStore((state) => state.activePath);
-  const activeFile = useEditorTabsStore((state) =>
-    state.openFiles.find((file) => file.path === state.activePath) ?? null,
+  const activeFile = useEditorTabsStore(
+    (state) => state.openFiles.find((file) => file.path === state.activePath) ?? null,
   );
   const openFile = useEditorTabsStore((state) => state.openFile);
   const updateContent = useEditorTabsStore((state) => state.updateContent);
@@ -45,7 +45,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   );
 
   const handleDragOver = (event: React.DragEvent) => {
-    if (!workspace) {
+    if (! workspace) {
       return;
     }
 
@@ -57,11 +57,11 @@ export function EditorArea({ onSave }: EditorAreaProps) {
       return;
     }
 
-    if (!hasFileDrag(event.dataTransfer.types)) {
+    if (! hasFileDrag(event.dataTransfer.types)) {
       return;
     }
     const payload = getActiveDragPayload();
-    if (!payload || payload.isDirectory) {
+    if (! payload || payload.isDirectory) {
       return;
     }
     event.preventDefault();
@@ -71,7 +71,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   };
 
   const handleDragLeave = (event: React.DragEvent) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+    if (! event.currentTarget.contains(event.relatedTarget as Node | null)) {
       setDropTarget(false);
     }
   };
@@ -88,7 +88,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
 
     const payload = readFileDragData(event.dataTransfer);
     clearFileDragData();
-    if (!payload || payload.isDirectory) {
+    if (! payload || payload.isDirectory) {
       return;
     }
     void openFile(payload.path);
@@ -107,7 +107,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
 
   let body: React.ReactNode;
 
-  if (!workspace) {
+  if (! workspace) {
     body = (
       <div className="editor-area__empty">
         <p className="editor-area__empty-title">No workspace open</p>
@@ -120,14 +120,14 @@ export function EditorArea({ onSave }: EditorAreaProps) {
           <Button
             variant="primary"
             onClick={() => selectedRuntimeId && void createWorkspace(selectedRuntimeId)}
-            disabled={!selectedRuntimeId}
+            disabled={! selectedRuntimeId}
           >
             Create workspace
           </Button>
         </div>
       </div>
     );
-  } else if (!activePath || !activeFile) {
+  } else if (! activePath || ! activeFile) {
     body = (
       <div className="editor-area__empty">
         <p className="editor-area__empty-hint">

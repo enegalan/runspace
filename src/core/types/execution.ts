@@ -2,12 +2,7 @@ import type { EnvironmentId } from "./environment";
 
 export type ExecutionStream = "stdout" | "stderr";
 
-export type ExecutionStatus =
-  | "idle"
-  | "running"
-  | "success"
-  | "error"
-  | "timeout";
+export type ExecutionStatus = "idle" | "running" | "success" | "error" | "timeout";
 
 export type ExecutionPhase = "compile" | "run";
 

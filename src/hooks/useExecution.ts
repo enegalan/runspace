@@ -56,12 +56,9 @@ export function useExecution() {
     };
 
     const setup = async () => {
-      const outputUnlisten = await listen<ExecutionOutputEvent>(
-        "execution-output",
-        (event) => {
-          appendOutput(event.payload.stream, event.payload.chunk);
-        },
-      );
+      const outputUnlisten = await listen<ExecutionOutputEvent>("execution-output", (event) => {
+        appendOutput(event.payload.stream, event.payload.chunk);
+      });
       register(outputUnlisten);
 
       const finishedUnlisten = await listen<ExecutionFinishedEvent>(
@@ -76,12 +73,9 @@ export function useExecution() {
       );
       register(finishedUnlisten);
 
-      const phaseUnlisten = await listen<ExecutionPhaseEvent>(
-        "execution-phase",
-        (event) => {
-          setPhase(event.payload.phase);
-        },
-      );
+      const phaseUnlisten = await listen<ExecutionPhaseEvent>("execution-phase", (event) => {
+        setPhase(event.payload.phase);
+      });
       register(phaseUnlisten);
 
       const startedUnlisten = await listen("execution-started", () => {
@@ -100,35 +94,39 @@ export function useExecution() {
     };
   }, [appendOutput, setFinished, setPhase, setStarted]);
 
-  const run = useCallback(async (options?: ExecutionOptions) => {
-    const executionSettings = getAppSettings().execution;
-    setRunning({ preserveOutput: !executionSettings.autoClearOutput });
+  const run = useCallback(
+    async (options?: ExecutionOptions) => {
+      const executionSettings = getAppSettings().execution;
+      setRunning({ preserveOutput: ! executionSettings.autoClearOutput });
 
-    const { environmentId, file, timeoutSecs, compileTimeoutSecs } = options ?? {};
-    if (!environmentId) {
-      setError("No environment selected. Add one in Settings → Environments.");
-      return;
-    }
-    if (!file) {
-      setError("Open a file to run.");
-      return;
-    }
-    const resolvedTimeoutSecs =
-      timeoutSecs ?? executionSettings.runTimeoutSecs ?? DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
-    const resolvedCompileTimeoutSecs =
-      compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
+      const { environmentId, file, timeoutSecs, compileTimeoutSecs } = options ?? {};
+      if (! environmentId) {
+        setError("No environment selected. Add one in Settings → Environments.");
+        return;
+      }
+      if (! file) {
+        setError("Open a file to run.");
+        return;
+      }
+      const resolvedTimeoutSecs =
+        timeoutSecs ??
+        executionSettings.runTimeoutSecs ??
+        DEFAULT_APP_SETTINGS.execution.runTimeoutSecs;
+      const resolvedCompileTimeoutSecs = compileTimeoutSecs ?? executionSettings.compileTimeoutSecs;
 
-    try {
-      await runspaceInvoke("execute_code", {
-        environmentId,
-        file,
-        timeoutSecs: resolvedTimeoutSecs,
-        compileTimeoutSecs: resolvedCompileTimeoutSecs,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  }, [setError, setRunning]);
+      try {
+        await runspaceInvoke("execute_code", {
+          environmentId,
+          file,
+          timeoutSecs: resolvedTimeoutSecs,
+          compileTimeoutSecs: resolvedCompileTimeoutSecs,
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [setError, setRunning],
+  );
 
   const stop = useCallback(async () => {
     try {

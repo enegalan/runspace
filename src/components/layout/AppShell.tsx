@@ -75,7 +75,7 @@ export function AppShell() {
   const settingsOpen = useSettingsUiStore((state) => state.open);
   const openSettings = useSettingsUiStore((state) => state.openSettings);
   const closeSettings = useSettingsUiStore((state) => state.closeSettings);
-  const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
+  const [backendReady, setBackendReady] = useState(isTauri() && ! import.meta.env.DEV);
 
   const { createAndOpenFile } = useNewFile();
   const { createNewFolder } = useNewFolder();
@@ -99,15 +99,14 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled =
-    !workspace || !selectedEnvironment?.configured || !activePath;
-  const runDisabledReason = !workspace
+  const runDisabled = ! workspace || ! selectedEnvironment?.configured || ! activePath;
+  const runDisabledReason = ! workspace
     ? "Create a workspace to run code"
-    : !selectedEnvironment
+    : ! selectedEnvironment
       ? "Add an environment in Settings"
-      : !selectedEnvironment.configured
+      : ! selectedEnvironment.configured
         ? "Configure in Settings → Environments"
-        : !activePath
+        : ! activePath
           ? "Open a file to run"
           : undefined;
 
@@ -118,12 +117,12 @@ export function AppShell() {
 
     void waitForBackendReady()
       .then(() => {
-        if (!cancelled) {
+        if (! cancelled) {
           setBackendReady(true);
         }
       })
       .catch(() => {
-        if (!cancelled) {
+        if (! cancelled) {
           setBackendReady(true);
         }
       });
@@ -140,7 +139,7 @@ export function AppShell() {
   }, [workspace, onboardingComplete]);
 
   useEffect(() => {
-    if (!backendReady || bootstrapStarted.current) {
+    if (! backendReady || bootstrapStarted.current) {
       return;
     }
     bootstrapStarted.current = true;
@@ -165,8 +164,7 @@ export function AppShell() {
         const storedRuntimeId = session.last_runtime_id;
         const { selectedId, environments } = useEnvironmentStore.getState();
         const runtimeId =
-          storedRuntimeId &&
-          environments.some((env) => env.definition.id === storedRuntimeId)
+          storedRuntimeId && environments.some((env) => env.definition.id === storedRuntimeId)
             ? (storedRuntimeId as EnvironmentId)
             : selectedId;
 
@@ -179,9 +177,7 @@ export function AppShell() {
         console.error("App bootstrap failed:", error);
         try {
           const runtimeId = useEnvironmentStore.getState().selectedId;
-          const active = await runspaceInvoke<WorkspaceInfo | null>(
-            "get_active_workspace",
-          );
+          const active = await runspaceInvoke<WorkspaceInfo | null>("get_active_workspace");
           if (active) {
             useWorkspaceStore.setState({ workspace: active, loaded: true });
             if (runtimeId) {
@@ -197,7 +193,7 @@ export function AppShell() {
         }
         useEnvironmentStore.setState({ loaded: true });
       } finally {
-        if (!cancelled) {
+        if (! cancelled) {
           useEditorTabsStore.setState({ loaded: true });
         }
       }
@@ -222,7 +218,7 @@ export function AppShell() {
   }, []);
 
   useEffect(() => {
-    if (!isTauri()) {
+    if (! isTauri()) {
       return;
     }
 
@@ -245,7 +241,7 @@ export function AppShell() {
   }, []);
 
   const handleRun = useCallback(() => {
-    if (!selectedId || !workspace || !activePath) {
+    if (! selectedId || ! workspace || ! activePath) {
       return;
     }
 
@@ -295,24 +291,24 @@ export function AppShell() {
 
   const handleToggleTerminal = useCallback(() => {
     void updateSettings({
-      layout: { terminalVisible: !layoutSettings.terminalVisible },
+      layout: { terminalVisible: ! layoutSettings.terminalVisible },
     });
   }, [layoutSettings.terminalVisible, updateSettings]);
 
   const handleToggleSidebar = useCallback(() => {
     void updateSettings({
-      layout: { sidebarVisible: !layoutSettings.sidebarVisible },
+      layout: { sidebarVisible: ! layoutSettings.sidebarVisible },
     });
   }, [layoutSettings.sidebarVisible, updateSettings]);
 
   const handleToggleOutput = useCallback(() => {
     void updateSettings({
-      layout: { outputVisible: !layoutSettings.outputVisible },
+      layout: { outputVisible: ! layoutSettings.outputVisible },
     });
   }, [layoutSettings.outputVisible, updateSettings]);
 
   const handleSave = useCallback(() => {
-    if (executionSettings.runOnSave && !runDisabled && !isRunning) {
+    if (executionSettings.runOnSave && ! runDisabled && ! isRunning) {
       handleRun();
       return;
     }
@@ -320,7 +316,7 @@ export function AppShell() {
   }, [executionSettings.runOnSave, runDisabled, isRunning, handleRun]);
 
   const handleNewTerminal = useCallback(() => {
-    if (!workspace || !selectedId || !selectedEnvironment?.configured) {
+    if (! workspace || ! selectedId || ! selectedEnvironment?.configured) {
       return;
     }
     void updateSettings({
@@ -351,7 +347,7 @@ export function AppShell() {
           handleSave();
           break;
         case "run":
-          if (!runDisabled) {
+          if (! runDisabled) {
             handleRun();
           }
           break;
@@ -405,7 +401,7 @@ export function AppShell() {
     runDisabled,
   });
 
-  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded || !settingsLoaded) {
+  if (! backendReady || ! workspaceLoaded || ! envLoaded || ! tabsLoaded || ! settingsLoaded) {
     return (
       <div
         className={`app-shell app-shell--loading${appShellDesktopClass()}`}
@@ -422,9 +418,9 @@ export function AppShell() {
 
   const showWelcome =
     onboardingRequired &&
-    !onboardingComplete &&
-    !isOnboardingComplete() &&
-    !hasEnteredMainShell.current;
+    ! onboardingComplete &&
+    ! isOnboardingComplete() &&
+    ! hasEnteredMainShell.current;
 
   if (showWelcome) {
     return (
@@ -441,18 +437,15 @@ export function AppShell() {
   const mainRowClass = [
     "main-row",
     isTauri() ? "main-row--desktop" : "",
-    !layoutSettings.sidebarVisible ? "main-row--sidebar-hidden" : "",
-    !layoutSettings.outputVisible ? "main-row--output-hidden" : "",
-    !layoutSettings.terminalVisible ? "main-row--terminal-hidden" : "",
+    ! layoutSettings.sidebarVisible ? "main-row--sidebar-hidden" : "",
+    ! layoutSettings.outputVisible ? "main-row--output-hidden" : "",
+    ! layoutSettings.terminalVisible ? "main-row--terminal-hidden" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div
-      className={`app-shell${appShellDesktopClass()}`}
-      data-testid="app-shell"
-    >
+    <div className={`app-shell${appShellDesktopClass()}`} data-testid="app-shell">
       <div className={mainRowClass}>
         {isTauri() && isMacOS() && (
           <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
@@ -471,14 +464,11 @@ export function AppShell() {
           onOpenSettings={() => openSettings()}
         />
         {layoutSettings.sidebarVisible && (
-          <Sidebar
-            width={layoutSettings.sidebarWidth}
-            onWidthChange={handleSidebarWidthChange}
-          />
+          <Sidebar width={layoutSettings.sidebarWidth} onWidthChange={handleSidebarWidthChange} />
         )}
         <div className="editor-column">
           {workspace && <EditorTabs inTitlebar={isTauri()} />}
-          {!workspace && isTauri() && (
+          {! workspace && isTauri() && (
             <div className="editor-titlebar-zone" data-tauri-drag-region aria-hidden="true" />
           )}
           <EditorArea onSave={handleSave} />
@@ -517,10 +507,7 @@ export function AppShell() {
       />
       <SettingsPanel open={settingsOpen} onClose={closeSettings} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <KeyboardShortcutsDialog
-        open={shortcutsOpen}
-        onClose={() => setShortcutsOpen(false)}
-      />
+      <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <AppDialogs />
     </div>
   );

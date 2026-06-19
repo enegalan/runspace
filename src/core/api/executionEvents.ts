@@ -9,30 +9,7 @@ type ExecutionEventPayload =
   | { event: "started"; pid: number }
   | { event: "output"; stream: "stdout" | "stderr"; chunk: string }
   | { event: "phase"; phase: ExecutionPhase }
-  | {
-      event: "finished";
-      exit_code?: number | null;
-      timed_out?: boolean;
-      compile_failed?: boolean;
-      "exit-code"?: number | null;
-      "timed-out"?: boolean;
-      "compile-failed"?: boolean;
-    };
-
-function parseFinishedEvent(
-  payload: Extract<ExecutionEventPayload, { event: "finished" }>,
-): ExecutionFinishedEvent {
-  const exitCode = payload.exit_code ?? payload["exit-code"] ?? null;
-  const timedOut = payload.timed_out ?? payload["timed-out"] ?? false;
-  const compileFailed =
-    payload.compile_failed ?? payload["compile-failed"] ?? false;
-
-  return {
-    exit_code: exitCode,
-    timed_out: timedOut,
-    compile_failed: compileFailed,
-  };
-}
+  | ({ event: "finished" } & ExecutionFinishedEvent);
 
 export interface ExecutionEventHandlers {
   onStarted: () => void;
@@ -58,7 +35,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
         attachHandlers();
       })
       .catch(() => {
-        if (!closed) {
+        if (! closed) {
           retryTimer = window.setTimeout(() => {
             connect();
           }, RETRY_DELAY_MS);
@@ -67,7 +44,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
   };
 
   const attachHandlers = () => {
-    if (!source) {
+    if (! source) {
       return;
     }
 
@@ -85,7 +62,11 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
           handlers.onPhase(payload.phase);
           break;
         case "finished":
-          handlers.onFinished(parseFinishedEvent(payload));
+          handlers.onFinished({
+            exit_code: payload.exit_code,
+            timed_out: payload.timed_out,
+            compile_failed: payload.compile_failed,
+          });
           break;
         default:
           break;
@@ -99,7 +80,7 @@ export function subscribeExecutionEvents(handlers: ExecutionEventHandlers): () =
         return;
       }
       retryTimer = window.setTimeout(() => {
-        if (!closed) {
+        if (! closed) {
           connect();
         }
       }, RETRY_DELAY_MS);

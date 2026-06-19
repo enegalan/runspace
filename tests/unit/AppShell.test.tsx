@@ -11,7 +11,7 @@ import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
-  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
+  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id) !;
   return {
     definition,
     user_config: { paths: {}, env_vars: {} },
@@ -78,9 +78,7 @@ describe("AppShell", () => {
         return Promise.resolve([mockWorkspace]);
       }
       if (cmd === "list_files") {
-        return Promise.resolve([
-          { name: "main.js", path: "main.js", is_directory: false },
-        ]);
+        return Promise.resolve([{ name: "main.js", path: "main.js", is_directory: false }]);
       }
       if (cmd === "read_session") {
         return Promise.resolve({ environments: {}, last_runtime_id: "nodejs" });

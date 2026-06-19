@@ -19,7 +19,7 @@ export function usePointerDragResize(
   const isDraggingRef = useRef(false);
 
   useEffect(() => {
-    if (!isDraggingRef.current) {
+    if (! isDraggingRef.current) {
       sizeRef.current = size;
       setCurrentSize(size);
     }
@@ -42,8 +42,7 @@ export function usePointerDragResize(
 
       const onPointerMove = (moveEvent: PointerEvent) => {
         const delta = moveEvent.clientX - startX;
-        const next =
-          options.side === "right" ? startSize + delta : startSize - delta;
+        const next = options.side === "right" ? startSize + delta : startSize - delta;
         const clamped = clamp(next, options.min, options.max);
         sizeRef.current = clamped;
         setCurrentSize(clamped);
@@ -59,13 +58,13 @@ export function usePointerDragResize(
 
       const onPointerUp = (upEvent: PointerEvent) => {
         try {
-            if (target.hasPointerCapture(upEvent.pointerId)) {
-              target.releasePointerCapture(upEvent.pointerId);
-            }
-          } finally {
-            target.classList.remove("resize-handle--active");
-            finish();
+          if (target.hasPointerCapture(upEvent.pointerId)) {
+            target.releasePointerCapture(upEvent.pointerId);
           }
+        } finally {
+          target.classList.remove("resize-handle--active");
+          finish();
+        }
       };
 
       target.addEventListener("pointermove", onPointerMove);

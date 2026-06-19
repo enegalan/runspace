@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  getRuntimeFileExtension,
-  normalizeFileName,
-} from "../../src/core/workspace/fileExtension";
+import { getRuntimeFileExtension, normalizeFileName } from "../../src/core/workspace/fileExtension";
 
 describe("fileExtension", () => {
   it("maps runtime ids to file extensions", () => {

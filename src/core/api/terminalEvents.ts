@@ -3,7 +3,7 @@ import { waitForBackendReady } from "./fetchBackend";
 
 type TerminalEventPayload =
   | { event: "data"; session_id: string; data: string }
-  | { event: "exit"; session_id: string; exit_code?: number | null; "exit-code"?: number | null };
+  | ({ event: "exit" } & TerminalExitEvent);
 
 export interface TerminalEventHandlers {
   onData: (payload: TerminalDataEvent) => void;
@@ -11,15 +11,6 @@ export interface TerminalEventHandlers {
 }
 
 const RETRY_DELAY_MS = 500;
-
-function parseExitEvent(
-  payload: Extract<TerminalEventPayload, { event: "exit" }>,
-): TerminalExitEvent {
-  return {
-    session_id: payload.session_id,
-    exit_code: payload.exit_code ?? payload["exit-code"] ?? null,
-  };
-}
 
 export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => void {
   let closed = false;
@@ -36,7 +27,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
         attachHandlers();
       })
       .catch(() => {
-        if (!closed) {
+        if (! closed) {
           retryTimer = window.setTimeout(() => {
             connect();
           }, RETRY_DELAY_MS);
@@ -45,7 +36,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
   };
 
   const attachHandlers = () => {
-    if (!source) {
+    if (! source) {
       return;
     }
 
@@ -60,7 +51,10 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
           });
           break;
         case "exit":
-          handlers.onExit(parseExitEvent(payload));
+          handlers.onExit({
+            session_id: payload.session_id,
+            exit_code: payload.exit_code,
+          });
           break;
         default:
           break;
@@ -74,7 +68,7 @@ export function subscribeTerminalEvents(handlers: TerminalEventHandlers): () => 
         return;
       }
       retryTimer = window.setTimeout(() => {
-        if (!closed) {
+        if (! closed) {
           connect();
         }
       }, RETRY_DELAY_MS);

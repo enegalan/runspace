@@ -31,9 +31,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   load: async () => {
     try {
-      const settings = normalizeAppSettings(
-        await runspaceInvoke<AppSettings>("read_settings"),
-      );
+      const settings = normalizeAppSettings(await runspaceInvoke<AppSettings>("read_settings"));
       set({ settings, loaded: true });
       applyAppSettings(settings);
     } catch {

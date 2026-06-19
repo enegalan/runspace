@@ -19,9 +19,9 @@ vi.mock("@tauri-apps/api/core", () => ({
 
 vi.mock("../src/core/api/fetchBackend", () => ({
   waitForBackendReady: vi.fn().mockResolvedValue(undefined),
-  fetchBackend: vi.fn().mockResolvedValue(
-    new Response(JSON.stringify({ ok: true }), { status: 200 }),
-  ),
+  fetchBackend: vi
+    .fn()
+    .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 })),
 }));
 
 vi.mock("../src/core/api/runspaceInvoke", () => ({
@@ -105,8 +105,7 @@ vi.mock("@monaco-editor/react", () => {
       React.createElement("textarea", {
         "data-testid": testId ?? "monaco-editor",
         value,
-        onChange: (event: { target: { value: string } }) =>
-          onChange?.(event.target.value),
+        onChange: (event: { target: { value: string } }) => onChange?.(event.target.value),
       }),
   };
 });

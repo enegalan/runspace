@@ -8,7 +8,7 @@ export function useNewFolder() {
   const createFolder = useWorkspaceStore((state) => state.createFolder);
 
   const createNewFolder = useCallback(async () => {
-    if (!workspace) {
+    if (! workspace) {
       return;
     }
 

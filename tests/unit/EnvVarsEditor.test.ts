@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  rowsToEnvVars,
-  validateEnvVarRows,
-} from "../../src/components/settings/EnvVarsEditor";
+import { rowsToEnvVars, validateEnvVarRows } from "../../src/components/settings/EnvVarsEditor";
 
 describe("EnvVarsEditor helpers", () => {
   it("converts rows to env vars map", () => {

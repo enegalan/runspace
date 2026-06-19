@@ -31,25 +31,23 @@ export function WorkspaceSwitcher() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const filteredWorkspaces = search.trim()
-    ? workspaces.filter((item) =>
-        item.name.toLowerCase().includes(search.trim().toLowerCase()),
-      )
+    ? workspaces.filter((item) => item.name.toLowerCase().includes(search.trim().toLowerCase()))
     : workspaces;
 
   useEffect(() => {
-    if (!runtimeId) {
+    if (! runtimeId) {
       return;
     }
     void loadWorkspaces(runtimeId);
   }, [runtimeId, workspace?.id, loadWorkspaces]);
 
   useEffect(() => {
-    if (!open) {
+    if (! open) {
       return;
     }
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      if (! rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     };
@@ -69,28 +67,27 @@ export function WorkspaceSwitcher() {
   }, [open]);
 
   const handleCreateWorkspace = async () => {
-    if (!runtimeId) {
+    if (! runtimeId) {
       return;
     }
 
     try {
       const workspaceName = await requireWorkspaceName("Name for the new workspace");
-      if (!workspaceName) {
+      if (! workspaceName) {
         return;
       }
       setOpen(false);
       await createWorkspace(runtimeId, workspaceName);
     } catch (error) {
       console.error("Failed to create workspace:", error);
-      const message =
-        error instanceof Error ? error.message : "Failed to create workspace";
+      const message = error instanceof Error ? error.message : "Failed to create workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
 
   const handleRenameWorkspace = async (item: WorkspaceInfo) => {
     const name = await requireWorkspaceName("Rename workspace", item.name);
-    if (!name || name === item.name) {
+    if (! name || name === item.name) {
       return;
     }
     await renameWorkspace(item.id, name);
@@ -101,7 +98,7 @@ export function WorkspaceSwitcher() {
       confirmLabel: "Delete",
       danger: true,
     });
-    if (!confirmed) {
+    if (! confirmed) {
       return;
     }
     setOpen(false);
@@ -110,8 +107,7 @@ export function WorkspaceSwitcher() {
       await deleteWorkspace(item.id);
     } catch (error) {
       console.error("Failed to delete workspace:", error);
-      const message =
-        error instanceof Error ? error.message : "Failed to delete workspace";
+      const message = error instanceof Error ? error.message : "Failed to delete workspace";
       await askConfirm(message, { confirmLabel: "OK" });
     }
   };
@@ -125,7 +121,7 @@ export function WorkspaceSwitcher() {
       <button
         type="button"
         className="workspace-switcher__trigger"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => setOpen((prev) => ! prev)}
         title={workspace?.name ?? "Create workspace..."}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -171,9 +167,7 @@ export function WorkspaceSwitcher() {
                 <button
                   type="button"
                   className={`workspace-switcher__option${
-                    item.id === workspace?.id
-                      ? " workspace-switcher__option--active"
-                      : ""
+                    item.id === workspace?.id ? " workspace-switcher__option--active" : ""
                   }`}
                   onClick={() => {
                     setOpen(false);
@@ -191,8 +185,8 @@ export function WorkspaceSwitcher() {
             type="button"
             className="workspace-switcher__create"
             onClick={() => void handleCreateWorkspace()}
-            disabled={!runtimeId}
-            title={!runtimeId ? "Add an environment in Settings" : undefined}
+            disabled={! runtimeId}
+            title={! runtimeId ? "Add an environment in Settings" : undefined}
           >
             <IconPlus size={14} />
             <span>New workspace</span>

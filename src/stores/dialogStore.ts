@@ -70,7 +70,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
 
   setPromptValue: (value) => {
     const prompt = get().prompt;
-    if (!prompt) {
+    if (! prompt) {
       return;
     }
     set({ prompt: { ...prompt, value, error: undefined } });
@@ -78,7 +78,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
 
   submitPrompt: () => {
     const prompt = get().prompt;
-    if (!prompt) {
+    if (! prompt) {
       return;
     }
     const value = prompt.value;
@@ -95,7 +95,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
 
   cancelPrompt: () => {
     const prompt = get().prompt;
-    if (!prompt) {
+    if (! prompt) {
       return;
     }
     prompt.resolve(null);
@@ -104,7 +104,7 @@ export const useDialogStore = create<DialogStore>((set, get) => ({
 
   answerConfirm: (confirmed) => {
     const confirm = get().confirm;
-    if (!confirm) {
+    if (! confirm) {
       return;
     }
     confirm.resolve(confirmed);

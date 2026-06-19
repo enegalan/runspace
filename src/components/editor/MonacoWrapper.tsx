@@ -1,8 +1,4 @@
-import Editor, {
-  type BeforeMount,
-  type OnMount,
-  type Monaco,
-} from "@monaco-editor/react";
+import Editor, { type BeforeMount, type OnMount, type Monaco } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { KeyCode, KeyMod } from "monaco-editor";
 import { memo, useEffect, useMemo, useRef } from "react";
@@ -113,7 +109,7 @@ export default memo(function MonacoWrapper({
 
   useEffect(() => {
     const monaco = monacoRef.current;
-    if (!monaco) {
+    if (! monaco) {
       return;
     }
 
@@ -123,7 +119,7 @@ export default memo(function MonacoWrapper({
 
   useEffect(() => {
     const editor = editorRef.current;
-    if (!editor) {
+    if (! editor) {
       return;
     }
 

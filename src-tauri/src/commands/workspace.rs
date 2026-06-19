@@ -74,7 +74,9 @@ pub fn create_workspace(
 }
 
 #[tauri::command]
-pub fn get_active_workspace(state: State<'_, SharedState>) -> Result<Option<WorkspaceInfo>, String> {
+pub fn get_active_workspace(
+    state: State<'_, SharedState>,
+) -> Result<Option<WorkspaceInfo>, String> {
     let manager = lock_workspace_manager(&state)?;
     let active = lock_active_workspace(&state)?;
     match active.as_ref() {

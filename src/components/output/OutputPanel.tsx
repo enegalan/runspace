@@ -1,9 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
-import {
-  OUTPUT_WIDTH_MAX,
-  OUTPUT_WIDTH_MIN,
-} from "../../core/layout/panelLayout";
+import { OUTPUT_WIDTH_MAX, OUTPUT_WIDTH_MIN } from "../../core/layout/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
 import { usePointerDragResize } from "../../hooks/usePointerDragResize";
 import { ResizeHandle } from "../layout/ResizeHandle";
@@ -38,11 +35,7 @@ export function OutputPanel({
 }: OutputPanelProps) {
   const isRunning = status === "running";
   const hasContent =
-    stdout.length > 0 ||
-    stderr.length > 0 ||
-    error !== null ||
-    timedOut ||
-    isRunning;
+    stdout.length > 0 || stderr.length > 0 || error !== null || timedOut || isRunning;
 
   const { currentSize, onPointerDown } = usePointerDragResize(width, onWidthChange, {
     min: OUTPUT_WIDTH_MIN,
@@ -51,9 +44,7 @@ export function OutputPanel({
   });
 
   const handleCopyAll = async () => {
-    const text = [stdout, stderr, error ? `Error: ${error}` : ""]
-      .filter(Boolean)
-      .join("\n");
+    const text = [stdout, stderr, error ? `Error: ${error}` : ""].filter(Boolean).join("\n");
     if (text) {
       await navigator.clipboard.writeText(text);
     }
@@ -63,11 +54,7 @@ export function OutputPanel({
 
   return (
     <div className="output-shell" style={panelStyle} data-testid="output-panel">
-      <ResizeHandle
-        side="left"
-        onPointerDown={onPointerDown}
-        data-testid="output-resize-handle"
-      />
+      <ResizeHandle side="left" onPointerDown={onPointerDown} data-testid="output-resize-handle" />
       <aside className="output-panel">
         <div
           className={`output-panel__header${isTauri() ? " output-panel__header--titlebar" : ""}`}
@@ -78,7 +65,7 @@ export function OutputPanel({
             <IconButton
               label="Clear output"
               onClick={onClear}
-              disabled={!hasContent}
+              disabled={! hasContent}
               data-testid="clear-button"
             >
               <IconClear size={16} />
@@ -102,9 +89,7 @@ export function OutputPanel({
               autoScrollEnabled={autoScrollEnabled}
             />
           ) : (
-            <p className="output-panel__placeholder">
-              Run your code to see output here
-            </p>
+            <p className="output-panel__placeholder">Run your code to see output here</p>
           )}
         </div>
       </aside>

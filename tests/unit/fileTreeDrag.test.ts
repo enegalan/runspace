@@ -43,7 +43,7 @@ describe("fileTreeDrag", () => {
       effectAllowed: "",
       setData(type: string, value: string) {
         this._data[type] = value;
-        if (!this.types.includes(type)) {
+        if (! this.types.includes(type)) {
           this.types.push(type);
         }
       },

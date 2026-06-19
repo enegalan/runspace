@@ -39,12 +39,11 @@ export function useTerminal({
 
   useEffect(() => {
     const sessionId = tab?.sessionId;
-    sessionIdRef.current =
-      sessionId && tab?.status === "running" ? sessionId : null;
+    sessionIdRef.current = sessionId && tab?.status === "running" ? sessionId : null;
   }, [tab?.sessionId, tab?.status]);
 
   useEffect(() => {
-    if (!enabled || !configured) {
+    if (! enabled || ! configured) {
       return;
     }
 
@@ -65,7 +64,7 @@ export function useTerminal({
         sessionIdRef.current = result.sessionId;
         setSession(tabId, result.sessionId);
         window.setTimeout(() => {
-          if (!activeRef.current) {
+          if (! activeRef.current) {
             return;
           }
           xtermRef.current?.fit();
@@ -78,11 +77,8 @@ export function useTerminal({
           });
         }, 0);
       } catch (error) {
-        if (!cancelled) {
-          setError(
-            tabId,
-            error instanceof Error ? error.message : String(error),
-          );
+        if (! cancelled) {
+          setError(tabId, error instanceof Error ? error.message : String(error));
         }
       }
     };
@@ -102,26 +98,17 @@ export function useTerminal({
     return () => {
       cancelled = true;
     };
-  }, [
-    configured,
-    enabled,
-    environmentId,
-    setConnecting,
-    setError,
-    setSession,
-    tabId,
-    workspaceId,
-  ]);
+  }, [configured, enabled, environmentId, setConnecting, setError, setSession, tabId, workspaceId]);
 
   useEffect(() => {
-    if (!active || tab?.status !== "running" || !sessionIdRef.current) {
+    if (! active || tab?.status !== "running" || ! sessionIdRef.current) {
       return;
     }
 
     window.setTimeout(() => {
       xtermRef.current?.fit();
       const sessionId = sessionIdRef.current;
-      if (!sessionId) {
+      if (! sessionId) {
         return;
       }
       const cols = xtermRef.current?.getCols() ?? 80;
@@ -195,7 +182,7 @@ export function useTerminal({
 
   const handleData = useCallback((data: string) => {
     const sessionId = sessionIdRef.current;
-    if (!sessionId) {
+    if (! sessionId) {
       return;
     }
     void runspaceInvoke("write_terminal", { sessionId, data });
@@ -203,7 +190,7 @@ export function useTerminal({
 
   const handleResize = useCallback((cols: number, rows: number) => {
     const sessionId = sessionIdRef.current;
-    if (!sessionId) {
+    if (! sessionId) {
       return;
     }
     void runspaceInvoke("resize_terminal", { sessionId, cols, rows });

@@ -23,8 +23,7 @@ const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
 const CONCEPTS = [
   {
     title: "Workspaces",
-    description:
-      "Each workspace is a self-contained area for your code and files.",
+    description: "Each workspace is a self-contained area for your code and files.",
   },
   {
     title: "Environments",
@@ -50,8 +49,7 @@ export function WelcomeScreen() {
 
   const [step, setStep] = useState<WelcomeStep>("intro");
   const [workspaceName, setWorkspaceName] = useState("");
-  const [primaryRuntimeId, setPrimaryRuntimeId] =
-    useState<EnvironmentId>(DEFAULT_ENVIRONMENT_ID);
+  const [primaryRuntimeId, setPrimaryRuntimeId] = useState<EnvironmentId>(DEFAULT_ENVIRONMENT_ID);
   const [additionalRuntimeIds, setAdditionalRuntimeIds] = useState<Set<EnvironmentId>>(
     () => new Set(),
   );
@@ -80,9 +78,7 @@ export function WelcomeScreen() {
   }, []);
 
   useEffect(() => {
-    const installed = environments.find(
-      (env) => env.definition.id === primaryRuntimeId,
-    );
+    const installed = environments.find((env) => env.definition.id === primaryRuntimeId);
     if (installed) {
       setPaths(installed.user_config.paths);
       return;
@@ -118,11 +114,11 @@ export function WelcomeScreen() {
 
   const handleCreateWorkspace = async () => {
     const trimmedName = workspaceName.trim();
-    if (!trimmedName) {
+    if (! trimmedName) {
       setError("Enter a workspace name to continue.");
       return;
     }
-    if (!primaryDefinition) {
+    if (! primaryDefinition) {
       setError("Select a runtime for your first workspace.");
       return;
     }
@@ -132,7 +128,7 @@ export function WelcomeScreen() {
 
     try {
       const toInstall = new Set<EnvironmentId>(additionalRuntimeIds);
-      if (!installedIds.has(primaryRuntimeId)) {
+      if (! installedIds.has(primaryRuntimeId)) {
         toInstall.add(primaryRuntimeId);
       }
 
@@ -151,11 +147,11 @@ export function WelcomeScreen() {
       };
 
       for (const field of primaryDefinition.config_fields) {
-        if (!field.required) {
+        if (! field.required) {
           continue;
         }
         const value = mergedPaths[field.key]?.trim() ?? "";
-        if (!value) {
+        if (! value) {
           setError(`Set ${field.label.toLowerCase()} for ${primaryDefinition.name}.`);
           return;
         }
@@ -207,8 +203,8 @@ export function WelcomeScreen() {
           <section className="welcome-screen__panel">
             <h1 className="welcome-screen__title">Welcome to Runspace</h1>
             <p className="welcome-screen__lead">
-              Your personal playground for code — multiple languages, one workspace, zero
-              setup beyond the runtimes you already have.
+              Your personal playground for code — multiple languages, one workspace, zero setup
+              beyond the runtimes you already have.
             </p>
             <ul className="welcome-screen__highlights">
               <li>Bring your own runtimes: Node.js, PHP, Python, Ruby...</li>
@@ -260,7 +256,8 @@ export function WelcomeScreen() {
           <section className="welcome-screen__panel welcome-screen__panel--setup">
             <h1 className="welcome-screen__title">Create your first workspace</h1>
             <p className="welcome-screen__lead">
-              Runspace needs at least one workspace to open the editor. Name your workspace, pick a primary runtime, and add any other environments you plan to use.
+              Runspace needs at least one workspace to open the editor. Name your workspace, pick a
+              primary runtime, and add any other environments you plan to use.
             </p>
 
             <label className="welcome-screen__field">
@@ -293,9 +290,7 @@ export function WelcomeScreen() {
                       <div className="welcome-screen__runtime-list">
                         {items.map((definition) => {
                           const isInstalled = installedIds.has(definition.id);
-                          const isAvailable = available.some(
-                            (item) => item.id === definition.id,
-                          );
+                          const isAvailable = available.some((item) => item.id === definition.id);
                           const isSelected = primaryRuntimeId === definition.id;
                           return (
                             <label
@@ -308,9 +303,7 @@ export function WelcomeScreen() {
                                 type="radio"
                                 name="primary-runtime"
                                 checked={isSelected}
-                                onChange={() =>
-                                  setPrimaryRuntimeId(definition.id as EnvironmentId)
-                                }
+                                onChange={() => setPrimaryRuntimeId(definition.id as EnvironmentId)}
                               />
                               <span className="welcome-screen__runtime-name">
                                 {definition.name}
@@ -338,8 +331,8 @@ export function WelcomeScreen() {
                   Configure {primaryDefinition.name}
                 </h2>
                 <p className="welcome-screen__section-hint">
-                  Paths are auto-detected when possible. Confirm or browse to the binaries on
-                  your system.
+                  Paths are auto-detected when possible. Confirm or browse to the binaries on your
+                  system.
                 </p>
                 <div className="welcome-screen__path-fields">
                   {primaryDefinition.config_fields.map((field) => (
@@ -383,47 +376,43 @@ export function WelcomeScreen() {
                 Optional. Install additional environments now so they are ready to select later.
               </p>
               <div className="welcome-screen__extras">
-                {ENVIRONMENT_CATALOG.filter(
-                  (definition) => definition.id !== primaryRuntimeId,
-                ).map((definition) => {
-                  const checked = additionalRuntimeIds.has(
-                    definition.id as EnvironmentId,
-                  );
-                  const isInstalled = installedIds.has(definition.id);
-                  return (
-                    <label
-                      key={definition.id}
-                      className={`welcome-screen__extra-option${
-                        checked ? " welcome-screen__extra-option--selected" : ""
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked || isInstalled}
-                        disabled={isInstalled}
-                        onChange={() =>
-                          toggleAdditionalRuntime(definition.id as EnvironmentId)
-                        }
-                      />
-                      <span>{definition.name}</span>
-                      {isInstalled && (
-                        <span className="welcome-screen__runtime-badge">Installed</span>
-                      )}
-                      {!isInstalled && (
-                        <a
-                          href={definition.install_guide_url}
-                          className="welcome-screen__guide-link"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            void openUrl(definition.install_guide_url);
-                          }}
-                        >
-                          Guide
-                        </a>
-                      )}
-                    </label>
-                  );
-                })}
+                {ENVIRONMENT_CATALOG.filter((definition) => definition.id !== primaryRuntimeId).map(
+                  (definition) => {
+                    const checked = additionalRuntimeIds.has(definition.id as EnvironmentId);
+                    const isInstalled = installedIds.has(definition.id);
+                    return (
+                      <label
+                        key={definition.id}
+                        className={`welcome-screen__extra-option${
+                          checked ? " welcome-screen__extra-option--selected" : ""
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked || isInstalled}
+                          disabled={isInstalled}
+                          onChange={() => toggleAdditionalRuntime(definition.id as EnvironmentId)}
+                        />
+                        <span>{definition.name}</span>
+                        {isInstalled && (
+                          <span className="welcome-screen__runtime-badge">Installed</span>
+                        )}
+                        {! isInstalled && (
+                          <a
+                            href={definition.install_guide_url}
+                            className="welcome-screen__guide-link"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              void openUrl(definition.install_guide_url);
+                            }}
+                          >
+                            Guide
+                          </a>
+                        )}
+                      </label>
+                    );
+                  },
+                )}
               </div>
             </div>
 

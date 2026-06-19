@@ -32,11 +32,13 @@ pub fn start_execution(
 
         let env_id = match environment_id.as_deref() {
             Some(id) => id.to_string(),
-            None => manager
-                .get_selected()
-                .ok_or("No selected environment")?
-                .definition
-                .id,
+            None => {
+                manager
+                    .get_selected()
+                    .ok_or("No selected environment")?
+                    .definition
+                    .id
+            }
         };
 
         manager
@@ -62,8 +64,7 @@ pub fn start_execution(
         timeout_secs.unwrap_or(settings.run_timeout_secs)
     };
 
-    let compile_timeout = compile_timeout_secs
-        .unwrap_or(settings.compile_timeout_secs);
+    let compile_timeout = compile_timeout_secs.unwrap_or(settings.compile_timeout_secs);
     let binary = PathBuf::from(&resolved.binary_path);
 
     let _ = state.execution_engine.kill();
@@ -88,9 +89,7 @@ pub fn start_execution(
 
         let workspace = active_workspace.as_ref().ok_or("No active workspace")?;
 
-        let relative_path = file
-            .as_deref()
-            .ok_or("No file selected to run")?;
+        let relative_path = file.as_deref().ok_or("No file selected to run")?;
         let resolved_entry = workspace_manager
             .resolve_run_file(workspace, relative_path)
             .map_err(|e| e.to_string())?;

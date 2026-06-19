@@ -37,10 +37,7 @@ export function subscribeFileTreeDragActive(listener: DragActiveListener): () =>
   };
 }
 
-export function setFileDragData(
-  dataTransfer: DataTransfer,
-  payload: FileTreeDragPayload,
-): void {
+export function setFileDragData(dataTransfer: DataTransfer, payload: FileTreeDragPayload): void {
   activeDragPayload = payload;
   setFileTreeDragActive(true);
   dataTransfer.setData(FILE_TREE_DRAG_TYPE, JSON.stringify(payload));
@@ -61,9 +58,7 @@ export function hasFileDrag(types: DataTransfer["types"]): boolean {
   return Array.from(types).includes(FILE_TREE_DRAG_TYPE);
 }
 
-export function readFileDragData(
-  dataTransfer: DataTransfer,
-): FileTreeDragPayload | null {
+export function readFileDragData(dataTransfer: DataTransfer): FileTreeDragPayload | null {
   const raw = dataTransfer.getData(FILE_TREE_DRAG_TYPE);
   if (raw) {
     try {
@@ -92,9 +87,7 @@ export function readFileDragData(
 }
 
 export function parentDir(sourcePath: string): string {
-  return sourcePath.includes("/")
-    ? sourcePath.slice(0, sourcePath.lastIndexOf("/"))
-    : "";
+  return sourcePath.includes("/") ? sourcePath.slice(0, sourcePath.lastIndexOf("/")) : "";
 }
 
 export function siblingPath(parentPath: string, name: string): string {
@@ -117,5 +110,5 @@ export function movedPath(sourcePath: string, targetDir: string): string {
 }
 
 export function canMoveToRoot(sourcePath: string): boolean {
-  return sourcePath.includes("/") && !isInvalidMove(sourcePath, "");
+  return sourcePath.includes("/") && ! isInvalidMove(sourcePath, "");
 }

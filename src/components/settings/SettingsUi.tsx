@@ -2,13 +2,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react
 import { Input } from "../ui/Input";
 import { Toggle } from "../ui/Toggle";
 
-export function SettingsPageHeader({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
+export function SettingsPageHeader({ title, description }: { title: string; description: string }) {
   return (
     <header className="settings-page-header">
       <h2 className="settings-page-header__title">{title}</h2>

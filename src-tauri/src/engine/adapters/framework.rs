@@ -291,8 +291,13 @@ fn sync_dir_excluding(
         let file_name = entry.file_name();
         let name = file_name.to_string_lossy();
 
-        if entry.file_type().map_err(FrameworkSkeletonError::Io)?.is_dir()
-            && excluded_dir_names.iter().any(|excluded| *excluded == name.as_ref())
+        if entry
+            .file_type()
+            .map_err(FrameworkSkeletonError::Io)?
+            .is_dir()
+            && excluded_dir_names
+                .iter()
+                .any(|excluded| *excluded == name.as_ref())
         {
             continue;
         }
@@ -308,7 +313,11 @@ fn sync_dir_excluding(
         }
 
         let dest = target.join(file_name);
-        if entry.file_type().map_err(FrameworkSkeletonError::Io)?.is_dir() {
+        if entry
+            .file_type()
+            .map_err(FrameworkSkeletonError::Io)?
+            .is_dir()
+        {
             fs::create_dir_all(&dest).map_err(FrameworkSkeletonError::Io)?;
             sync_dir_excluding(&entry.path(), &dest, excluded_dir_names)?;
         } else {
@@ -329,10 +338,8 @@ mod tests {
 
     #[test]
     fn skeleton_is_current_matches_version_file() {
-        let temp = std::env::temp_dir().join(format!(
-            "runspace-skeleton-test-{}",
-            std::process::id()
-        ));
+        let temp =
+            std::env::temp_dir().join(format!("runspace-skeleton-test-{}", std::process::id()));
         let source = temp.join("source");
         let target = temp.join("target");
         let _ = fs::remove_dir_all(&temp);

@@ -34,9 +34,6 @@ describe("activateRuntime", () => {
     const workspace = await activateRuntime("php");
 
     expect(workspace).toBeNull();
-    expect(runspaceInvoke).not.toHaveBeenCalledWith(
-      "create_workspace",
-      expect.anything(),
-    );
+    expect(runspaceInvoke).not.toHaveBeenCalledWith("create_workspace", expect.anything());
   });
 });

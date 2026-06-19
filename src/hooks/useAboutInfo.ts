@@ -1,11 +1,6 @@
 import { getName, getTauriVersion, getVersion } from "@tauri-apps/api/app";
 import { useEffect, useState } from "react";
-import {
-  APP_AUTHOR,
-  APP_LICENSE,
-  APP_NAME,
-  APP_VERSION,
-} from "../core/constants/appMetadata";
+import { APP_AUTHOR, APP_LICENSE, APP_NAME, APP_VERSION } from "../core/constants/appMetadata";
 import { isTauri } from "../core/platform/isTauri";
 
 export interface AboutInfo {
@@ -30,7 +25,7 @@ export function useAboutInfo(open: boolean): AboutInfo {
   const [info, setInfo] = useState<AboutInfo>(DEFAULT_INFO);
 
   useEffect(() => {
-    if (!open) {
+    if (! open) {
       return;
     }
 
@@ -39,7 +34,7 @@ export function useAboutInfo(open: boolean): AboutInfo {
     async function loadAboutInfo() {
       const copyrightYear = new Date().getFullYear();
 
-      if (!isTauri()) {
+      if (! isTauri()) {
         setInfo({ ...DEFAULT_INFO, copyrightYear });
         return;
       }
@@ -64,7 +59,7 @@ export function useAboutInfo(open: boolean): AboutInfo {
           license: APP_LICENSE,
         });
       } catch {
-        if (!cancelled) {
+        if (! cancelled) {
           setInfo({ ...DEFAULT_INFO, copyrightYear });
         }
       }

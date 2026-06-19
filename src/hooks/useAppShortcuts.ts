@@ -17,10 +17,7 @@ interface AppShortcutHandlers {
   runDisabled?: boolean;
 }
 
-const ACTION_HANDLERS: Record<
-  ShortcutActionId,
-  keyof AppShortcutHandlers
-> = {
+const ACTION_HANDLERS: Record<ShortcutActionId, keyof AppShortcutHandlers> = {
   run: "onRun",
   stop: "onStop",
   save: "onSave",
@@ -42,14 +39,14 @@ export function useAppShortcuts(handlers: AppShortcutHandlers) {
         keyof AppShortcutHandlers,
       ][]) {
         const binding = shortcuts[actionId];
-        if (!binding || !matchesShortcut(event, binding)) {
+        if (! binding || ! matchesShortcut(event, binding)) {
           continue;
         }
 
         if (actionId === "run" && (handlers.isRunning || handlers.runDisabled)) {
           return;
         }
-        if (actionId === "stop" && !handlers.isRunning) {
+        if (actionId === "stop" && ! handlers.isRunning) {
           return;
         }
 

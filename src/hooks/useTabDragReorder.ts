@@ -23,11 +23,7 @@ interface UseTabDragReorderOptions {
   onReorder: (fromIndex: number, toIndex: number) => void;
 }
 
-export function useTabDragReorder({
-  listRef,
-  tabCount,
-  onReorder,
-}: UseTabDragReorderOptions) {
+export function useTabDragReorder({ listRef, tabCount, onReorder }: UseTabDragReorderOptions) {
   const [dragState, setDragState] = useState<TabDragState | null>(null);
   const dragStateRef = useRef<TabDragState | null>(null);
   const layoutSnapshotRef = useRef<TabLayoutSnapshot[]>([]);
@@ -45,7 +41,7 @@ export function useTabDragReorder({
 
   const captureLayoutSnapshot = useCallback(() => {
     const list = listRef.current;
-    if (!list) {
+    if (! list) {
       layoutSnapshotRef.current = [];
       return;
     }
@@ -76,11 +72,11 @@ export function useTabDragReorder({
         }
 
         const delta = Math.abs(moveEvent.clientX - startXRef.current);
-        if (!dragStateRef.current && delta < TAB_DRAG_THRESHOLD_PX) {
+        if (! dragStateRef.current && delta < TAB_DRAG_THRESHOLD_PX) {
           return;
         }
 
-        if (!dragStateRef.current) {
+        if (! dragStateRef.current) {
           captureLayoutSnapshot();
           target.setPointerCapture(moveEvent.pointerId);
         }

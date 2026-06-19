@@ -8,7 +8,7 @@ interface KeyboardShortcutsDialogProps {
 }
 
 export function KeyboardShortcutsDialog({ open, onClose }: KeyboardShortcutsDialogProps) {
-  if (!open || typeof document === "undefined") {
+  if (! open || typeof document === "undefined") {
     return null;
   }
 

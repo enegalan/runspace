@@ -13,12 +13,7 @@ import type {
 } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { IconCheck, IconChevronDown, IconChevronRight } from "../ui/icons";
-import {
-  EnvVarsEditor,
-  envVarsToRows,
-  rowsToEnvVars,
-  validateEnvVarRows,
-} from "./EnvVarsEditor";
+import { EnvVarsEditor, envVarsToRows, rowsToEnvVars, validateEnvVarRows } from "./EnvVarsEditor";
 import { SettingsPageHeader } from "./SettingsUi";
 
 const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
@@ -35,9 +30,7 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
   const uninstall = useEnvironmentStore((state) => state.uninstall);
   const [expanded, setExpanded] = useState(false);
   const [paths, setPaths] = useState<Record<string, string>>(environment.user_config.paths);
-  const [envRows, setEnvRows] = useState(() =>
-    envVarsToRows(environment.user_config.env_vars),
-  );
+  const [envRows, setEnvRows] = useState(() => envVarsToRows(environment.user_config.env_vars));
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -128,16 +121,14 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
       <button
         type="button"
         className="env-card__header"
-        onClick={() => setExpanded((prev) => !prev)}
+        onClick={() => setExpanded((prev) => ! prev)}
         aria-expanded={expanded}
       >
         <span className="env-card__chevron" aria-hidden="true">
           {expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
         </span>
         <span className="env-card__name">{definition.name}</span>
-        <span
-          className={`env-card__status${configured ? " env-card__status--configured" : ""}`}
-        >
+        <span className={`env-card__status${configured ? " env-card__status--configured" : ""}`}>
           {configured ? (
             <>
               <IconCheck size={12} />
@@ -162,13 +153,9 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
                   type="text"
                   className="env-card__input"
                   value={paths[field.key] ?? ""}
-                  onChange={(e) =>
-                    setPaths((prev) => ({ ...prev, [field.key]: e.target.value }))
-                  }
+                  onChange={(e) => setPaths((prev) => ({ ...prev, [field.key]: e.target.value }))}
                   placeholder={
-                    field.field_type === "directory_path"
-                      ? "/path/to/project"
-                      : "/path/to/binary"
+                    field.field_type === "directory_path" ? "/path/to/project" : "/path/to/binary"
                   }
                 />
                 <button
@@ -232,7 +219,7 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
 
           {message && (
             <div
-              className={`env-card__message${testResult && !testResult.valid ? " env-card__message--error" : ""}`}
+              className={`env-card__message${testResult && ! testResult.valid ? " env-card__message--error" : ""}`}
             >
               {message}
             </div>
@@ -265,15 +252,10 @@ function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
   };
 
   return (
-    <div
-      className="env-available-row"
-      data-testid={`env-available-${definition.id}`}
-    >
+    <div className="env-available-row" data-testid={`env-available-${definition.id}`}>
       <div className="env-available-row__info">
         <span className="env-available-row__name">{definition.name}</span>
-        <span className="env-available-row__category">
-          {CATEGORY_LABELS[definition.category]}
-        </span>
+        <span className="env-available-row__category">{CATEGORY_LABELS[definition.category]}</span>
       </div>
       <div className="env-available-row__actions">
         <a
@@ -306,18 +288,10 @@ export function EnvironmentsSettings() {
   const [search, setSearch] = useState("");
 
   const filteredEnvironments = environments.filter((env) =>
-    matchesEnvironmentSearch(
-      env.definition.name,
-      CATEGORY_LABELS[env.definition.category],
-      search,
-    ),
+    matchesEnvironmentSearch(env.definition.name, CATEGORY_LABELS[env.definition.category], search),
   );
   const filteredAvailable = available.filter((definition) =>
-    matchesEnvironmentSearch(
-      definition.name,
-      CATEGORY_LABELS[definition.category],
-      search,
-    ),
+    matchesEnvironmentSearch(definition.name, CATEGORY_LABELS[definition.category], search),
   );
   const showAvailableSection = available.length > 0;
   const hasSearch = search.trim().length > 0;
@@ -341,54 +315,58 @@ export function EnvironmentsSettings() {
         />
       </div>
 
-      {hasSearch && !hasVisibleResults ? (
+      {hasSearch && ! hasVisibleResults ? (
         <p className="environments-settings__empty" data-testid="environments-no-results">
           No environments match your search.
         </p>
       ) : (
         <>
-      <section className="settings-card environments-settings__section">
-        <div className="settings-card__header">
-          <h3 className="settings-card__title">Installed</h3>
-        </div>
-        <div className="settings-card__body">
-        {environments.length === 0 ? (
-          <p className="environments-settings__empty" data-testid="environments-empty">
-            No environments installed. Add one from the list below.
-          </p>
-        ) : filteredEnvironments.length === 0 ? (
-          <p className="environments-settings__empty">No installed environments match your search.</p>
-        ) : (
-          <div className="environments-settings__list">
-            {filteredEnvironments.map((env) => (
-              <EnvironmentCard key={env.definition.id} environment={env} />
-            ))}
-          </div>
-        )}
-        </div>
-      </section>
+          <section className="settings-card environments-settings__section">
+            <div className="settings-card__header">
+              <h3 className="settings-card__title">Installed</h3>
+            </div>
+            <div className="settings-card__body">
+              {environments.length === 0 ? (
+                <p className="environments-settings__empty" data-testid="environments-empty">
+                  No environments installed. Add one from the list below.
+                </p>
+              ) : filteredEnvironments.length === 0 ? (
+                <p className="environments-settings__empty">
+                  No installed environments match your search.
+                </p>
+              ) : (
+                <div className="environments-settings__list">
+                  {filteredEnvironments.map((env) => (
+                    <EnvironmentCard key={env.definition.id} environment={env} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
 
-      {showAvailableSection && (
-        <section className="settings-card environments-settings__section">
-          <div className="settings-card__header">
-            <h3 className="settings-card__title">Available</h3>
-            <p className="settings-card__description">
-              Add runtimes and frameworks to the toolbar selector.
-            </p>
-          </div>
-          <div className="settings-card__body">
-          {filteredAvailable.length === 0 ? (
-            <p className="environments-settings__empty">No available environments match your search.</p>
-          ) : (
-          <div className="environments-settings__available">
-            {filteredAvailable.map((definition) => (
-              <AvailableEnvironmentRow key={definition.id} definition={definition} />
-            ))}
-          </div>
+          {showAvailableSection && (
+            <section className="settings-card environments-settings__section">
+              <div className="settings-card__header">
+                <h3 className="settings-card__title">Available</h3>
+                <p className="settings-card__description">
+                  Add runtimes and frameworks to the toolbar selector.
+                </p>
+              </div>
+              <div className="settings-card__body">
+                {filteredAvailable.length === 0 ? (
+                  <p className="environments-settings__empty">
+                    No available environments match your search.
+                  </p>
+                ) : (
+                  <div className="environments-settings__available">
+                    {filteredAvailable.map((definition) => (
+                      <AvailableEnvironmentRow key={definition.id} definition={definition} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
           )}
-          </div>
-        </section>
-      )}
         </>
       )}
     </div>

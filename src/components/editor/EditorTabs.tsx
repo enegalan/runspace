@@ -49,7 +49,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   });
 
   const handleWheel = (event: React.WheelEvent) => {
-    if (!listRef.current) {
+    if (! listRef.current) {
       return;
     }
     if (event.deltaY !== 0) {
@@ -57,18 +57,14 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
     }
   };
 
-  const handleContextMenu = (
-    event: React.MouseEvent,
-    path: string,
-    index: number,
-  ) => {
+  const handleContextMenu = (event: React.MouseEvent, path: string, index: number) => {
     event.preventDefault();
     event.stopPropagation();
     setContextMenu({ x: event.clientX, y: event.clientY, path, index });
   };
 
   const buildContextMenuItems = (): ContextMenuItem[] => {
-    if (!contextMenu) {
+    if (! contextMenu) {
       return [];
     }
     const { path, index } = contextMenu;
@@ -89,7 +85,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
       {
         id: "close-right",
         label: "Close right",
-        disabled: !hasTabsToRight,
+        disabled: ! hasTabsToRight,
         onClick: () => void closeRight(path),
       },
       {
@@ -115,8 +111,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
           const isActive = file.path === activePath;
           const isDragging = dragState?.dragIndex === index;
           const offsetX = dragState?.offsets[index] ?? 0;
-          const tabStyle =
-            offsetX !== 0 ? { transform: `translateX(${offsetX}px)` } : undefined;
+          const tabStyle = offsetX !== 0 ? { transform: `translateX(${offsetX}px)` } : undefined;
           return (
             <div
               key={file.path}
@@ -158,11 +153,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
           );
         })}
         {inTitlebar && (
-          <div
-            className="editor-tabs__drag-fill"
-            data-tauri-drag-region
-            aria-hidden="true"
-          />
+          <div className="editor-tabs__drag-fill" data-tauri-drag-region aria-hidden="true" />
         )}
       </div>
       <button
@@ -171,7 +162,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
         onClick={() => void createAndOpenFile()}
         title={hasWorkspace ? "New file" : "Create a workspace first"}
         aria-label="New file"
-        disabled={!hasWorkspace}
+        disabled={! hasWorkspace}
       >
         <IconPlus size={16} />
       </button>

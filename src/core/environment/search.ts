@@ -4,7 +4,7 @@ export function matchesEnvironmentSearch(
   query: string,
 ): boolean {
   const trimmed = query.trim().toLowerCase();
-  if (!trimmed) {
+  if (! trimmed) {
     return true;
   }
   const haystack = `${name} ${categoryLabel}`.toLowerCase();

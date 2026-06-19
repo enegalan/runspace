@@ -18,10 +18,10 @@ use tower_http::cors::{Any, CorsLayer};
 use tauri::AppHandle;
 
 use crate::engine::ExecutionEvent;
-use crate::terminal::TerminalEvent;
 use crate::services::dialog::pick_path;
 use crate::services::invoke::dispatch_invoke;
 use crate::state::SharedState;
+use crate::terminal::TerminalEvent;
 
 pub type TauriHandleSlot = Arc<Mutex<Option<AppHandle>>>;
 
@@ -114,10 +114,7 @@ async fn invoke_handler(
 ) -> Result<Json<InvokeResponse>, (StatusCode, Json<ErrorResponse>)> {
     match dispatch_invoke(&state.app, None, &body.cmd, body.args).await {
         Ok(result) => Ok(Json(InvokeResponse { result })),
-        Err(error) => Err((
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse { error }),
-        )),
+        Err(error) => Err((StatusCode::BAD_REQUEST, Json(ErrorResponse { error }))),
     }
 }
 
@@ -179,9 +176,8 @@ async fn execution_events_handler(
         .filter_map(execution_event_to_sse);
 
     let receiver = state.app.execution_events.subscribe();
-    let live = BroadcastStream::new(receiver).filter_map(|message| {
-        execution_event_to_sse(message.ok()?)
-    });
+    let live =
+        BroadcastStream::new(receiver).filter_map(|message| execution_event_to_sse(message.ok()?));
 
     let stream = stream::iter(replay).chain(live);
 
@@ -206,9 +202,8 @@ async fn terminal_events_handler(
         .filter_map(terminal_event_to_sse);
 
     let receiver = state.app.terminal_events.subscribe();
-    let live = BroadcastStream::new(receiver).filter_map(|message| {
-        terminal_event_to_sse(message.ok()?)
-    });
+    let live =
+        BroadcastStream::new(receiver).filter_map(|message| terminal_event_to_sse(message.ok()?));
 
     let stream = stream::iter(replay).chain(live);
 

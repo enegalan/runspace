@@ -8,12 +8,12 @@ import { isTauri } from "./isTauri";
  * so this handler does not cancel them.
  */
 export function suppressNativeContextMenu(): void {
-  if (!isTauri()) {
+  if (! isTauri()) {
     return;
   }
 
   document.addEventListener("contextmenu", (event) => {
-    if (!event.defaultPrevented) {
+    if (! event.defaultPrevented) {
       event.preventDefault();
     }
   });

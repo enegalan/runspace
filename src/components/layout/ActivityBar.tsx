@@ -32,8 +32,7 @@ export function ActivityBar({
   const runShortcut = formatShortcutCompact(shortcuts.run);
   const stopShortcut = formatShortcutCompact(shortcuts.stop);
   const settingsShortcut = formatShortcutCompact(shortcuts.openSettings);
-  const runTitle =
-    runDisabled && runDisabledReason ? runDisabledReason : `Run (${runShortcut})`;
+  const runTitle = runDisabled && runDisabledReason ? runDisabledReason : `Run (${runShortcut})`;
   const stopTitle = `Stop (${stopShortcut})`;
 
   return (
@@ -54,7 +53,7 @@ export function ActivityBar({
           title={stopTitle}
           className={`activity-bar__btn activity-bar__btn--stop${isRunning ? " activity-bar__btn--stop-active" : ""}`}
           onClick={onStop}
-          disabled={!isRunning}
+          disabled={! isRunning}
           data-testid="stop-button"
         >
           <IconStop size={20} />

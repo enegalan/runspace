@@ -37,21 +37,17 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (!open) {
+    if (! open) {
       setSearch("");
     }
   }, [open]);
 
-  if (!open || typeof document === "undefined") {
+  if (! open || typeof document === "undefined") {
     return null;
   }
 
   const filteredEnvironments = environments.filter((env) =>
-    matchesEnvironmentSearch(
-      env.definition.name,
-      CATEGORY_LABELS[env.definition.category],
-      search,
-    ),
+    matchesEnvironmentSearch(env.definition.name, CATEGORY_LABELS[env.definition.category], search),
   );
   const groups = groupByCategory(filteredEnvironments);
   const hasVisibleEnvironments = filteredEnvironments.length > 0;
@@ -64,7 +60,7 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
 
     void (async () => {
       const switched = await useWorkspaceStore.getState().switchEnvironment(id);
-      if (!switched) {
+      if (! switched) {
         return;
       }
       await select(id as EnvironmentId);
@@ -107,7 +103,7 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
           <p className="env-picker__empty">
             No environments installed. Add runtimes in Settings → Environments.
           </p>
-        ) : !hasVisibleEnvironments ? (
+        ) : ! hasVisibleEnvironments ? (
           <p className="env-picker__empty" data-testid="environment-picker-no-results">
             No environments match your search.
           </p>
@@ -121,7 +117,11 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
               return (
                 <section key={category} className="env-picker__group">
                   <h3 className="env-picker__group-label">{CATEGORY_LABELS[category]}</h3>
-                  <ul className="env-picker__list" role="listbox" aria-label={CATEGORY_LABELS[category]}>
+                  <ul
+                    className="env-picker__list"
+                    role="listbox"
+                    aria-label={CATEGORY_LABELS[category]}
+                  >
                     {items.map((env) => (
                       <li key={env.definition.id} role="presentation">
                         <button

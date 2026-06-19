@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  TERMINAL_HEIGHT_MAX,
-  TERMINAL_HEIGHT_MIN,
-} from "../../core/layout/panelLayout";
+import { TERMINAL_HEIGHT_MAX, TERMINAL_HEIGHT_MIN } from "../../core/layout/panelLayout";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { terminalContextKey } from "../../core/types/terminal";
 import { useVerticalDragResize } from "../../hooks/useVerticalDragResize";
@@ -38,7 +35,7 @@ export function TerminalPanel({
   const setActiveTab = useTerminalStore((state) => state.setActiveTab);
   const tabs = useTerminalStore(
     useShallow((state) => {
-      if (!workspaceId || !environmentId) {
+      if (! workspaceId || ! environmentId) {
         return [] as TerminalTabState[];
       }
       const contextKey = terminalContextKey(workspaceId, environmentId);
@@ -49,12 +46,10 @@ export function TerminalPanel({
     }),
   );
   const activeTabId = useTerminalStore((state) => {
-    if (!workspaceId || !environmentId) {
+    if (! workspaceId || ! environmentId) {
       return undefined;
     }
-    return state.activeTabIdByContext[
-      terminalContextKey(workspaceId, environmentId)
-    ];
+    return state.activeTabIdByContext[terminalContextKey(workspaceId, environmentId)];
   });
   const activeTab = tabs.find((tab) => tab.tabId === activeTabId) ?? tabs[0];
 
@@ -70,7 +65,7 @@ export function TerminalPanel({
   });
 
   const handleAddTab = useCallback(() => {
-    if (!workspaceId || !environmentId) {
+    if (! workspaceId || ! environmentId) {
       return;
     }
     addTab(workspaceId, environmentId);
@@ -78,7 +73,7 @@ export function TerminalPanel({
 
   const closeTab = useCallback(
     async (tabId: string) => {
-      if (!workspaceId || !environmentId) {
+      if (! workspaceId || ! environmentId) {
         return;
       }
 
@@ -93,9 +88,7 @@ export function TerminalPanel({
 
       removeTab(tabId);
 
-      const remaining = useTerminalStore
-        .getState()
-        .getTabsForContext(workspaceId, environmentId);
+      const remaining = useTerminalStore.getState().getTabsForContext(workspaceId, environmentId);
       if (remaining.length === 0) {
         addTab(workspaceId, environmentId);
       }
@@ -111,7 +104,7 @@ export function TerminalPanel({
     clearActiveRef.current = clear;
   }, []);
 
-  const showPlaceholder = !enabled;
+  const showPlaceholder = ! enabled;
 
   return (
     <div
@@ -132,12 +125,8 @@ export function TerminalPanel({
       />
       <section className="terminal-panel">
         <div className="terminal-panel__header">
-          {!showPlaceholder && (
-            <div
-              className="terminal-tabs__list"
-              role="tablist"
-              data-testid="terminal-tabs"
-            >
+          {! showPlaceholder && (
+            <div className="terminal-tabs__list" role="tablist" data-testid="terminal-tabs">
               {tabs.map((tab, index) => {
                 const isActive = tab.tabId === activeTab?.tabId;
                 const statusSuffix =
@@ -198,7 +187,7 @@ export function TerminalPanel({
             <IconButton
               label="Clear terminal"
               onClick={handleClearActive}
-              disabled={showPlaceholder || !activeTabId}
+              disabled={showPlaceholder || ! activeTabId}
               data-testid="terminal-clear-button"
             >
               <IconClear size={16} />
@@ -212,7 +201,7 @@ export function TerminalPanel({
               }}
               disabled={
                 showPlaceholder ||
-                !activeTab ||
+                ! activeTab ||
                 (activeTab.status !== "running" && activeTab.status !== "connecting")
               }
               data-testid="terminal-kill-button"
@@ -231,14 +220,12 @@ export function TerminalPanel({
               <TerminalTabView
                 key={tab.tabId}
                 tabId={tab.tabId}
-                workspaceId={workspaceId!}
-                environmentId={environmentId!}
+                workspaceId={workspaceId !}
+                environmentId={environmentId !}
                 configured={configured}
                 enabled={enabled}
                 active={tab.tabId === activeTab?.tabId}
-                onClearReady={
-                  tab.tabId === activeTab?.tabId ? bindClearActive : undefined
-                }
+                onClearReady={tab.tabId === activeTab?.tabId ? bindClearActive : undefined}
               />
             ))
           )}

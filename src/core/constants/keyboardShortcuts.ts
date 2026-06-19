@@ -37,9 +37,7 @@ export const DEFAULT_SHORTCUT_SETTINGS: ShortcutSettings = {
 const CLOSE_WINDOW_BINDING: ShortcutBinding = { key: "w", mod: true, shift: false, alt: false };
 
 export function isMacPlatform(): boolean {
-  return (
-    typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
-  );
+  return typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 }
 
 export function normalizeShortcutKey(key: string): string {
@@ -50,12 +48,7 @@ export function normalizeShortcutKey(key: string): string {
 }
 
 export function bindingsEqual(a: ShortcutBinding, b: ShortcutBinding): boolean {
-  return (
-    a.key === b.key &&
-    a.mod === b.mod &&
-    a.shift === b.shift &&
-    a.alt === b.alt
-  );
+  return a.key === b.key && a.mod === b.mod && a.shift === b.shift && a.alt === b.alt;
 }
 
 export function normalizeShortcutBinding(binding: ShortcutBinding): ShortcutBinding {
@@ -67,16 +60,14 @@ export function normalizeShortcutBinding(binding: ShortcutBinding): ShortcutBind
   };
 }
 
-export function bindingFromKeyboardEvent(
-  event: KeyboardEvent,
-): ShortcutBinding | null {
+export function bindingFromKeyboardEvent(event: KeyboardEvent): ShortcutBinding | null {
   const key = normalizeShortcutKey(event.key);
   if (key === "control" || key === "meta" || key === "shift" || key === "alt") {
     return null;
   }
 
   const mod = event.metaKey || event.ctrlKey;
-  if (!mod) {
+  if (! mod) {
     return null;
   }
 
@@ -88,10 +79,7 @@ export function bindingFromKeyboardEvent(
   };
 }
 
-export function matchesShortcut(
-  event: KeyboardEvent,
-  binding: ShortcutBinding,
-): boolean {
+export function matchesShortcut(event: KeyboardEvent, binding: ShortcutBinding): boolean {
   const mod = event.metaKey || event.ctrlKey;
   if (binding.mod !== mod) {
     return false;
@@ -168,7 +156,7 @@ export function normalizeShortcutSettings(
   shortcuts: Partial<ShortcutSettings> | undefined,
 ): ShortcutSettings {
   const next = { ...DEFAULT_SHORTCUT_SETTINGS };
-  if (!shortcuts) {
+  if (! shortcuts) {
     return next;
   }
 
@@ -212,6 +200,4 @@ export function shortcutsToAppShortcuts(shortcuts: ShortcutSettings): AppShortcu
   return items;
 }
 
-export const APP_SHORTCUTS: AppShortcut[] = shortcutsToAppShortcuts(
-  DEFAULT_SHORTCUT_SETTINGS,
-);
+export const APP_SHORTCUTS: AppShortcut[] = shortcutsToAppShortcuts(DEFAULT_SHORTCUT_SETTINGS);

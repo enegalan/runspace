@@ -5,10 +5,7 @@ import { getAppSettings } from "./settingsStore";
 import { languageFromExtension } from "../core/languageFromExtension";
 import type { OpenFile, SessionData } from "../core/types/workspace";
 import { reorderByIndex } from "../core/editor/tabReorder";
-import {
-  getEnvironmentSession,
-  uniquePaths,
-} from "../core/workspace/session";
+import { getEnvironmentSession, uniquePaths } from "../core/workspace/session";
 
 interface EditorTabsStore {
   openFiles: OpenFile[];
@@ -32,10 +29,7 @@ interface EditorTabsStore {
     runtimeId: string,
     workspaceId: string,
   ) => Promise<void>;
-  persistForEnvironment: (
-    runtimeId: string,
-    workspaceId: string | null,
-  ) => Promise<void>;
+  persistForEnvironment: (runtimeId: string, workspaceId: string | null) => Promise<void>;
 }
 
 function basename(path: string): string {
@@ -66,16 +60,18 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   closeFile: async (path, force = false) => {
     const file = get().openFiles.find((item) => item.path === path);
-    if (!file) {
+    if (! file) {
       return true;
     }
-    if (file.dirty && !force && getAppSettings().layout.confirmCloseUnsavedTab) {
+    if (file.dirty && ! force && getAppSettings().layout.confirmCloseUnsavedTab) {
       const name = basename(path);
-      const confirmed = await useDialogStore.getState().askConfirm(
-        `"${name}" has unsaved changes. Close without saving?`,
-        { confirmLabel: "Close", danger: true },
-      );
-      if (!confirmed) {
+      const confirmed = await useDialogStore
+        .getState()
+        .askConfirm(`"${name}" has unsaved changes. Close without saving?`, {
+          confirmLabel: "Close",
+          danger: true,
+        });
+      if (! confirmed) {
         return false;
       }
     }
@@ -97,7 +93,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       .map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (!closed) {
+      if (! closed) {
         return false;
       }
     }
@@ -113,7 +109,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     const paths = openFiles.slice(index + 1).map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (!closed) {
+      if (! closed) {
         return false;
       }
     }
@@ -124,7 +120,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     const paths = get().openFiles.map((item) => item.path);
     for (const itemPath of paths) {
       const closed = await get().closeFile(itemPath);
-      if (!closed) {
+      if (! closed) {
         return false;
       }
     }
@@ -154,7 +150,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   saveFile: async (path) => {
     const file = get().openFiles.find((item) => item.path === path);
-    if (!file || !file.dirty) {
+    if (! file || ! file.dirty) {
       return;
     }
     await runspaceInvoke("write_file", { path, content: file.content });
@@ -166,7 +162,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
 
   saveActiveFile: async () => {
     const activePath = get().activePath;
-    if (!activePath) {
+    if (! activePath) {
       return;
     }
     await get().saveFile(activePath);
@@ -175,9 +171,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   renameOpenFile: (oldPath, newPath) => {
     const language = languageFromExtension(newPath);
     const openFiles = get().openFiles.map((file) =>
-      file.path === oldPath
-        ? { ...file, path: newPath, language }
-        : file,
+      file.path === oldPath ? { ...file, path: newPath, language } : file,
     );
     const activePath = get().activePath === oldPath ? newPath : get().activePath;
     set({ openFiles, activePath });
@@ -217,10 +211,9 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     }
 
     const activePath =
-      savedTabs?.active_file &&
-      openFiles.some((file) => file.path === savedTabs.active_file)
+      savedTabs?.active_file && openFiles.some((file) => file.path === savedTabs.active_file)
         ? savedTabs.active_file
-        : openFiles[0]?.path ?? null;
+        : (openFiles[0]?.path ?? null);
 
     set({ openFiles, activePath });
   },

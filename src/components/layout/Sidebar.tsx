@@ -1,7 +1,4 @@
-import {
-  SIDEBAR_WIDTH_MAX,
-  SIDEBAR_WIDTH_MIN,
-} from "../../core/layout/panelLayout";
+import { SIDEBAR_WIDTH_MAX, SIDEBAR_WIDTH_MIN } from "../../core/layout/panelLayout";
 import { usePointerDragResize } from "../../hooks/usePointerDragResize";
 import { FileTree } from "../files/FileTree";
 import { ResizeHandle } from "./ResizeHandle";

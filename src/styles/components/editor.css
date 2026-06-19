@@ -84,7 +84,8 @@
   transition: transform var(--rs-duration-fast) var(--rs-ease);
 }
 
-.editor-tabs__tab:not(.editor-tabs__tab--active) + .editor-tabs__tab:not(.editor-tabs__tab--active)::before {
+.editor-tabs__tab:not(.editor-tabs__tab--active)
+  + .editor-tabs__tab:not(.editor-tabs__tab--active)::before {
   content: "";
   position: absolute;
   left: 0;
@@ -122,12 +123,24 @@
 
 .editor-tabs__tab--active::before {
   left: -8px;
-  background: radial-gradient(circle at 0 0, transparent 7px, var(--rs-border-subtle) 7px, var(--rs-border-subtle) 8px, var(--rs-editor-bg) 8px);
+  background: radial-gradient(
+    circle at 0 0,
+    transparent 7px,
+    var(--rs-border-subtle) 7px,
+    var(--rs-border-subtle) 8px,
+    var(--rs-editor-bg) 8px
+  );
 }
 
 .editor-tabs__tab--active::after {
   right: -8px;
-  background: radial-gradient(circle at 100% 0, transparent 7px, var(--rs-border-subtle) 7px, var(--rs-border-subtle) 8px, var(--rs-editor-bg) 8px);
+  background: radial-gradient(
+    circle at 100% 0,
+    transparent 7px,
+    var(--rs-border-subtle) 7px,
+    var(--rs-border-subtle) 8px,
+    var(--rs-editor-bg) 8px
+  );
 }
 
 .editor-tabs__list--dragging {

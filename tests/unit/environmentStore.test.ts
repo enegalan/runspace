@@ -4,7 +4,7 @@ import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
-  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
+  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id) !;
   return {
     definition,
     user_config: { paths: {}, env_vars: {} },
