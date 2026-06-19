@@ -220,7 +220,7 @@ describe("workspaceStore", () => {
       lastRunDurationMs: null,
     });
 
-    vi.mocked(runspaceInvoke).mockImplementation(async (cmd, args) => {
+    vi.mocked(runspaceInvoke).mockImplementation(async (cmd) => {
       if (cmd === "write_file") {
         return undefined;
       }
