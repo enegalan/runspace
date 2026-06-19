@@ -44,6 +44,7 @@ import { StatusBar } from "./StatusBar";
 import { AppDialogs } from "../ui/AppDialogs";
 import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
+import { AppLoadingScreen } from "./AppLoadingScreen";
 
 export function AppShell() {
   const workspace = useWorkspaceStore((state) => state.workspace);
@@ -406,10 +407,14 @@ export function AppShell() {
 
   if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded || !settingsLoaded) {
     return (
-      <div className="app-shell app-shell--loading" data-testid="app-shell">
-        <div className="app-shell__loading">
-          {!backendReady && !isTauri() ? "Starting backend..." : "Loading..."}
-        </div>
+      <div
+        className={`app-shell app-shell--loading${appShellDesktopClass()}`}
+        data-testid="app-shell"
+      >
+        {isTauri() && (
+          <div className="app-loading__titlebar" data-tauri-drag-region aria-hidden="true" />
+        )}
+        <AppLoadingScreen />
         <AppDialogs />
       </div>
     );

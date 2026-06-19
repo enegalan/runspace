@@ -12,9 +12,65 @@
   justify-content: center;
 }
 
-.app-shell__loading {
+.app-shell--loading.app-shell--desktop .app-loading__titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: var(--rs-editor-tabs-height);
+  -webkit-app-region: drag;
+}
+
+.app-shell--loading.app-shell--windows .app-loading__titlebar {
+  right: var(--rs-titlebar-drag-inset-right);
+}
+
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rs-space-4);
+  width: calc(100vw - 15%);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.app-loading__message {
+  margin: 0;
   color: var(--rs-text-muted);
-  font-size: var(--rs-font-size-md);
+  font-size: var(--rs-font-size-sm);
+}
+
+.app-loading__bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: var(--rs-radius-full);
+  background: var(--rs-bg-overlay);
+  overflow: hidden;
+}
+
+.app-loading__bar-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--rs-accent);
+  animation: app-loading-bar 1.3s ease-in-out infinite;
+}
+
+@keyframes app-loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(380%);
+  }
 }
 
 .app-shell--welcome {
