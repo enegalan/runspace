@@ -94,6 +94,46 @@ describe("editorTabsStore", () => {
     expect(runspaceInvoke).not.toHaveBeenCalled();
   });
 
+  it("saves every dirty open file", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.js",
+          content: "console.log(1);",
+          dirty: true,
+          language: "javascript",
+        },
+        {
+          path: "utils.js",
+          content: "export {};",
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "index.js",
+          content: "import './main.js';",
+          dirty: true,
+          language: "javascript",
+        },
+      ],
+      activePath: "main.js",
+    });
+    vi.mocked(runspaceInvoke).mockResolvedValue(undefined);
+
+    await useEditorTabsStore.getState().saveDirtyFiles();
+
+    expect(runspaceInvoke).toHaveBeenCalledTimes(2);
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_file", {
+      path: "main.js",
+      content: "console.log(1);",
+    });
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_file", {
+      path: "index.js",
+      content: "import './main.js';",
+    });
+    expect(useEditorTabsStore.getState().openFiles.every((file) => !file.dirty)).toBe(true);
+  });
+
   it("starts with no tabs when the session has none", async () => {
     await useEditorTabsStore.getState().restoreForWorkspace(
       {

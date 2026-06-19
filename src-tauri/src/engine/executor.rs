@@ -9,7 +9,6 @@ use super::emitter::ExecutionEmitter;
 #[derive(Debug)]
 pub enum ExecutionError {
     SpawnFailed(String),
-    NoActiveProcess,
     Io(std::io::Error),
 }
 
@@ -17,7 +16,6 @@ impl std::fmt::Display for ExecutionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ExecutionError::SpawnFailed(msg) => write!(f, "Spawn failed: {msg}"),
-            ExecutionError::NoActiveProcess => write!(f, "No active process"),
             ExecutionError::Io(e) => write!(f, "IO error: {e}"),
         }
     }
@@ -102,10 +100,8 @@ impl ExecutionEngine {
         if let Some(mut child) = guard.take() {
             child.kill().map_err(ExecutionError::Io)?;
             let _ = child.wait();
-            Ok(())
-        } else {
-            Err(ExecutionError::NoActiveProcess)
         }
+        Ok(())
     }
 
     pub fn run(

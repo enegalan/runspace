@@ -247,6 +247,13 @@ export function AppShell() {
 
     void (async () => {
       await useEditorTabsStore.getState().saveActiveFile();
+      if (
+        useWorkspaceStore.getState().workspace?.id !== workspace.id ||
+        useEnvironmentStore.getState().selectedId !== selectedId ||
+        useEditorTabsStore.getState().activePath !== activePath
+      ) {
+        return;
+      }
       await run({
         environmentId: selectedId,
         file: activePath,

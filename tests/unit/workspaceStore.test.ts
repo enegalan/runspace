@@ -3,6 +3,7 @@ import { markOnboardingComplete } from "../../src/core/onboarding/onboardingStat
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { useDialogStore } from "../../src/stores/dialogStore";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useExecutionStore } from "../../src/stores/executionStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 const mockWorkspace = {
@@ -14,6 +15,7 @@ const mockWorkspace = {
 describe("workspaceStore", () => {
   beforeEach(() => {
     vi.mocked(runspaceInvoke).mockReset();
+    useExecutionStore.getState().reset();
     useWorkspaceStore.setState({
       workspace: null,
       workspaces: [],
@@ -182,6 +184,75 @@ describe("workspaceStore", () => {
     expect(useEditorTabsStore.getState().openFiles).toHaveLength(0);
     expect(useEditorTabsStore.getState().activePath).toBeNull();
     expect(useWorkspaceStore.getState().workspace).toEqual(nodeWorkspace);
+    expect(runspaceInvoke).toHaveBeenCalledWith("kill_process");
+  });
+
+  it("saves dirty files and clears execution output when switching environments", async () => {
+    const phpWorkspace = { id: "ws-php", name: "PHP project", runtime_id: "php" };
+    const laravelWorkspace = { id: "ws-laravel", name: "Laravel project", runtime_id: "laravel" };
+    useWorkspaceStore.setState({
+      workspace: phpWorkspace,
+      workspaces: [phpWorkspace],
+      loaded: true,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.php",
+          content: "<?php echo 1;",
+          dirty: true,
+          language: "php",
+        },
+      ],
+      activePath: "main.php",
+      loaded: true,
+    });
+    useExecutionStore.setState({
+      status: "error",
+      stderr: "",
+      stdout: "",
+      exitCode: 1,
+      timedOut: false,
+      compileFailed: false,
+      error: "File not found: main.php",
+      phase: null,
+      startedAt: null,
+      lastRunDurationMs: null,
+    });
+
+    vi.mocked(runspaceInvoke).mockImplementation(async (cmd) => {
+      if (cmd === "write_file") {
+        return undefined;
+      }
+      if (cmd === "kill_process") {
+        return undefined;
+      }
+      if (cmd === "read_session") {
+        return { environments: {}, last_runtime_id: "laravel" };
+      }
+      if (cmd === "write_session" || cmd === "set_selected_environment") {
+        return undefined;
+      }
+      if (cmd === "list_workspaces") {
+        return [laravelWorkspace];
+      }
+      if (cmd === "initialize_workspace" || cmd === "open_workspace") {
+        return laravelWorkspace;
+      }
+      if (cmd === "list_files") {
+        return [];
+      }
+      return undefined;
+    });
+
+    await useWorkspaceStore.getState().switchEnvironment("laravel");
+
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_file", {
+      path: "main.php",
+      content: "<?php echo 1;",
+    });
+    expect(useExecutionStore.getState().error).toBeNull();
+    expect(useExecutionStore.getState().status).toBe("idle");
   });
 
   it("clears active workspace and keeps onboarding complete after deleting the last workspace", async () => {
