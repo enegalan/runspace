@@ -10,6 +10,7 @@ import { getAppSettings } from "./settingsStore";
 import type { FileEntry, SessionData, WorkspaceInfo } from "../core/types/workspace";
 import { useEditorTabsStore } from "./editorTabsStore";
 import { useDialogStore } from "./dialogStore";
+import { useExecutionStore } from "./executionStore";
 
 interface WorkspaceStore {
   workspace: WorkspaceInfo | null;
@@ -84,6 +85,16 @@ function applyNoActiveWorkspaceState(
     onboardingRequired: false,
     loaded: true,
   });
+}
+
+async function prepareForWorkspaceSwitch(): Promise<void> {
+  await useEditorTabsStore.getState().saveDirtyFiles();
+  try {
+    await runspaceInvoke("kill_process");
+  } catch {
+    // No active run.
+  }
+  useExecutionStore.getState().reset();
 }
 
 async function activateWorkspace(
@@ -187,6 +198,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   },
 
   switchEnvironment: async (runtimeId) => {
+    await prepareForWorkspaceSwitch();
+
     const current = get().workspace;
     if (current?.runtime_id) {
       await useEditorTabsStore.getState().persistForEnvironment(current.runtime_id, current.id);
@@ -230,6 +243,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   },
 
   switchWorkspace: async (id) => {
+    await prepareForWorkspaceSwitch();
+
     const current = get().workspace;
     if (current) {
       await useEditorTabsStore.getState().persistForEnvironment(current.runtime_id, current.id);

@@ -21,6 +21,7 @@ interface EditorTabsStore {
   updateContent: (path: string, content: string) => void;
   saveFile: (path: string) => Promise<void>;
   saveActiveFile: () => Promise<void>;
+  saveDirtyFiles: () => Promise<void>;
   renameOpenFile: (oldPath: string, newPath: string) => void;
   removeOpenFile: (path: string) => void;
   clearTabs: () => void;
@@ -166,6 +167,14 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
       return;
     }
     await get().saveFile(activePath);
+  },
+
+  saveDirtyFiles: async () => {
+    for (const file of get().openFiles) {
+      if (file.dirty) {
+        await get().saveFile(file.path);
+      }
+    }
   },
 
   renameOpenFile: (oldPath, newPath) => {
