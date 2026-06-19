@@ -4,7 +4,7 @@ use serde::Serialize;
 use tokio::sync::broadcast;
 
 #[derive(Clone, Debug, Serialize)]
-#[serde(tag = "event")]
+#[serde(tag = "event", rename_all = "lowercase")]
 pub enum TerminalEvent {
     Data {
         session_id: String,
