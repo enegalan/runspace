@@ -94,9 +94,15 @@ pub fn get_active_workspace(
 pub fn list_files(
     state: State<'_, SharedState>,
     relative_path: Option<String>,
+    id: Option<String>,
 ) -> Result<Vec<FileEntry>, String> {
     let manager = lock_workspace_manager(&state)?;
-    let workspace = require_active_workspace(&state)?;
+    let workspace = match id {
+        Some(workspace_id) => manager
+            .open_workspace(&workspace_id)
+            .map_err(|e| e.to_string())?,
+        None => require_active_workspace(&state)?,
+    };
     manager
         .list_files(&workspace, relative_path.as_deref())
         .map_err(|e| e.to_string())

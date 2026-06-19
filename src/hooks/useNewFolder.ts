@@ -24,7 +24,7 @@ export function useNewFolder() {
         return;
       }
       const trimmed = raw.trim();
-      if (await workspaceEntryExists(trimmed)) {
+      if (await workspaceEntryExists(workspace.id, trimmed)) {
         label = `"${trimmed}" already exists.`;
         initialValue = trimmed;
         continue;

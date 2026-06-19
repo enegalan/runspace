@@ -293,19 +293,25 @@ pub async fn dispatch_invoke(
                 .get("relativePath")
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
+            let workspace_id = args.get("id").and_then(|v| v.as_str());
             let manager = state
                 .workspace_manager
                 .lock()
                 .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
+            let workspace = if let Some(id) = workspace_id {
+                manager.open_workspace(id).map_err(|e| e.to_string())?
+            } else {
+                let active = state
+                    .active_workspace
+                    .lock()
+                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
+                active
+                    .as_ref()
+                    .ok_or_else(|| "No active workspace".to_string())?
+                    .clone()
+            };
             let files = manager
-                .list_files(workspace, relative_path.as_deref())
+                .list_files(&workspace, relative_path.as_deref())
                 .map_err(|e| e.to_string())?;
             Ok(json!(files))
         }

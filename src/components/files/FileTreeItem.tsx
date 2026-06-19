@@ -210,7 +210,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     }
 
     const newPath = siblingPath(parentDir(entry.path), trimmed);
-    if (await workspaceEntryExists(newPath)) {
+    if (await workspaceEntryExists(workspaceId, newPath)) {
       setRenameValue(entry.name);
       setRenaming(false);
       return;
