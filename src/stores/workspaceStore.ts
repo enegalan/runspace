@@ -90,7 +90,6 @@ async function activateWorkspace(
   runtimeId: string,
   resetExpanded = true,
 ): Promise<void> {
-  await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
   const session = await runspaceInvoke<SessionData>("read_session");
   useEditorTabsStore.getState().clearTabs();
   useWorkspaceStore.setState({

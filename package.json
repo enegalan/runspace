@@ -28,7 +28,7 @@
     "format:prettier": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"*.{ts,js}\"",
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml",
     "format": "npm run format:prettier && npm run format:rust && npm run lint:fix",
-    "format:check": "npm run lint && cargo fmt --manifest-path src-tauri/Cargo.toml --check && prettier --check \"src/**/*.css\"",
+    "format:check": "npm run lint && cargo fmt --manifest-path src-tauri/Cargo.toml --check && prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"*.{ts,js}\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "tauri": "tauri"
