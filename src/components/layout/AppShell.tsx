@@ -64,8 +64,6 @@ export function AppShell() {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const envLoaded = useEnvironmentStore((state) => state.loaded);
   const loadEnvironments = useEnvironmentStore((state) => state.load);
-  const settingsLoaded = useSettingsStore((state) => state.loaded);
-  const loadSettings = useSettingsStore((state) => state.load);
   const layoutSettings = useSettingsStore((state) => state.settings.layout);
   const executionSettings = useSettingsStore((state) => state.settings.execution);
   const updateSettings = useSettingsStore((state) => state.update);
@@ -148,7 +146,7 @@ export function AppShell() {
 
     const bootstrap = async () => {
       try {
-        await Promise.all([loadSettings(), loadEnvironments()]);
+        await loadEnvironments();
         if (cancelled) {
           return;
         }
@@ -204,7 +202,7 @@ export function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [backendReady, loadEnvironments, loadSettings, selectEnvironment]);
+  }, [backendReady, loadEnvironments, selectEnvironment]);
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -408,7 +406,7 @@ export function AppShell() {
     runDisabled,
   });
 
-  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded || !settingsLoaded) {
+  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
     return (
       <div
         className={`app-shell app-shell--loading${appShellDesktopClass()}`}
