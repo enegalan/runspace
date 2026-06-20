@@ -8,6 +8,7 @@ import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
+import { useExecutionStore } from "../../src/stores/executionStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
@@ -281,5 +282,72 @@ describe("AppShell", () => {
     expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create workspace" })).toBeInTheDocument();
     expect(screen.getByTestId("run-button")).toBeDisabled();
+  });
+
+  it("clears output when switching editor tabs", async () => {
+    localStorage.setItem("runspace.onboarding.complete", "1");
+    useWorkspaceStore.setState({
+      workspace: mockWorkspace,
+      workspaces: [mockWorkspace],
+      loaded: true,
+      onboardingComplete: true,
+      onboardingRequired: false,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.js",
+          content: 'console.log("a");',
+          dirty: false,
+          language: "javascript",
+        },
+        {
+          path: "other.js",
+          content: 'console.log("b");',
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "main.js",
+      loaded: true,
+    });
+    useEnvironmentStore.setState({
+      environments: [mockInstalledEnvironment("nodejs", true)],
+      available: [],
+      selectedId: "nodejs",
+      loaded: true,
+    });
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_APP_SETTINGS,
+        execution: { ...DEFAULT_APP_SETTINGS.execution, runOnTabChange: false },
+      },
+      loaded: true,
+    });
+    useExecutionStore.setState({
+      status: "success",
+      stdout: "previous output",
+      stderr: "",
+      exitCode: 0,
+      timedOut: false,
+      compileFailed: false,
+      error: null,
+      phase: null,
+      startedAt: null,
+      lastRunDurationMs: 10,
+    });
+
+    render(<AppShell />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("activity-bar")).toBeInTheDocument();
+    });
+
+    useEditorTabsStore.getState().setActive("other.js");
+
+    await waitFor(() => {
+      expect(useExecutionStore.getState().stdout).toBe("");
+      expect(useExecutionStore.getState().status).toBe("idle");
+    });
   });
 });

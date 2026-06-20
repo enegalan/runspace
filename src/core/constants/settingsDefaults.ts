@@ -43,6 +43,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
     autoClearOutput: true,
     autoScrollOutput: true,
     runOnSave: true,
+    runOnTabChange: true,
   },
   layout: {
     sidebarWidth: SIDEBAR_WIDTH_DEFAULT,

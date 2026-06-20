@@ -213,6 +213,15 @@ export function GeneralSettings() {
           onChange={(event) => void update({ execution: { runOnSave: event.target.checked } })}
           data-testid="setting-run-on-save"
         />
+        <SettingsToggleRow
+          label="Run on tab change"
+          description="Run the active file when switching editor tabs."
+          checked={settings.execution.runOnTabChange}
+          onChange={(event) =>
+            void update({ execution: { runOnTabChange: event.target.checked } })
+          }
+          data-testid="setting-run-on-tab-change"
+        />
       </SettingsCard>
 
       <SettingsCard title="Layout" description="Panels and workspace restore.">

@@ -59,11 +59,11 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
     }
 
     void (async () => {
+      await select(id as EnvironmentId);
       const switched = await useWorkspaceStore.getState().switchEnvironment(id);
       if (!switched) {
         return;
       }
-      await select(id as EnvironmentId);
       onClose();
     })();
   };
