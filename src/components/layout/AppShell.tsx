@@ -29,7 +29,7 @@ import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome"
 import { EditorTabs } from "../editor/EditorTabs";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
-import { useSettingsStore } from "../../stores/settingsStore";
+import { useSettingsStore, getAppSettings } from "../../stores/settingsStore";
 import { useSettingsUiStore } from "../../stores/settingsUiStore";
 import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
@@ -52,6 +52,8 @@ export function AppShell() {
   const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
   const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
   const bootstrapStarted = useRef(false);
+  const tabChangeReadyRef = useRef(false);
+  const prevActivePathRef = useRef<string | null>(null);
   const hasEnteredMainShell = useRef(
     useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
   );
@@ -239,27 +241,65 @@ export function AppShell() {
   }, []);
 
   const handleRun = useCallback(() => {
-    if (!selectedId || !workspace || !activePath) {
-      return;
-    }
-
     void (async () => {
+      const workspaceState = useWorkspaceStore.getState().workspace;
+      const environmentId = useEnvironmentStore.getState().selectedId;
+      const filePath = useEditorTabsStore.getState().activePath;
+      if (!environmentId || !workspaceState || !filePath) {
+        return;
+      }
+
       await useEditorTabsStore.getState().saveActiveFile();
       if (
-        useWorkspaceStore.getState().workspace?.id !== workspace.id ||
-        useEnvironmentStore.getState().selectedId !== selectedId ||
-        useEditorTabsStore.getState().activePath !== activePath
+        useWorkspaceStore.getState().workspace?.id !== workspaceState.id ||
+        useEnvironmentStore.getState().selectedId !== environmentId ||
+        useEditorTabsStore.getState().activePath !== filePath
       ) {
         return;
       }
+
+      const settings = getAppSettings().execution;
       await run({
-        environmentId: selectedId,
-        file: activePath,
-        timeoutSecs: executionSettings.runTimeoutSecs,
-        compileTimeoutSecs: executionSettings.compileTimeoutSecs,
+        environmentId,
+        file: filePath,
+        timeoutSecs: settings.runTimeoutSecs,
+        compileTimeoutSecs: settings.compileTimeoutSecs,
       });
     })();
-  }, [selectedId, workspace, activePath, run, executionSettings]);
+  }, [run]);
+
+  useEffect(() => {
+    if (!tabsLoaded) {
+      return;
+    }
+    if (!tabChangeReadyRef.current) {
+      tabChangeReadyRef.current = true;
+      prevActivePathRef.current = activePath;
+      return;
+    }
+    if (prevActivePathRef.current === activePath) {
+      return;
+    }
+    prevActivePathRef.current = activePath;
+    void (async () => {
+      if (isRunning) {
+        await stop();
+      }
+      clear();
+      if (executionSettings.runOnTabChange && activePath && !runDisabled) {
+        handleRun();
+      }
+    })();
+  }, [
+    tabsLoaded,
+    activePath,
+    clear,
+    stop,
+    isRunning,
+    executionSettings.runOnTabChange,
+    runDisabled,
+    handleRun,
+  ]);
 
   const handleSidebarWidthChange = useCallback(
     (width: number) => {
@@ -312,13 +352,16 @@ export function AppShell() {
     });
   }, [layoutSettings.outputVisible, updateSettings]);
 
-  const handleSave = useCallback(() => {
-    if (executionSettings.runOnSave && !runDisabled && !isRunning) {
-      handleRun();
-      return;
-    }
-    void useEditorTabsStore.getState().saveActiveFile();
-  }, [executionSettings.runOnSave, runDisabled, isRunning, handleRun]);
+  const handleSave = useCallback(
+    (autoRun = false) => {
+      if (!autoRun && executionSettings.runOnSave && !runDisabled && !isRunning) {
+        handleRun();
+        return;
+      }
+      void useEditorTabsStore.getState().saveActiveFile();
+    },
+    [executionSettings.runOnSave, runDisabled, isRunning, handleRun],
+  );
 
   const handleNewTerminal = useCallback(() => {
     if (!workspace || !selectedId || !selectedEnvironment?.configured) {

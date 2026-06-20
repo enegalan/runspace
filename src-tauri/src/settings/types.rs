@@ -69,6 +69,7 @@ pub struct ExecutionSettings {
     pub auto_clear_output: bool,
     pub auto_scroll_output: bool,
     pub run_on_save: bool,
+    pub run_on_tab_change: bool,
 }
 
 impl Default for ExecutionSettings {
@@ -79,6 +80,7 @@ impl Default for ExecutionSettings {
             auto_clear_output: true,
             auto_scroll_output: true,
             run_on_save: true,
+            run_on_tab_change: true,
         }
     }
 }

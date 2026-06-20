@@ -8,8 +8,10 @@ import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
 import { requireWorkspaceName } from "../core/workspace/promptWorkspaceName";
 import { getAppSettings } from "./settingsStore";
 import type { FileEntry, SessionData, WorkspaceInfo } from "../core/types/workspace";
+import type { EnvironmentId } from "../core/types/environment";
 import { useEditorTabsStore } from "./editorTabsStore";
 import { useDialogStore } from "./dialogStore";
+import { useEnvironmentStore } from "./environmentStore";
 import { useExecutionStore } from "./executionStore";
 
 interface WorkspaceStore {
@@ -214,7 +216,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       }
       await get().createWorkspace(runtimeId, workspaceName);
       useEditorTabsStore.getState().clearTabs();
-      return get().workspace !== null;
+      if (get().workspace === null) {
+        return false;
+      }
+      await useEnvironmentStore.getState().select(runtimeId as EnvironmentId);
+      return true;
     }
 
     const workspace = await activateRuntime(runtimeId);
@@ -232,6 +238,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     });
     await get().loadWorkspaces(runtimeId);
     await get().refreshFiles();
+    await useEnvironmentStore.getState().select(runtimeId as EnvironmentId);
 
     const session = await runspaceInvoke<SessionData>("read_session");
     await useEditorTabsStore.getState().restoreForWorkspace(session, runtimeId, workspace.id);

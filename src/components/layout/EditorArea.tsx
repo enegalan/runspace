@@ -19,7 +19,7 @@ import { Button } from "../ui/Button";
 const MonacoWrapper = lazy(() => import("../editor/MonacoWrapper"));
 
 interface EditorAreaProps {
-  onSave: () => void;
+  onSave: (autoRun?: boolean) => void;
 }
 
 export function EditorArea({ onSave }: EditorAreaProps) {

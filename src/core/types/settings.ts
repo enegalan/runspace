@@ -26,6 +26,7 @@ export interface ExecutionSettings {
   autoClearOutput: boolean;
   autoScrollOutput: boolean;
   runOnSave: boolean;
+  runOnTabChange: boolean;
 }
 
 export interface LayoutSettings {
