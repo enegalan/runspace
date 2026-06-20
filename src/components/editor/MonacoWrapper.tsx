@@ -46,7 +46,7 @@ export interface MonacoWrapperProps {
   value: string;
   onChange: (value: string) => void;
   language: string;
-  onSave: () => void;
+  onSave: (autoRun?: boolean) => void;
 }
 
 export default memo(function MonacoWrapper({
@@ -100,7 +100,7 @@ export default memo(function MonacoWrapper({
 
     editor.onDidBlurEditorWidget(() => {
       if (autoSaveRef.current) {
-        void Promise.resolve(onSaveRef.current()).finally(() => {
+        void Promise.resolve(onSaveRef.current(true)).finally(() => {
           editor.focus();
         });
       }
