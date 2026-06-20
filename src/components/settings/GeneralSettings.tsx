@@ -217,9 +217,7 @@ export function GeneralSettings() {
           label="Run on tab change"
           description="Run the active file when switching editor tabs."
           checked={settings.execution.runOnTabChange}
-          onChange={(event) =>
-            void update({ execution: { runOnTabChange: event.target.checked } })
-          }
+          onChange={(event) => void update({ execution: { runOnTabChange: event.target.checked } })}
           data-testid="setting-run-on-tab-change"
         />
       </SettingsCard>
