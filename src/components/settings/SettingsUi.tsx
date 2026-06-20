@@ -11,6 +11,31 @@ export function SettingsPageHeader({ title, description }: { title: string; desc
   );
 }
 
+export function SettingsSearchInput({
+  value,
+  onChange,
+  placeholder,
+  testId,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  testId: string;
+}) {
+  return (
+    <div className="settings-search">
+      <input
+        type="search"
+        className="settings-search__input"
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        data-testid={testId}
+      />
+    </div>
+  );
+}
+
 export function SettingsCard({
   title,
   description,

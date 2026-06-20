@@ -14,7 +14,7 @@ import type {
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { IconCheck, IconChevronDown, IconChevronRight } from "../ui/icons";
 import { EnvVarsEditor, envVarsToRows, rowsToEnvVars, validateEnvVarRows } from "./EnvVarsEditor";
-import { SettingsPageHeader } from "./SettingsUi";
+import { SettingsPageHeader, SettingsSearchInput } from "./SettingsUi";
 
 const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
   language: "Language",
@@ -304,14 +304,12 @@ export function EnvironmentsSettings() {
         description="Configure binary paths and environment variables. Paths are auto-detected on startup when possible."
       />
 
-      <div className="environment-search environments-settings__search">
-        <input
-          type="search"
-          className="environment-search__input"
-          placeholder="Search environments..."
+      <div className="environments-settings__search">
+        <SettingsSearchInput
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          data-testid="environments-settings-search"
+          onChange={setSearch}
+          placeholder="Search environments..."
+          testId="environments-settings-search"
         />
       </div>
 
