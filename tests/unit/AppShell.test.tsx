@@ -56,7 +56,7 @@ describe("AppShell", () => {
     });
     useSettingsStore.setState({
       settings: DEFAULT_APP_SETTINGS,
-      loaded: false,
+      loaded: true,
     });
 
     vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
