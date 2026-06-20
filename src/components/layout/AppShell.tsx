@@ -282,11 +282,25 @@ export function AppShell() {
       return;
     }
     prevActivePathRef.current = activePath;
-    clear();
-    if (executionSettings.runOnTabChange && activePath && !runDisabled) {
-      handleRun();
-    }
-  }, [tabsLoaded, activePath, clear, executionSettings.runOnTabChange, runDisabled, handleRun]);
+    void (async () => {
+      if (isRunning) {
+        await stop();
+      }
+      clear();
+      if (executionSettings.runOnTabChange && activePath && !runDisabled) {
+        handleRun();
+      }
+    })();
+  }, [
+    tabsLoaded,
+    activePath,
+    clear,
+    stop,
+    isRunning,
+    executionSettings.runOnTabChange,
+    runDisabled,
+    handleRun,
+  ]);
 
   const handleSidebarWidthChange = useCallback(
     (width: number) => {

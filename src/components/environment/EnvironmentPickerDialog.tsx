@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { matchesEnvironmentSearch } from "../../core/environment/search";
-import type { Environment, EnvironmentCategory, EnvironmentId } from "../../core/types/environment";
+import type { Environment, EnvironmentCategory } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useSettingsUiStore } from "../../stores/settingsUiStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
@@ -32,7 +32,6 @@ function groupByCategory(environments: Environment[]) {
 export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDialogProps) {
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
-  const select = useEnvironmentStore((state) => state.select);
   const openSettings = useSettingsUiStore((state) => state.openSettings);
   const [search, setSearch] = useState("");
 
@@ -59,7 +58,6 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
     }
 
     void (async () => {
-      await select(id as EnvironmentId);
       const switched = await useWorkspaceStore.getState().switchEnvironment(id);
       if (!switched) {
         return;
