@@ -249,10 +249,9 @@ export function AppShell() {
         return;
       }
 
-      const workspaceId = workspaceState.id;
       await useEditorTabsStore.getState().saveActiveFile();
       if (
-        useWorkspaceStore.getState().workspace?.id !== workspaceId ||
+        useWorkspaceStore.getState().workspace?.id !== workspaceState.id ||
         useEnvironmentStore.getState().selectedId !== environmentId ||
         useEditorTabsStore.getState().activePath !== filePath
       ) {
