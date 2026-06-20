@@ -15,6 +15,7 @@ describe("editorTabsStore", () => {
     useEditorTabsStore.setState({
       openFiles: [],
       activePath: null,
+      focusHistory: [],
       loaded: false,
     });
   });
@@ -183,6 +184,48 @@ describe("editorTabsStore", () => {
     expect(useEditorTabsStore.getState().activePath).toBe("main.js");
   });
 
+  it("persists a provided tab snapshot instead of the current store state", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "stale.js",
+          content: "stale",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "stale.js",
+    });
+    vi.mocked(runspaceInvoke).mockResolvedValue({ environments: {} });
+
+    await useEditorTabsStore.getState().persistForEnvironment("nodejs", "ws-1", {
+      openFiles: [
+        {
+          path: "saved.js",
+          content: "saved",
+          dirty: false,
+          language: "javascript",
+        },
+      ],
+      activePath: "saved.js",
+    });
+
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_session", {
+      session: expect.objectContaining({
+        environments: expect.objectContaining({
+          nodejs: expect.objectContaining({
+            workspace_tabs: expect.objectContaining({
+              "ws-1": {
+                open_files: ["saved.js"],
+                active_file: "saved.js",
+              },
+            }),
+          }),
+        }),
+      }),
+    });
+  });
+
   it("reorders open tabs", () => {
     useEditorTabsStore.setState({
       openFiles: [
@@ -213,6 +256,28 @@ describe("editorTabsStore", () => {
     const state = useEditorTabsStore.getState();
     expect(state.openFiles.map((file) => file.path)).toEqual(["b.js", "c.js", "a.js"]);
     expect(state.activePath).toBe("b.js");
+  });
+
+  it("activates the previously focused tab when closing the active tab", async () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "a.js", content: "a", dirty: false, language: "javascript" },
+        { path: "b.js", content: "b", dirty: false, language: "javascript" },
+        { path: "c.js", content: "c", dirty: false, language: "javascript" },
+      ],
+      activePath: "c.js",
+      focusHistory: [],
+    });
+
+    useEditorTabsStore.getState().setActive("a.js");
+    const closed = await useEditorTabsStore.getState().closeFile("a.js");
+
+    expect(closed).toBe(true);
+    expect(useEditorTabsStore.getState().activePath).toBe("c.js");
+    expect(useEditorTabsStore.getState().openFiles.map((file) => file.path)).toEqual([
+      "b.js",
+      "c.js",
+    ]);
   });
 
   it("closes dirty file without confirm when setting disabled", async () => {

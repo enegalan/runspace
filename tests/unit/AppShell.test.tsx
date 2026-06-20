@@ -45,6 +45,7 @@ describe("AppShell", () => {
     useEditorTabsStore.setState({
       openFiles: [],
       activePath: null,
+      focusHistory: [],
       loaded: false,
     });
     useEnvironmentStore.setState({
