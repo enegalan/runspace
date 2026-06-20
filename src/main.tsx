@@ -10,13 +10,21 @@ import { suppressNativeContextMenu } from "./core/platform/suppressNativeContext
 import { useSettingsStore } from "./stores/settingsStore";
 import "./styles/globals.css";
 
+function renderApp() {
+  suppressNativeContextMenu();
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
+}
+
+function renderBootstrapError(error: unknown) {
+  console.error("Failed to start Runspace:", error);
+  void useSettingsStore.getState().load().finally(renderApp);
+}
+
 void waitForBackendReady()
   .then(() => useSettingsStore.getState().load())
-  .then(() => {
-    suppressNativeContextMenu();
-    ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>,
-    );
-  });
+  .then(renderApp)
+  .catch(renderBootstrapError);
