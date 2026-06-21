@@ -51,6 +51,24 @@ describe("GeneralSettings", () => {
     expect(page.getByText("Tab size")).toBeInTheDocument();
   });
 
+  it("finds settings by common label terms", () => {
+    render(<GeneralSettings />);
+    const page = within(screen.getByTestId("general-settings"));
+
+    fireEvent.change(page.getByTestId("general-settings-search"), {
+      target: { value: "ui" },
+    });
+    expect(page.getByText("Appearance")).toBeInTheDocument();
+    expect(page.getByText("UI density")).toBeInTheDocument();
+
+    fireEvent.change(page.getByTestId("general-settings-search"), {
+      target: { value: "show" },
+    });
+    expect(page.getByText("Layout")).toBeInTheDocument();
+    expect(page.getByText("Show sidebar")).toBeInTheDocument();
+    expect(page.getByText("Show output panel")).toBeInTheDocument();
+  });
+
   it("shows an empty state when search has no matches", () => {
     render(<GeneralSettings />);
     const page = within(screen.getByTestId("general-settings"));

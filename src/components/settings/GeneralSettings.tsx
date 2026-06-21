@@ -35,13 +35,13 @@ const TAB_SIZE_OPTIONS: { value: TabSize; label: string }[] = [
 ];
 
 const APPEARANCE_SEARCH =
-  "Appearance theme density typography font size font family dark light system comfortable compact";
+  "Appearance theme UI density typography font size font family dark light system comfortable compact";
 const EDITOR_SEARCH =
   "Editor tab size word wrap minimap scroll beyond last line insert spaces auto-save";
 const EXECUTION_SEARCH =
   "Execution run timeout compile timeout auto-clear output auto-scroll output run on save run on tab change";
 const LAYOUT_SEARCH =
-  "Layout sidebar output panel restore last workspace confirm before closing unsaved tabs";
+  "Layout show sidebar output panel restore last workspace confirm before closing unsaved tabs";
 const SHORTCUTS_SEARCH = [
   "Keyboard shortcuts",
   ...SHORTCUT_ACTIONS.map((action) => action.label),
