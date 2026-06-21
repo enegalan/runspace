@@ -1,0 +1,48 @@
+import { getFileExtension, normalizeFileName } from "../fileExtension";
+import { workspaceEntryExists } from "../workspaceEntryExists";
+import { WorkspacePrompt, type PromptProcessResult } from "./WorkspacePrompt";
+
+class FileNamePrompt extends WorkspacePrompt<string> {
+  private readonly environmentId: string;
+  private readonly workspaceId: string;
+
+  constructor(environmentId: string, workspaceId: string) {
+    const ext = getFileExtension(environmentId);
+    super(`New file name (.${ext})`);
+    this.environmentId = environmentId;
+    this.workspaceId = workspaceId;
+  }
+
+  protected placeholder(): string {
+    return `filename.${getFileExtension(this.environmentId)}`;
+  }
+
+  protected emptyValueMessage(): string {
+    return "File name cannot be empty.";
+  }
+
+  protected async process(trimmed: string): Promise<PromptProcessResult<string>> {
+    const path = normalizeFileName(trimmed, this.environmentId);
+    if (await workspaceEntryExists(this.workspaceId, path)) {
+      return {
+        status: "retry",
+        label: `"${path}" already exists.`,
+        initialValue: trimmed,
+      };
+    }
+    return { status: "done", value: path };
+  }
+}
+
+/**
+ * This function is used to prompt the user for a file name.
+ * @param environmentId - The ID of the environment.
+ * @param workspaceId - The ID of the workspace.
+ * @returns The file name.
+ */
+export async function requireFileName(
+  environmentId: string,
+  workspaceId: string,
+): Promise<string | null> {
+  return new FileNamePrompt(environmentId, workspaceId).run();
+}

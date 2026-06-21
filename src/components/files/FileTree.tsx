@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
@@ -6,6 +6,8 @@ import {
 } from "../../core/workspace/externalFileDrop";
 import {
   clearFileTreeDropTarget,
+  getFileTreeDropTarget,
+  subscribeFileTreeDropTarget,
   updateFileTreeDropTargetFromDrag,
 } from "../../core/workspace/fileTreeDropTarget";
 import {
@@ -13,11 +15,11 @@ import {
   clearFileDragData,
   getActiveDragPayload,
   hasFileDrag,
+  isFileTreeDragActive,
   readFileDragData,
   setFileTreeDragActive,
+  subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
-import { useFileTreeDragActive } from "../../hooks/useFileTreeDragActive";
-import { useFileTreeDropTarget } from "../../hooks/useFileTreeDropTarget";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
@@ -33,6 +35,9 @@ interface SidebarMenuState {
   y: number;
 }
 
+/**
+ * This component is used to display the file tree.
+ */
 export function FileTree() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const workspaceId = workspace?.id ?? "";
@@ -44,9 +49,17 @@ export function FileTree() {
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
   const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
-  const dropTargetPath = useFileTreeDropTarget();
+  const dropTargetPath = useSyncExternalStore(
+    subscribeFileTreeDropTarget,
+    getFileTreeDropTarget,
+    getFileTreeDropTarget,
+  );
   const rootDropTarget = dropTargetPath === "";
-  const isDragging = useFileTreeDragActive();
+  const isDragging = useSyncExternalStore(
+    subscribeFileTreeDragActive,
+    isFileTreeDragActive,
+    isFileTreeDragActive,
+  );
 
   useEffect(() => {
     const onDragEnd = () => {

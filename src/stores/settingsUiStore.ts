@@ -10,6 +10,10 @@ interface SettingsUiStore {
   setTab: (tab: SettingsTab) => void;
 }
 
+/**
+ * The useSettingsUiStore hook.
+ * @returns The useSettingsUiStore hook.
+ */
 export const useSettingsUiStore = create<SettingsUiStore>((set) => ({
   open: false,
   tab: "general",

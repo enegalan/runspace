@@ -8,6 +8,14 @@ interface StatusBarProps {
   lastRunDurationMs: number | null;
 }
 
+/**
+ * Get the status label.
+ * @param status - The status.
+ * @param phase - The phase.
+ * @param exitCode - The exit code.
+ * @param timedOut - Whether the execution timed out.
+ * @returns The status label.
+ */
 function statusLabel(
   status: ExecutionStatus,
   phase: ExecutionPhase | null,
@@ -38,6 +46,11 @@ function statusLabel(
   return "Ready";
 }
 
+/**
+ * Get the status class.
+ * @param status - The status.
+ * @returns The status class.
+ */
 function statusClass(status: ExecutionStatus): string {
   if (status === "running") {
     return "status-bar__item--running";
@@ -51,6 +64,15 @@ function statusClass(status: ExecutionStatus): string {
   return "";
 }
 
+/**
+ * The StatusBar component.
+ * @param status - The status.
+ * @param phase - The phase.
+ * @param exitCode - The exit code.
+ * @param timedOut - Whether the execution timed out.
+ * @param lastRunDurationMs - The last run duration in milliseconds.
+ * @returns The StatusBar component.
+ */
 export function StatusBar({
   status,
   phase,

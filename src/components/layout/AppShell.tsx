@@ -1,23 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { getRunGuardian } from "../../core/execution/runGuardian";
-import { isOnboardingComplete } from "../../core/onboarding/onboardingState";
 import { useExecution } from "../../hooks/useExecution";
 import { useAppBootstrap } from "../../hooks/useAppBootstrap";
-import { useAppShortcuts } from "../../hooks/useAppShortcuts";
-import type { MenuAction } from "../../hooks/useMenuActions";
-import { useMenuActions } from "../../hooks/useMenuActions";
+import { useAppShellActions } from "../../hooks/useAppShellActions";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
-import { useLayoutWidthPreview } from "../../hooks/useLayoutWidthPreview";
-import { clamp } from "../../core/clamp";
-import {
-  OUTPUT_WIDTH_MAX,
-  OUTPUT_WIDTH_MIN,
-  SIDEBAR_WIDTH_MAX,
-  SIDEBAR_WIDTH_MIN,
-  TERMINAL_HEIGHT_MAX,
-  TERMINAL_HEIGHT_MIN,
-} from "../../core/layout/panelLayout";
+import { useOnboardingVisibility } from "../../hooks/useOnboardingVisibility";
+import { usePanelLayoutHandlers } from "../../hooks/usePanelLayoutHandlers";
+import { useRunOnTabChange } from "../../hooks/useRunOnTabChange";
 import { isTauri } from "../../core/platform/isTauri";
 import { appShellDesktopClass, isMacOS } from "../../core/platform/windowChrome";
 import { EditorTabs } from "../editor/EditorTabs";
@@ -25,7 +15,6 @@ import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useSettingsStore, getAppSettings } from "../../stores/settingsStore";
 import { useSettingsUiStore } from "../../stores/settingsUiStore";
-import { useTerminalStore } from "../../stores/terminalStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { AboutDialog } from "../about/AboutDialog";
 import { KeyboardShortcutsDialog } from "../about/KeyboardShortcutsDialog";
@@ -40,17 +29,16 @@ import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 import { AppLoadingScreen } from "./AppLoadingScreen";
 
+/**
+ * The AppShell component.
+ * @returns The AppShell component.
+ */
 export function AppShell() {
   const workspace = useWorkspaceStore((state) => state.workspace);
-  const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
-  const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
-  const tabChangeReadyRef = useRef(false);
-  const prevActivePathRef = useRef<string | null>(null);
-  const hasEnteredMainShell = useRef(
-    useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
-  );
+  const mainRowRef = useRef<HTMLDivElement>(null);
 
   const { appReady } = useAppBootstrap();
+  const { showWelcome } = useOnboardingVisibility();
 
   const tabsLoaded = useEditorTabsStore((state) => state.loaded);
   const activePath = useEditorTabsStore((state) => state.activePath);
@@ -89,32 +77,38 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const { disabled: runDisabled, reason: runDisabledReason } = useMemo(
+  const runGuardian = useMemo(
     () =>
       getRunGuardian({
         workspace,
+        environmentId: selectedId,
         selectedEnvironment,
         activePath,
       }),
-    [workspace, selectedEnvironment, activePath],
+    [workspace, selectedEnvironment, activePath, selectedId],
   );
+  const runDisabled = runGuardian.disabled;
+  const runDisabledReason = runGuardian.disabled ? runGuardian.reason : undefined;
 
   const isRunning = status === "running";
 
-  useEffect(() => {
-    if (workspace !== null || onboardingComplete || isOnboardingComplete()) {
-      hasEnteredMainShell.current = true;
-    }
-  }, [workspace, onboardingComplete]);
-
   const handleRun = useCallback(() => {
     void (async () => {
-      const workspaceState = useWorkspaceStore.getState().workspace;
-      const environmentId = useEnvironmentStore.getState().selectedId;
-      const filePath = useEditorTabsStore.getState().activePath;
-      if (!environmentId || !workspaceState || !filePath) {
+      const guardian = getRunGuardian({
+        workspace: useWorkspaceStore.getState().workspace,
+        environmentId: useEnvironmentStore.getState().selectedId,
+        selectedEnvironment: useEnvironmentStore
+          .getState()
+          .environments.find(
+            (env) => env.definition.id === useEnvironmentStore.getState().selectedId,
+          ),
+        activePath: useEditorTabsStore.getState().activePath,
+      });
+      if (guardian.disabled) {
         return;
       }
+
+      const { environmentId, workspace: workspaceState, filePath } = guardian.snapshot;
 
       await useEditorTabsStore.getState().saveActiveFile();
       if (
@@ -135,205 +129,50 @@ export function AppShell() {
     })();
   }, [run]);
 
-  useEffect(() => {
-    if (!tabsLoaded) {
-      return;
-    }
-    if (!tabChangeReadyRef.current) {
-      tabChangeReadyRef.current = true;
-      prevActivePathRef.current = activePath;
-      return;
-    }
-    if (prevActivePathRef.current === activePath) {
-      return;
-    }
-    prevActivePathRef.current = activePath;
-    void (async () => {
-      if (isRunning) {
-        await stop();
-      }
-      clear();
-      if (executionSettings.runOnTabChange && activePath && !runDisabled) {
-        handleRun();
-      }
-    })();
-  }, [
+  useRunOnTabChange({
     tabsLoaded,
     activePath,
-    clear,
-    stop,
     isRunning,
-    executionSettings.runOnTabChange,
+    runOnTabChange: executionSettings.runOnTabChange,
     runDisabled,
     handleRun,
-  ]);
+    stop,
+    clear,
+  });
 
-  const mainRowRef = useRef<HTMLDivElement>(null);
+  const {
+    previewSidebarWidth,
+    previewOutputWidth,
+    handleSidebarWidthChange,
+    handleOutputWidthChange,
+    handleTerminalHeightChange,
+    handleToggleTerminal,
+    handleToggleSidebar,
+    handleToggleOutput,
+  } = usePanelLayoutHandlers({
+    mainRowRef,
+    layoutSettings,
+    updateSettings,
+  });
 
-  const { preview: previewSidebarWidth, clearPreview: clearSidebarWidthPreview } =
-    useLayoutWidthPreview(
-      mainRowRef,
-      "--rs-sidebar-width-preview",
-      SIDEBAR_WIDTH_MIN,
-      SIDEBAR_WIDTH_MAX,
-    );
-
-  const { preview: previewOutputWidth, clearPreview: clearOutputWidthPreview } =
-    useLayoutWidthPreview(
-      mainRowRef,
-      "--rs-output-width-preview",
-      OUTPUT_WIDTH_MIN,
-      OUTPUT_WIDTH_MAX,
-    );
-
-  const handleSidebarWidthChange = useCallback(
-    (width: number) => {
-      clearSidebarWidthPreview();
-      void updateSettings({
-        layout: {
-          sidebarWidth: clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
-        },
-      });
-    },
-    [clearSidebarWidthPreview, updateSettings],
-  );
-
-  const handleOutputWidthChange = useCallback(
-    (width: number) => {
-      clearOutputWidthPreview();
-      void updateSettings({
-        layout: {
-          outputWidth: clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
-        },
-      });
-    },
-    [clearOutputWidthPreview, updateSettings],
-  );
-
-  const handleTerminalHeightChange = useCallback(
-    (height: number) => {
-      void updateSettings({
-        layout: {
-          terminalHeight: clamp(height, TERMINAL_HEIGHT_MIN, TERMINAL_HEIGHT_MAX),
-        },
-      });
-    },
-    [updateSettings],
-  );
-
-  const handleToggleTerminal = useCallback(() => {
-    void updateSettings({
-      layout: { terminalVisible: !layoutSettings.terminalVisible },
-    });
-  }, [layoutSettings.terminalVisible, updateSettings]);
-
-  const handleToggleSidebar = useCallback(() => {
-    void updateSettings({
-      layout: { sidebarVisible: !layoutSettings.sidebarVisible },
-    });
-  }, [layoutSettings.sidebarVisible, updateSettings]);
-
-  const handleToggleOutput = useCallback(() => {
-    void updateSettings({
-      layout: { outputVisible: !layoutSettings.outputVisible },
-    });
-  }, [layoutSettings.outputVisible, updateSettings]);
-
-  const handleSave = useCallback(
-    (autoRun = false) => {
-      if (!autoRun && executionSettings.runOnSave && !runDisabled && !isRunning) {
-        handleRun();
-        return;
-      }
-      void useEditorTabsStore.getState().saveActiveFile();
-    },
-    [executionSettings.runOnSave, runDisabled, isRunning, handleRun],
-  );
-
-  const handleNewTerminal = useCallback(() => {
-    if (!workspace || !selectedId || !selectedEnvironment?.configured) {
-      return;
-    }
-    void updateSettings({
-      layout: { terminalVisible: true },
-    });
-    useTerminalStore.getState().addTab(workspace.id, selectedId);
-  }, [workspace, selectedId, selectedEnvironment?.configured, updateSettings]);
-
-  const handleMenuAction = useCallback(
-    (action: MenuAction) => {
-      switch (action) {
-        case "about":
-          setAboutOpen(true);
-          break;
-        case "keyboard_shortcuts":
-          setShortcutsOpen(true);
-          break;
-        case "settings":
-          openSettings();
-          break;
-        case "new_file":
-          void createAndOpenFile();
-          break;
-        case "new_folder":
-          void createNewFolder();
-          break;
-        case "save":
-          handleSave();
-          break;
-        case "run":
-          if (!runDisabled) {
-            handleRun();
-          }
-          break;
-        case "stop":
-          stop();
-          break;
-        case "clear_output":
-          clear();
-          break;
-        case "toggle_sidebar":
-          handleToggleSidebar();
-          break;
-        case "toggle_output":
-          handleToggleOutput();
-          break;
-        case "new_terminal":
-          handleNewTerminal();
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      createAndOpenFile,
-      createNewFolder,
-      handleSave,
-      handleRun,
-      runDisabled,
-      stop,
-      clear,
-      handleToggleSidebar,
-      handleToggleOutput,
-      handleNewTerminal,
-      openSettings,
-    ],
-  );
-
-  useMenuActions({ onAction: handleMenuAction });
-
-  useAppShortcuts({
-    onRun: handleRun,
-    onStop: stop,
-    onSave: handleSave,
-    onNewFile: () => void createAndOpenFile(),
-    onNewFolder: () => void createNewFolder(),
-    onNewTerminal: handleNewTerminal,
-    onOpenSettings: () => openSettings(),
-    onToggleSidebar: handleToggleSidebar,
-    onToggleOutput: handleToggleOutput,
-    isRunning,
+  const { handleSave } = useAppShellActions({
+    workspace,
+    selectedId,
+    selectedEnvironment,
     runDisabled,
+    isRunning,
+    runOnSave: executionSettings.runOnSave,
+    updateSettings,
+    createAndOpenFile,
+    createNewFolder,
+    handleRun,
+    stop,
+    clear,
+    handleToggleSidebar,
+    handleToggleOutput,
+    openSettings,
+    setAboutOpen,
+    setShortcutsOpen,
   });
 
   if (!appReady) {
@@ -350,12 +189,6 @@ export function AppShell() {
       </div>
     );
   }
-
-  const showWelcome =
-    onboardingRequired &&
-    !onboardingComplete &&
-    !isOnboardingComplete() &&
-    !hasEnteredMainShell.current;
 
   if (showWelcome) {
     return (

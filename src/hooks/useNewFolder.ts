@@ -1,8 +1,11 @@
 import { useCallback } from "react";
-import { workspaceEntryExists } from "../core/workspace/workspaceEntryExists";
-import { useDialogStore } from "../stores/dialogStore";
+import { requireFolderName } from "../core/workspace/prompts/folderNamePrompt";
 import { useWorkspaceStore } from "../stores/workspaceStore";
 
+/**
+ * The useNewFolder hook.
+ * @returns The useNewFolder hook.
+ */
 export function useNewFolder() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const createFolder = useWorkspaceStore((state) => state.createFolder);
@@ -12,26 +15,12 @@ export function useNewFolder() {
       return;
     }
 
-    let label = "New folder name";
-    let initialValue = "";
-
-    while (true) {
-      const raw = await useDialogStore.getState().askPrompt(label, {
-        initialValue,
-        validate: (value) => (value.trim() ? null : "Folder name cannot be empty."),
-      });
-      if (raw === null) {
-        return;
-      }
-      const trimmed = raw.trim();
-      if (await workspaceEntryExists(workspace.id, trimmed)) {
-        label = `"${trimmed}" already exists.`;
-        initialValue = trimmed;
-        continue;
-      }
-      await createFolder(trimmed);
+    const path = await requireFolderName(workspace.id);
+    if (!path) {
       return;
     }
+
+    await createFolder(path);
   }, [createFolder, workspace]);
 
   return { createNewFolder };

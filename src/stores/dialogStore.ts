@@ -38,6 +38,10 @@ interface DialogStore {
   answerConfirm: (confirmed: boolean) => void;
 }
 
+/**
+ * The useDialogStore hook.
+ * @returns The useDialogStore hook.
+ */
 export const useDialogStore = create<DialogStore>((set, get) => ({
   prompt: null,
   confirm: null,

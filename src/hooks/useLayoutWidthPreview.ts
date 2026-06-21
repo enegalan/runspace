@@ -1,6 +1,14 @@
 import { useCallback, type RefObject } from "react";
 import { clamp } from "../core/clamp";
 
+/**
+ * The useLayoutWidthPreview hook.
+ * @param containerRef - The container ref.
+ * @param cssVariable - The CSS variable.
+ * @param min - The minimum width.
+ * @param max - The maximum width.
+ * @returns The useLayoutWidthPreview hook.
+ */
 export function useLayoutWidthPreview(
   containerRef: RefObject<HTMLElement | null>,
   cssVariable: string,

@@ -6,6 +6,11 @@ interface EnvironmentIndicatorProps {
   onOpenPicker: () => void;
 }
 
+/**
+ * The EnvironmentIndicator component.
+ * @param onOpenPicker - The function to call when the environment picker is opened.
+ * @returns The EnvironmentIndicator component.
+ */
 export function EnvironmentIndicator({ onOpenPicker }: EnvironmentIndicatorProps) {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
   const environments = useEnvironmentStore((state) => state.environments);

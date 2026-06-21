@@ -5,6 +5,15 @@ interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"
   description?: string;
 }
 
+/**
+ * The Toggle component.
+ * @param label - The label.
+ * @param description - The description.
+ * @param className - The class name.
+ * @param id - The ID.
+ * @param props - The props.
+ * @returns The Toggle component.
+ */
 export function Toggle({ label, description, className = "", id, ...props }: ToggleProps) {
   const inputId = id ?? `toggle-${label.replace(/\s+/g, "-").toLowerCase()}`;
 

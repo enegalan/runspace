@@ -4,13 +4,18 @@ import { waitForBackendReady } from "../core/api/fetchBackend";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { syncOnboardingFromSession } from "../core/onboarding/onboardingState";
 import { isTauri } from "../core/platform/isTauri";
-import { flushSessionState } from "../core/workspace/flushSession";
-import type { SessionData, WorkspaceInfo } from "../core/types/workspace";
+import type { SessionData } from "../core/types/workspace";
 import type { EnvironmentId } from "../core/types/environment";
 import { useEditorTabsStore } from "../stores/editorTabsStore";
 import { useEnvironmentStore } from "../stores/environmentStore";
 import { useWorkspaceStore } from "../stores/workspaceStore";
 
+/**
+ * This hook is used to bootstrap the app.
+ * It is used to load the backend, the environments, the workspaces, and the editor tabs.
+ * It is also used to flush the session state when the app is hidden.
+ * It is also used to destroy the app when the window is closed.
+ */
 export function useAppBootstrap() {
   const bootstrapStarted = useRef(false);
   const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
@@ -82,16 +87,7 @@ export function useAppBootstrap() {
         console.error("App bootstrap failed:", error);
         try {
           const runtimeId = useEnvironmentStore.getState().selectedId;
-          const active = await runspaceInvoke<WorkspaceInfo | null>("get_active_workspace");
-          if (active) {
-            useWorkspaceStore.setState({ workspace: active, loaded: true });
-            if (runtimeId) {
-              await useWorkspaceStore.getState().loadWorkspaces(runtimeId);
-              await useWorkspaceStore.getState().refreshFiles();
-            }
-          } else {
-            useWorkspaceStore.setState({ loaded: true });
-          }
+          await useWorkspaceStore.getState().recoverFromFailure(runtimeId);
         } catch (recoveryError) {
           console.error("Workspace recovery failed:", recoveryError);
           useWorkspaceStore.setState({ loaded: true });
@@ -146,4 +142,18 @@ export function useAppBootstrap() {
   }, []);
 
   return { appReady };
+}
+
+/**
+ * This function is used to flush the session state when the app is hidden.
+ * It is used to save the active file and persist the session state.
+ */
+async function flushSessionState(): Promise<void> {
+  const workspace = useWorkspaceStore.getState().workspace;
+  if (!workspace) {
+    return;
+  }
+
+  await useEditorTabsStore.getState().saveActiveFile();
+  await useEditorTabsStore.getState().persistForEnvironment(workspace.runtime_id, workspace.id);
 }

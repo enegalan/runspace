@@ -12,6 +12,13 @@ interface ShortcutRecorderProps {
   testId?: string;
 }
 
+/**
+ * The ShortcutRecorder component.
+ * @param value - The value.
+ * @param onChange - The function to call when the value changes.
+ * @param testId - The test ID.
+ * @returns The ShortcutRecorder component.
+ */
 export function ShortcutRecorder({ value, onChange, testId }: ShortcutRecorderProps) {
   const [recording, setRecording] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);

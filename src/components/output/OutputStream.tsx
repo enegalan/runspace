@@ -12,6 +12,17 @@ interface OutputStreamProps {
   autoScrollEnabled: boolean;
 }
 
+/**
+ * The OutputStream component.
+ * @param stdout - The stdout.
+ * @param stderr - The stderr.
+ * @param error - The error.
+ * @param timedOut - Whether the execution timed out.
+ * @param isRunning - Whether the execution is running.
+ * @param phase - The phase.
+ * @param autoScrollEnabled - Whether the auto scroll is enabled.
+ * @returns The OutputStream component.
+ */
 export function OutputStream({
   stdout,
   stderr,

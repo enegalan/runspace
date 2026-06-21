@@ -19,10 +19,19 @@ interface EnvironmentStore {
 
 type EnvironmentState = Pick<EnvironmentStore, "environments" | "available" | "selectedId">;
 
+/**
+ * The selectedIdFrom function.
+ * @param selected - The selected environment.
+ * @returns The selected ID.
+ */
 function selectedIdFrom(selected: Environment | null): EnvironmentId | null {
   return (selected?.definition.id as EnvironmentId | undefined) ?? null;
 }
 
+/**
+ * The fetchEnvironmentState function.
+ * @returns The environment state.
+ */
 async function fetchEnvironmentState(): Promise<EnvironmentState> {
   const [environments, available, selected] = await Promise.all([
     runspaceInvoke<Environment[]>("list_environments"),
@@ -37,6 +46,10 @@ async function fetchEnvironmentState(): Promise<EnvironmentState> {
   };
 }
 
+/**
+ * The useEnvironmentStore hook.
+ * @returns The useEnvironmentStore hook.
+ */
 export const useEnvironmentStore = create<EnvironmentStore>((set, get) => ({
   environments: [],
   available: [],

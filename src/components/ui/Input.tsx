@@ -5,6 +5,15 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
+/**
+ * The Input component.
+ * @param label - The label.
+ * @param error - The error.
+ * @param className - The class name.
+ * @param id - The ID.
+ * @param props - The props.
+ * @returns The Input component.
+ */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { label, error, className = "", id, ...props },
   ref,

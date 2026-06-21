@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { clamp } from "../core/clamp";
+import { useDragResize, type DragResizeOptions } from "./useDragResize";
 
 type ResizeSide = "left" | "right";
 
@@ -9,72 +8,25 @@ interface PointerDragResizeOptions {
   side: ResizeSide;
 }
 
+/**
+ * The usePointerDragResize hook.
+ * @param size - The size.
+ * @param options - The options.
+ * @param onChange - The function to call when the value changes.
+ * @param onCommit - The function to call when the value is committed.
+ * @returns The usePointerDragResize hook.
+ */
 export function usePointerDragResize(
   size: number,
   options: PointerDragResizeOptions,
   onChange: (value: number) => void,
   onCommit: (value: number) => void,
 ) {
-  const [currentSize, setCurrentSize] = useState(size);
-  const sizeRef = useRef(size);
-  const isDraggingRef = useRef(false);
-
-  useEffect(() => {
-    if (!isDraggingRef.current) {
-      sizeRef.current = size;
-      setCurrentSize(size);
-    }
-  }, [size]);
-
-  const onPointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      if (event.button !== 0) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const startX = event.clientX;
-      const startSize = sizeRef.current;
-      const target = event.currentTarget;
-      isDraggingRef.current = true;
-      target.setPointerCapture(event.pointerId);
-      target.classList.add("resize-handle--active");
-
-      const onPointerMove = (moveEvent: PointerEvent) => {
-        const delta = moveEvent.clientX - startX;
-        const next = options.side === "right" ? startSize + delta : startSize - delta;
-        const clamped = clamp(next, options.min, options.max);
-        sizeRef.current = clamped;
-        setCurrentSize(clamped);
-        onChange(clamped);
-      };
-
-      const finish = () => {
-        isDraggingRef.current = false;
-        onCommit(sizeRef.current);
-        target.removeEventListener("pointermove", onPointerMove);
-        target.removeEventListener("pointerup", onPointerUp);
-        target.removeEventListener("pointercancel", onPointerUp);
-      };
-
-      const onPointerUp = (upEvent: PointerEvent) => {
-        try {
-          if (target.hasPointerCapture(upEvent.pointerId)) {
-            target.releasePointerCapture(upEvent.pointerId);
-          }
-        } finally {
-          target.classList.remove("resize-handle--active");
-          finish();
-        }
-      };
-
-      target.addEventListener("pointermove", onPointerMove);
-      target.addEventListener("pointerup", onPointerUp);
-      target.addEventListener("pointercancel", onPointerUp);
-    },
-    [onChange, onCommit, options.max, options.min, options.side],
-  );
-
-  return { currentSize, onPointerDown };
+  const dragOptions: DragResizeOptions = {
+    axis: "horizontal",
+    min: options.min,
+    max: options.max,
+    side: options.side,
+  };
+  return useDragResize(size, dragOptions, onCommit, onChange);
 }

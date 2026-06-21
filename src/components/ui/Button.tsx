@@ -12,6 +12,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
+/**
+ * The variant class.
+ * @returns The variant class.
+ */
 const variantClass: Record<ButtonVariant, string> = {
   primary: "btn--primary",
   secondary: "",
@@ -19,11 +23,27 @@ const variantClass: Record<ButtonVariant, string> = {
   danger: "btn--danger",
 };
 
+/**
+ * The size class.
+ * @returns The size class.
+ */
 const sizeClass: Record<ButtonSize, string> = {
   sm: "btn--sm",
   md: "btn--md",
 };
 
+/**
+ * The Button component.
+ * @param variant - The variant.
+ * @param size - The size.
+ * @param shortcut - The shortcut.
+ * @param dangerActive - The danger active.
+ * @param className - The class name.
+ * @param type - The type.
+ * @param children - The children.
+ * @param props - The props.
+ * @returns The Button component.
+ */
 export function Button({
   variant = "secondary",
   size = "md",

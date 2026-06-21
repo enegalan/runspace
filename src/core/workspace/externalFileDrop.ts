@@ -2,8 +2,17 @@ import { hasFileDrag } from "./fileTreeDrag";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
+/**
+ * The attribute for the drop target.
+ * @returns The attribute for the drop target.
+ */
 export const DROP_TARGET_ATTR = "data-drop-dir";
 
+/**
+ * Checks if the data transfer has external file drag.
+ * @param dataTransfer - The data transfer to check.
+ * @returns `true` if the data transfer has external file drag, `false` otherwise.
+ */
 export function hasExternalFileDrag(dataTransfer: DataTransfer): boolean {
   if (hasFileDrag(dataTransfer.types)) {
     return false;
@@ -11,10 +20,20 @@ export function hasExternalFileDrag(dataTransfer: DataTransfer): boolean {
   return Array.from(dataTransfer.types).includes("Files") || dataTransfer.files.length > 0;
 }
 
+/**
+ * Gets the external files from the data transfer.
+ * @param dataTransfer - The data transfer to get the external files from.
+ * @returns The external files.
+ */
 export function getExternalFiles(dataTransfer: DataTransfer): File[] {
   return Array.from(dataTransfer.files);
 }
 
+/**
+ * Reads the file as text.
+ * @param file - The file to read.
+ * @returns The file as text.
+ */
 export function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -28,11 +47,23 @@ export function readFileAsText(file: File): Promise<string> {
   });
 }
 
+/**
+ * Picks the imported file to open.
+ * @param paths - The paths to pick the imported file to open from.
+ * @returns The imported file to open, or `null` if there is no imported file to open.
+ */
 export function pickImportedFileToOpen(paths: string[]): string | null {
   const file = paths.find((path) => !path.endsWith("/"));
   return file ?? null;
 }
 
+/**
+ * Imports the dropped external files.
+ * @param dataTransfer - The data transfer to import the dropped external files from.
+ * @param targetDir - The target directory to import the dropped external files to.
+ * @param options - The options for the import.
+ * @returns The imported files.
+ */
 export async function importDroppedExternalFiles(
   dataTransfer: DataTransfer,
   targetDir: string,

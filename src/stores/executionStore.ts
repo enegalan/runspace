@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { ExecutionPhase, ExecutionStatus } from "../core/types/execution";
 
-export interface ExecutionState {
+interface ExecutionState {
   status: ExecutionStatus;
   phase: ExecutionPhase | null;
   stdout: string;
@@ -21,6 +21,10 @@ export interface ExecutionState {
   setError: (message: string) => void;
 }
 
+/**
+ * The initial state.
+ * @returns The initial state.
+ */
 const initialState = {
   status: "idle" as ExecutionStatus,
   phase: null as ExecutionPhase | null,
@@ -34,6 +38,13 @@ const initialState = {
   lastRunDurationMs: null as number | null,
 };
 
+/**
+ * The resolveStatus function.
+ * @param exitCode - The exit code.
+ * @param timedOut - Whether the execution timed out.
+ * @param compileFailed - Whether the execution failed to compile.
+ * @returns The status.
+ */
 function resolveStatus(
   exitCode: number | null,
   timedOut: boolean,
@@ -48,6 +59,10 @@ function resolveStatus(
   return "success";
 }
 
+/**
+ * The useExecutionStore hook.
+ * @returns The useExecutionStore hook.
+ */
 export const useExecutionStore = create<ExecutionState>((set, get) => ({
   ...initialState,
 

@@ -3,6 +3,10 @@ export interface RuntimePresentation {
   accent: string;
 }
 
+/**
+ * The runtime presentation.
+ * @returns The runtime presentation.
+ */
 const RUNTIME_PRESENTATION: Record<string, RuntimePresentation> = {
   nodejs: { label: "Node.js", accent: "#3c873a" },
   php: { label: "PHP", accent: "#8892bf" },
@@ -14,6 +18,11 @@ const RUNTIME_PRESENTATION: Record<string, RuntimePresentation> = {
   symfony: { label: "Symfony", accent: "#000000" },
 };
 
+/**
+ * Gets the runtime presentation for the given runtime ID.
+ * @param runtimeId - The runtime ID to get the presentation for.
+ * @returns The runtime presentation.
+ */
 export function getRuntimePresentation(runtimeId: string): RuntimePresentation {
   return (
     RUNTIME_PRESENTATION[runtimeId] ?? {

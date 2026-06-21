@@ -20,12 +20,21 @@ interface SettingsStore {
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let saveGeneration = 0;
 
+/**
+ * The persistSettings function.
+ * @param settings - The settings.
+ * @returns The persisted settings.
+ */
 async function persistSettings(settings: AppSettingsPatch | AppSettings): Promise<AppSettings> {
   const payload = settings as unknown as Record<string, unknown>;
   const args = shouldUseHttpApi() ? payload : { patch: payload };
   return runspaceInvoke<AppSettings>("update_settings", args);
 }
 
+/**
+ * The useSettingsStore hook.
+ * @returns The useSettingsStore hook.
+ */
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: DEFAULT_APP_SETTINGS,
   loaded: false,
@@ -93,6 +102,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 }));
 
+/**
+ * The getAppSettings function.
+ * @returns The app settings.
+ */
 export function getAppSettings(): AppSettings {
   return useSettingsStore.getState().settings;
 }
