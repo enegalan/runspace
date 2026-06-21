@@ -102,7 +102,10 @@ describe("settingsStore", () => {
       });
       await vi.advanceTimersByTimeAsync(300);
 
-      resolveFirst?.({
+      expect(mockedInvoke).toHaveBeenCalledTimes(2);
+      expect(resolveFirst).toBeDefined();
+
+      resolveFirst!({
         ...DEFAULT_APP_SETTINGS,
         editor: { ...DEFAULT_APP_SETTINGS.editor, tabSize: 4 },
       });
