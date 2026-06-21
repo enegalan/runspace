@@ -18,6 +18,7 @@ interface SettingsStore {
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let saveGeneration = 0;
 
 async function persistSettings(settings: AppSettingsPatch | AppSettings): Promise<AppSettings> {
   const payload = settings as unknown as Record<string, unknown>;
@@ -47,6 +48,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       applyAppSettings(next);
     }
 
+    const generation = ++saveGeneration;
+
     if (saveTimer) {
       clearTimeout(saveTimer);
     }
@@ -55,6 +58,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       saveTimer = null;
       void persistSettings(get().settings)
         .then((saved) => {
+          if (generation !== saveGeneration) {
+            return;
+          }
           set({ settings: normalizeAppSettings(saved) });
         })
         .catch(() => {
@@ -69,12 +75,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       saveTimer = null;
     }
 
+    const generation = ++saveGeneration;
     const next = normalizeAppSettings(DEFAULT_APP_SETTINGS);
     set({ settings: next });
     applyAppSettings(next);
 
     try {
       const saved = normalizeAppSettings(await persistSettings(DEFAULT_APP_SETTINGS));
+      if (generation !== saveGeneration) {
+        return;
+      }
       set({ settings: saved });
       applyAppSettings(saved);
     } catch {

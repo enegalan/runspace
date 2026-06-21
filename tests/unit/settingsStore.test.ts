@@ -5,6 +5,7 @@ import {
   normalizeAppSettings,
 } from "../../src/core/constants/settingsDefaults";
 import { applyAppSettings } from "../../src/core/settings/applyAppSettings";
+import type { AppSettings } from "../../src/core/types/settings";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 
 vi.mock("../../src/core/api/runspaceInvoke", () => ({
@@ -71,6 +72,40 @@ describe("settingsStore", () => {
         }),
       }),
     );
+
+    vi.useRealTimers();
+  });
+
+  it("ignores stale persist responses from earlier save cycles", async () => {
+    vi.useFakeTimers();
+    let resolveFirst: ((value: AppSettings) => void) | undefined;
+    const firstPersist = new Promise<AppSettings>((resolve) => {
+      resolveFirst = resolve;
+    });
+
+    mockedInvoke
+      .mockImplementationOnce(() => firstPersist)
+      .mockImplementationOnce(async (_cmd, payload) => {
+        return normalizeAppSettings(payload as AppSettings);
+      });
+
+    await useSettingsStore.getState().update({
+      editor: { tabSize: 4 },
+    });
+    await vi.advanceTimersByTimeAsync(300);
+
+    await useSettingsStore.getState().update({
+      editor: { tabSize: 2 },
+    });
+    await vi.advanceTimersByTimeAsync(300);
+
+    resolveFirst?.({
+      ...DEFAULT_APP_SETTINGS,
+      editor: { ...DEFAULT_APP_SETTINGS.editor, tabSize: 4 },
+    });
+    await Promise.resolve();
+
+    expect(useSettingsStore.getState().settings.editor.tabSize).toBe(2);
 
     vi.useRealTimers();
   });
