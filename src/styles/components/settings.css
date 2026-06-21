@@ -573,12 +573,14 @@
   outline-offset: 2px;
 }
 
-/* Environments tab */
+/* Settings search */
 
+.settings-search,
 .environment-search {
   margin-bottom: var(--rs-space-4);
 }
 
+.settings-search__input,
 .environment-search__input {
   width: 100%;
   padding: var(--rs-space-2) var(--rs-space-3);
@@ -590,10 +592,20 @@
   font-family: inherit;
 }
 
+.settings-search__input:focus,
 .environment-search__input:focus {
   outline: none;
   border-color: var(--rs-accent);
 }
+
+.general-settings__empty {
+  margin: 0;
+  padding: var(--rs-space-3) var(--rs-space-4);
+  color: var(--rs-text-muted);
+  font-size: var(--rs-font-size-sm);
+}
+
+/* Environments tab */
 
 .environments-settings__search {
   margin-bottom: var(--rs-space-5);
