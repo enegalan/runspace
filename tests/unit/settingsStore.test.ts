@@ -47,6 +47,34 @@ describe("settingsStore", () => {
     expect(useSettingsStore.getState().settings.execution.runTimeoutSecs).toBe(30);
   });
 
+  it("persists merged layout sizes after rapid panel resizes", async () => {
+    vi.useFakeTimers();
+    mockedInvoke.mockImplementation(async (_cmd, payload) => {
+      return normalizeAppSettings(payload as typeof DEFAULT_APP_SETTINGS);
+    });
+
+    await useSettingsStore.getState().update({
+      layout: { sidebarWidth: 350 },
+    });
+    await useSettingsStore.getState().update({
+      layout: { outputWidth: 420 },
+    });
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(mockedInvoke).toHaveBeenCalledWith(
+      "update_settings",
+      expect.objectContaining({
+        layout: expect.objectContaining({
+          sidebarWidth: 350,
+          outputWidth: 420,
+        }),
+      }),
+    );
+
+    vi.useRealTimers();
+  });
+
   it("resets all settings to defaults", async () => {
     useSettingsStore.setState({
       settings: mergeAppSettings(DEFAULT_APP_SETTINGS, {

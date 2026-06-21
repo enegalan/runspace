@@ -1,5 +1,6 @@
 import { applyAppSettings } from "../core/settings/applyAppSettings";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
+import { shouldUseHttpApi } from "../core/api/backendTransport";
 import {
   DEFAULT_APP_SETTINGS,
   mergeAppSettings,
@@ -18,11 +19,10 @@ interface SettingsStore {
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-async function persistSettings(patch: AppSettingsPatch | AppSettings): Promise<AppSettings> {
-  return runspaceInvoke<AppSettings>(
-    "update_settings",
-    patch as unknown as Record<string, unknown>,
-  );
+async function persistSettings(settings: AppSettingsPatch | AppSettings): Promise<AppSettings> {
+  const payload = settings as unknown as Record<string, unknown>;
+  const args = shouldUseHttpApi() ? payload : { patch: payload };
+  return runspaceInvoke<AppSettings>("update_settings", args);
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -52,20 +52,24 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
 
     saveTimer = setTimeout(() => {
-      void persistSettings(patch).then((saved) => {
-        set({ settings: normalizeAppSettings(saved) });
-      });
+      saveTimer = null;
+      void persistSettings(get().settings)
+        .then((saved) => {
+          set({ settings: normalizeAppSettings(saved) });
+        })
+        .catch(() => {
+          // Keep local state when persistence fails.
+        });
     }, 300);
   },
 
   reset: async () => {
-    const next = normalizeAppSettings(DEFAULT_APP_SETTINGS);
-
     if (saveTimer) {
       clearTimeout(saveTimer);
       saveTimer = null;
     }
 
+    const next = normalizeAppSettings(DEFAULT_APP_SETTINGS);
     set({ settings: next });
     applyAppSettings(next);
 

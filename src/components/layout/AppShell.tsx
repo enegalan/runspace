@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
 import {
   isOnboardingComplete,
@@ -312,6 +312,22 @@ export function AppShell() {
     [updateSettings],
   );
 
+  const mainRowRef = useRef<HTMLDivElement>(null);
+
+  const previewSidebarWidth = useCallback((width: number) => {
+    mainRowRef.current?.style.setProperty(
+      "--rs-sidebar-width",
+      `${clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX)}px`,
+    );
+  }, []);
+
+  const previewOutputWidth = useCallback((width: number) => {
+    mainRowRef.current?.style.setProperty(
+      "--rs-output-width",
+      `${clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX)}px`,
+    );
+  }, []);
+
   const handleOutputWidthChange = useCallback(
     (width: number) => {
       void updateSettings({
@@ -492,9 +508,14 @@ export function AppShell() {
     .filter(Boolean)
     .join(" ");
 
+  const mainRowStyle = {
+    "--rs-sidebar-width": `${layoutSettings.sidebarWidth}px`,
+    "--rs-output-width": `${layoutSettings.outputWidth}px`,
+  } as CSSProperties;
+
   return (
     <div className={`app-shell${appShellDesktopClass()}`} data-testid="app-shell">
-      <div className={mainRowClass}>
+      <div className={mainRowClass} ref={mainRowRef} style={mainRowStyle}>
         {isTauri() && isMacOS() && (
           <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
         )}
@@ -512,7 +533,11 @@ export function AppShell() {
           onOpenSettings={() => openSettings()}
         />
         {layoutSettings.sidebarVisible && (
-          <Sidebar width={layoutSettings.sidebarWidth} onWidthChange={handleSidebarWidthChange} />
+          <Sidebar
+            width={layoutSettings.sidebarWidth}
+            onWidthChange={previewSidebarWidth}
+            onWidthCommit={handleSidebarWidthChange}
+          />
         )}
         <div className="editor-column">
           {workspace && <EditorTabs inTitlebar={isTauri()} />}
@@ -540,7 +565,8 @@ export function AppShell() {
             timedOut={timedOut}
             error={error}
             width={layoutSettings.outputWidth}
-            onWidthChange={handleOutputWidthChange}
+            onWidthChange={previewOutputWidth}
+            onWidthCommit={handleOutputWidthChange}
             onClear={clear}
             autoScrollEnabled={executionSettings.autoScrollOutput}
           />
