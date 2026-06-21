@@ -11,7 +11,8 @@
 .main-row--desktop .sidebar-shell,
 .main-row--desktop .output-shell {
   height: auto;
-  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 

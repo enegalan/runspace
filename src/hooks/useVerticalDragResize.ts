@@ -8,8 +8,8 @@ interface VerticalDragResizeOptions {
 
 export function useVerticalDragResize(
   size: number,
-  onCommit: (value: number) => void,
   options: VerticalDragResizeOptions,
+  onCommit: (value: number) => void,
 ) {
   const [currentSize, setCurrentSize] = useState(size);
   const sizeRef = useRef(size);

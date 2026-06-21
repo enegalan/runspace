@@ -5,6 +5,7 @@ import {
   normalizeAppSettings,
 } from "../../src/core/constants/settingsDefaults";
 import { applyAppSettings } from "../../src/core/settings/applyAppSettings";
+import type { AppSettings } from "../../src/core/types/settings";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 
 vi.mock("../../src/core/api/runspaceInvoke", () => ({
@@ -45,6 +46,75 @@ describe("settingsStore", () => {
 
     expect(useSettingsStore.getState().settings.editor.tabSize).toBe(4);
     expect(useSettingsStore.getState().settings.execution.runTimeoutSecs).toBe(30);
+  });
+
+  it("persists merged layout sizes after rapid panel resizes", async () => {
+    vi.useFakeTimers();
+    try {
+      mockedInvoke.mockImplementation(async (_cmd, payload) => {
+        return normalizeAppSettings(payload as typeof DEFAULT_APP_SETTINGS);
+      });
+
+      await useSettingsStore.getState().update({
+        layout: { sidebarWidth: 350 },
+      });
+      await useSettingsStore.getState().update({
+        layout: { outputWidth: 420 },
+      });
+
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(mockedInvoke).toHaveBeenCalledWith(
+        "update_settings",
+        expect.objectContaining({
+          layout: expect.objectContaining({
+            sidebarWidth: 350,
+            outputWidth: 420,
+          }),
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("ignores stale persist responses from earlier save cycles", async () => {
+    vi.useFakeTimers();
+    try {
+      let resolveFirst: ((value: AppSettings) => void) | undefined;
+      const firstPersist = new Promise<AppSettings>((resolve) => {
+        resolveFirst = resolve;
+      });
+
+      mockedInvoke
+        .mockImplementationOnce(() => firstPersist)
+        .mockImplementationOnce(async (_cmd, payload) => {
+          return normalizeAppSettings(payload as AppSettings);
+        });
+
+      await useSettingsStore.getState().update({
+        editor: { tabSize: 4 },
+      });
+      await vi.advanceTimersByTimeAsync(300);
+
+      await useSettingsStore.getState().update({
+        editor: { tabSize: 2 },
+      });
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(mockedInvoke).toHaveBeenCalledTimes(2);
+      expect(resolveFirst).toBeDefined();
+
+      resolveFirst!({
+        ...DEFAULT_APP_SETTINGS,
+        editor: { ...DEFAULT_APP_SETTINGS.editor, tabSize: 4 },
+      });
+      await Promise.resolve();
+
+      expect(useSettingsStore.getState().settings.editor.tabSize).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("resets all settings to defaults", async () => {

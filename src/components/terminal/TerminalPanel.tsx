@@ -59,10 +59,14 @@ export function TerminalPanel({
     }
   }, [enabled, ensureDefaultTab, environmentId, workspaceId]);
 
-  const { currentSize, onPointerDown } = useVerticalDragResize(height, onHeightChange, {
-    min: TERMINAL_HEIGHT_MIN,
-    max: TERMINAL_HEIGHT_MAX,
-  });
+  const { currentSize, onPointerDown } = useVerticalDragResize(
+    height,
+    {
+      min: TERMINAL_HEIGHT_MIN,
+      max: TERMINAL_HEIGHT_MAX,
+    },
+    onHeightChange,
+  );
 
   const handleAddTab = useCallback(() => {
     if (!workspaceId || !environmentId) {

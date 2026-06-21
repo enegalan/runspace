@@ -7,14 +7,20 @@ import type { CSSProperties } from "react";
 interface SidebarProps {
   width: number;
   onWidthChange: (width: number) => void;
+  onWidthCommit: (width: number) => void;
 }
 
-export function Sidebar({ width, onWidthChange }: SidebarProps) {
-  const { currentSize, onPointerDown } = usePointerDragResize(width, onWidthChange, {
-    min: SIDEBAR_WIDTH_MIN,
-    max: SIDEBAR_WIDTH_MAX,
-    side: "right",
-  });
+export function Sidebar({ width, onWidthChange, onWidthCommit }: SidebarProps) {
+  const { currentSize, onPointerDown } = usePointerDragResize(
+    width,
+    {
+      min: SIDEBAR_WIDTH_MIN,
+      max: SIDEBAR_WIDTH_MAX,
+      side: "right",
+    },
+    onWidthChange,
+    onWidthCommit,
+  );
 
   const panelStyle = { "--rs-panel-width": `${currentSize}px` } as CSSProperties;
 

@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { waitForBackendReady } from "../../core/api/fetchBackend";
 import {
   isOnboardingComplete,
@@ -301,26 +301,52 @@ export function AppShell() {
     handleRun,
   ]);
 
+  const mainRowRef = useRef<HTMLDivElement>(null);
+
+  const previewSidebarWidth = useCallback((width: number) => {
+    mainRowRef.current?.style.setProperty(
+      "--rs-sidebar-width-preview",
+      `${clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX)}px`,
+    );
+  }, []);
+
+  const previewOutputWidth = useCallback((width: number) => {
+    mainRowRef.current?.style.setProperty(
+      "--rs-output-width-preview",
+      `${clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX)}px`,
+    );
+  }, []);
+
+  const clearSidebarWidthPreview = useCallback(() => {
+    mainRowRef.current?.style.removeProperty("--rs-sidebar-width-preview");
+  }, []);
+
+  const clearOutputWidthPreview = useCallback(() => {
+    mainRowRef.current?.style.removeProperty("--rs-output-width-preview");
+  }, []);
+
   const handleSidebarWidthChange = useCallback(
     (width: number) => {
+      clearSidebarWidthPreview();
       void updateSettings({
         layout: {
           sidebarWidth: clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX),
         },
       });
     },
-    [updateSettings],
+    [clearSidebarWidthPreview, updateSettings],
   );
 
   const handleOutputWidthChange = useCallback(
     (width: number) => {
+      clearOutputWidthPreview();
       void updateSettings({
         layout: {
           outputWidth: clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX),
         },
       });
     },
-    [updateSettings],
+    [clearOutputWidthPreview, updateSettings],
   );
 
   const handleTerminalHeightChange = useCallback(
@@ -492,9 +518,14 @@ export function AppShell() {
     .filter(Boolean)
     .join(" ");
 
+  const mainRowStyle = {
+    "--rs-sidebar-width": `${layoutSettings.sidebarWidth}px`,
+    "--rs-output-width": `${layoutSettings.outputWidth}px`,
+  } as CSSProperties;
+
   return (
     <div className={`app-shell${appShellDesktopClass()}`} data-testid="app-shell">
-      <div className={mainRowClass}>
+      <div className={mainRowClass} ref={mainRowRef} style={mainRowStyle}>
         {isTauri() && isMacOS() && (
           <div className="traffic-light-zone" data-tauri-drag-region aria-hidden="true" />
         )}
@@ -512,7 +543,11 @@ export function AppShell() {
           onOpenSettings={() => openSettings()}
         />
         {layoutSettings.sidebarVisible && (
-          <Sidebar width={layoutSettings.sidebarWidth} onWidthChange={handleSidebarWidthChange} />
+          <Sidebar
+            width={layoutSettings.sidebarWidth}
+            onWidthChange={previewSidebarWidth}
+            onWidthCommit={handleSidebarWidthChange}
+          />
         )}
         <div className="editor-column">
           {workspace && <EditorTabs inTitlebar={isTauri()} />}
@@ -540,7 +575,8 @@ export function AppShell() {
             timedOut={timedOut}
             error={error}
             width={layoutSettings.outputWidth}
-            onWidthChange={handleOutputWidthChange}
+            onWidthChange={previewOutputWidth}
+            onWidthCommit={handleOutputWidthChange}
             onClear={clear}
             autoScrollEnabled={executionSettings.autoScrollOutput}
           />

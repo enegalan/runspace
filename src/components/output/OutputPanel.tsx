@@ -17,6 +17,7 @@ interface OutputPanelProps {
   error: string | null;
   width: number;
   onWidthChange: (width: number) => void;
+  onWidthCommit: (width: number) => void;
   onClear: () => void;
   autoScrollEnabled: boolean;
 }
@@ -30,6 +31,7 @@ export function OutputPanel({
   error,
   width,
   onWidthChange,
+  onWidthCommit,
   onClear,
   autoScrollEnabled,
 }: OutputPanelProps) {
@@ -37,11 +39,16 @@ export function OutputPanel({
   const hasContent =
     stdout.length > 0 || stderr.length > 0 || error !== null || timedOut || isRunning;
 
-  const { currentSize, onPointerDown } = usePointerDragResize(width, onWidthChange, {
-    min: OUTPUT_WIDTH_MIN,
-    max: OUTPUT_WIDTH_MAX,
-    side: "left",
-  });
+  const { currentSize, onPointerDown } = usePointerDragResize(
+    width,
+    {
+      min: OUTPUT_WIDTH_MIN,
+      max: OUTPUT_WIDTH_MAX,
+      side: "left",
+    },
+    onWidthChange,
+    onWidthCommit,
+  );
 
   const handleCopyAll = async () => {
     const text = [stdout, stderr, error ? `Error: ${error}` : ""].filter(Boolean).join("\n");

@@ -11,8 +11,9 @@ interface PointerDragResizeOptions {
 
 export function usePointerDragResize(
   size: number,
-  onCommit: (value: number) => void,
   options: PointerDragResizeOptions,
+  onChange: (value: number) => void,
+  onCommit: (value: number) => void,
 ) {
   const [currentSize, setCurrentSize] = useState(size);
   const sizeRef = useRef(size);
@@ -46,6 +47,7 @@ export function usePointerDragResize(
         const clamped = clamp(next, options.min, options.max);
         sizeRef.current = clamped;
         setCurrentSize(clamped);
+        onChange(clamped);
       };
 
       const finish = () => {
@@ -71,7 +73,7 @@ export function usePointerDragResize(
       target.addEventListener("pointerup", onPointerUp);
       target.addEventListener("pointercancel", onPointerUp);
     },
-    [onCommit, options.max, options.min, options.side],
+    [onChange, onCommit, options.max, options.min, options.side],
   );
 
   return { currentSize, onPointerDown };

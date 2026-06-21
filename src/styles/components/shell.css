@@ -98,8 +98,9 @@
   min-width: 0;
   overflow: hidden;
   grid-template-columns:
-    48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr)
-    minmax(0, auto);
+    48px var(--rs-sidebar-width-preview, var(--rs-sidebar-width, 260px))
+    minmax(var(--rs-editor-column-min-width, 320px), 1fr)
+    var(--rs-output-width-preview, var(--rs-output-width, 300px));
   grid-template-rows: 35px 1fr;
 }
 
@@ -139,7 +140,9 @@
 }
 
 .main-row--desktop.main-row--sidebar-hidden {
-  grid-template-columns: 48px minmax(var(--rs-editor-column-min-width, 320px), 1fr) minmax(0, auto);
+  grid-template-columns:
+    48px minmax(var(--rs-editor-column-min-width, 320px), 1fr)
+    var(--rs-output-width-preview, var(--rs-output-width, 300px));
 }
 
 .main-row--desktop.main-row--sidebar-hidden .sidebar-titlebar-zone {
@@ -147,7 +150,9 @@
 }
 
 .main-row--desktop.main-row--output-hidden {
-  grid-template-columns: 48px minmax(0, auto) minmax(var(--rs-editor-column-min-width, 320px), 1fr);
+  grid-template-columns:
+    48px var(--rs-sidebar-width-preview, var(--rs-sidebar-width, 260px))
+    minmax(var(--rs-editor-column-min-width, 320px), 1fr);
 }
 
 .main-row--desktop.main-row--sidebar-hidden.main-row--output-hidden {
