@@ -186,7 +186,9 @@ export function GeneralSettings() {
                 label="Insert spaces"
                 description="Use spaces instead of tab characters."
                 checked={settings.editor.insertSpaces}
-                onChange={(event) => void update({ editor: { insertSpaces: event.target.checked } })}
+                onChange={(event) =>
+                  void update({ editor: { insertSpaces: event.target.checked } })
+                }
                 data-testid="setting-insert-spaces"
               />
               <SettingsToggleRow
@@ -255,14 +257,18 @@ export function GeneralSettings() {
                 label="Run on save"
                 description="Run the active file after saving."
                 checked={settings.execution.runOnSave}
-                onChange={(event) => void update({ execution: { runOnSave: event.target.checked } })}
+                onChange={(event) =>
+                  void update({ execution: { runOnSave: event.target.checked } })
+                }
                 data-testid="setting-run-on-save"
               />
               <SettingsToggleRow
                 label="Run on tab change"
                 description="Run the active file when switching editor tabs."
                 checked={settings.execution.runOnTabChange}
-                onChange={(event) => void update({ execution: { runOnTabChange: event.target.checked } })}
+                onChange={(event) =>
+                  void update({ execution: { runOnTabChange: event.target.checked } })
+                }
                 data-testid="setting-run-on-tab-change"
               />
             </SettingsCard>
@@ -273,13 +279,17 @@ export function GeneralSettings() {
               <SettingsToggleRow
                 label="Show sidebar"
                 checked={settings.layout.sidebarVisible}
-                onChange={(event) => void update({ layout: { sidebarVisible: event.target.checked } })}
+                onChange={(event) =>
+                  void update({ layout: { sidebarVisible: event.target.checked } })
+                }
                 data-testid="setting-sidebar-visible"
               />
               <SettingsToggleRow
                 label="Show output panel"
                 checked={settings.layout.outputVisible}
-                onChange={(event) => void update({ layout: { outputVisible: event.target.checked } })}
+                onChange={(event) =>
+                  void update({ layout: { outputVisible: event.target.checked } })
+                }
                 data-testid="setting-output-visible"
               />
 
