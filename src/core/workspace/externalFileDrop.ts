@@ -2,10 +2,7 @@ import { hasFileDrag } from "./fileTreeDrag";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
-/**
- * The attribute for the drop target.
- * @returns The attribute for the drop target.
- */
+/** Data attribute marking a directory drop target in the file tree. */
 export const DROP_TARGET_ATTR = "data-drop-dir";
 
 /**

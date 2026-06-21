@@ -40,8 +40,12 @@ export function subscribeBackendEvents<T>(
     }
 
     source.onmessage = (message) => {
-      const payload = JSON.parse(message.data) as T;
-      dispatch(payload);
+      try {
+        const payload = JSON.parse(message.data) as T;
+        dispatch(payload);
+      } catch (error) {
+        console.error(`Failed to parse backend event from ${endpoint}:`, error);
+      }
     };
 
     source.onerror = () => {

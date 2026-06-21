@@ -13,4 +13,9 @@ describe("basename", () => {
   it("supports backslash separators", () => {
     expect(basename("lib\\utils\\helper.js")).toBe("helper.js");
   });
+
+  it("strips trailing separators", () => {
+    expect(basename("foo/")).toBe("foo");
+    expect(basename("lib/utils/")).toBe("utils");
+  });
 });

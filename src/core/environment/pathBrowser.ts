@@ -18,6 +18,11 @@ export async function openPathBrowser(
   onSelected: (path: string) => void,
   onError: (message: string) => void,
 ): Promise<void> {
+  if (fieldType !== "file_path" && fieldType !== "directory_path") {
+    onError(`Invalid field type for path browser: ${fieldType}`);
+    return;
+  }
+
   try {
     const selected = await pickNativePath(fieldType === "directory_path");
     if (selected) {

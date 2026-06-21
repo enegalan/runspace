@@ -1,9 +1,6 @@
 import { basename } from "./path/basename";
 
-/**
- * The default language.
- * @returns The default language.
- */
+/** The default language when no extension mapping matches. */
 const DEFAULT_LANGUAGE = "plaintext";
 
 /**

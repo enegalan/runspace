@@ -1,3 +1,4 @@
 export function basename(path: string): string {
-  return path.split(/[/\\]/).pop() ?? path;
+  const parts = path.split(/[/\\]/).filter(Boolean);
+  return parts[parts.length - 1] ?? path;
 }
