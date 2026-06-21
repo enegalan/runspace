@@ -1,20 +1,14 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { waitForBackendReady } from "../../core/api/fetchBackend";
-import {
-  isOnboardingComplete,
-  syncOnboardingFromSession,
-} from "../../core/onboarding/onboardingState";
-import { runspaceInvoke } from "../../core/api/runspaceInvoke";
-import { flushSessionState } from "../../core/workspace/flushSession";
-import type { SessionData, WorkspaceInfo } from "../../core/types/workspace";
-import type { EnvironmentId } from "../../core/types/environment";
+import { getRunGuardian } from "../../core/execution/runGuardian";
+import { isOnboardingComplete } from "../../core/onboarding/onboardingState";
 import { useExecution } from "../../hooks/useExecution";
+import { useAppBootstrap } from "../../hooks/useAppBootstrap";
 import { useAppShortcuts } from "../../hooks/useAppShortcuts";
 import type { MenuAction } from "../../hooks/useMenuActions";
 import { useMenuActions } from "../../hooks/useMenuActions";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
+import { useLayoutWidthPreview } from "../../hooks/useLayoutWidthPreview";
 import { clamp } from "../../core/clamp";
 import {
   OUTPUT_WIDTH_MAX,
@@ -48,24 +42,21 @@ import { AppLoadingScreen } from "./AppLoadingScreen";
 
 export function AppShell() {
   const workspace = useWorkspaceStore((state) => state.workspace);
-  const workspaceLoaded = useWorkspaceStore((state) => state.loaded);
   const onboardingRequired = useWorkspaceStore((state) => state.onboardingRequired);
   const onboardingComplete = useWorkspaceStore((state) => state.onboardingComplete);
-  const bootstrapStarted = useRef(false);
   const tabChangeReadyRef = useRef(false);
   const prevActivePathRef = useRef<string | null>(null);
   const hasEnteredMainShell = useRef(
     useWorkspaceStore.getState().onboardingComplete || isOnboardingComplete(),
   );
 
+  const { appReady } = useAppBootstrap();
+
   const tabsLoaded = useEditorTabsStore((state) => state.loaded);
   const activePath = useEditorTabsStore((state) => state.activePath);
-  const selectEnvironment = useEnvironmentStore((state) => state.select);
 
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
-  const envLoaded = useEnvironmentStore((state) => state.loaded);
-  const loadEnvironments = useEnvironmentStore((state) => state.load);
   const layoutSettings = useSettingsStore((state) => state.settings.layout);
   const executionSettings = useSettingsStore((state) => state.settings.execution);
   const updateSettings = useSettingsStore((state) => state.update);
@@ -75,7 +66,6 @@ export function AppShell() {
   const settingsOpen = useSettingsUiStore((state) => state.open);
   const openSettings = useSettingsUiStore((state) => state.openSettings);
   const closeSettings = useSettingsUiStore((state) => state.closeSettings);
-  const [backendReady, setBackendReady] = useState(isTauri() && !import.meta.env.DEV);
 
   const { createAndOpenFile } = useNewFile();
   const { createNewFolder } = useNewFolder();
@@ -99,146 +89,23 @@ export function AppShell() {
     [environments, selectedId],
   );
 
-  const runDisabled = !workspace || !selectedEnvironment?.configured || !activePath;
-  const runDisabledReason = !workspace
-    ? "Create a workspace to run code"
-    : !selectedEnvironment
-      ? "Add an environment in Settings"
-      : !selectedEnvironment.configured
-        ? "Configure in Settings → Environments"
-        : !activePath
-          ? "Open a file to run"
-          : undefined;
+  const { disabled: runDisabled, reason: runDisabledReason } = useMemo(
+    () =>
+      getRunGuardian({
+        workspace,
+        selectedEnvironment,
+        activePath,
+      }),
+    [workspace, selectedEnvironment, activePath],
+  );
 
   const isRunning = status === "running";
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void waitForBackendReady()
-      .then(() => {
-        if (!cancelled) {
-          setBackendReady(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setBackendReady(true);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (workspace !== null || onboardingComplete || isOnboardingComplete()) {
       hasEnteredMainShell.current = true;
     }
   }, [workspace, onboardingComplete]);
-
-  useEffect(() => {
-    if (!backendReady || bootstrapStarted.current) {
-      return;
-    }
-    bootstrapStarted.current = true;
-
-    let cancelled = false;
-
-    const bootstrap = async () => {
-      try {
-        await loadEnvironments();
-        if (cancelled) {
-          return;
-        }
-
-        const session = await runspaceInvoke<SessionData>("read_session");
-        const onboardingComplete = syncOnboardingFromSession(session);
-        useWorkspaceStore.setState({
-          onboardingComplete,
-          onboardingRequired: onboardingComplete
-            ? false
-            : useWorkspaceStore.getState().onboardingRequired,
-        });
-        const storedRuntimeId = session.last_runtime_id;
-        const { selectedId, environments } = useEnvironmentStore.getState();
-        const runtimeId =
-          storedRuntimeId && environments.some((env) => env.definition.id === storedRuntimeId)
-            ? (storedRuntimeId as EnvironmentId)
-            : selectedId;
-
-        if (runtimeId && storedRuntimeId === runtimeId && storedRuntimeId !== selectedId) {
-          await selectEnvironment(runtimeId);
-        }
-
-        await useWorkspaceStore.getState().initialize(runtimeId);
-      } catch (error) {
-        console.error("App bootstrap failed:", error);
-        try {
-          const runtimeId = useEnvironmentStore.getState().selectedId;
-          const active = await runspaceInvoke<WorkspaceInfo | null>("get_active_workspace");
-          if (active) {
-            useWorkspaceStore.setState({ workspace: active, loaded: true });
-            if (runtimeId) {
-              await useWorkspaceStore.getState().loadWorkspaces(runtimeId);
-              await useWorkspaceStore.getState().refreshFiles();
-            }
-          } else {
-            useWorkspaceStore.setState({ loaded: true });
-          }
-        } catch (recoveryError) {
-          console.error("Workspace recovery failed:", recoveryError);
-          useWorkspaceStore.setState({ loaded: true });
-        }
-        useEnvironmentStore.setState({ loaded: true });
-      } finally {
-        if (!cancelled) {
-          useEditorTabsStore.setState({ loaded: true });
-        }
-      }
-    };
-
-    void bootstrap();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [backendReady, loadEnvironments, selectEnvironment]);
-
-  useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        void flushSessionState();
-      }
-    };
-
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, []);
-
-  useEffect(() => {
-    if (!isTauri()) {
-      return;
-    }
-
-    let unlisten: (() => void) | undefined;
-
-    void getCurrentWindow()
-      .onCloseRequested((event) => {
-        event.preventDefault();
-        void flushSessionState().finally(() => {
-          void getCurrentWindow().destroy();
-        });
-      })
-      .then((fn) => {
-        unlisten = fn;
-      });
-
-    return () => {
-      unlisten?.();
-    };
-  }, []);
 
   const handleRun = useCallback(() => {
     void (async () => {
@@ -303,27 +170,21 @@ export function AppShell() {
 
   const mainRowRef = useRef<HTMLDivElement>(null);
 
-  const previewSidebarWidth = useCallback((width: number) => {
-    mainRowRef.current?.style.setProperty(
+  const { preview: previewSidebarWidth, clearPreview: clearSidebarWidthPreview } =
+    useLayoutWidthPreview(
+      mainRowRef,
       "--rs-sidebar-width-preview",
-      `${clamp(width, SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX)}px`,
+      SIDEBAR_WIDTH_MIN,
+      SIDEBAR_WIDTH_MAX,
     );
-  }, []);
 
-  const previewOutputWidth = useCallback((width: number) => {
-    mainRowRef.current?.style.setProperty(
+  const { preview: previewOutputWidth, clearPreview: clearOutputWidthPreview } =
+    useLayoutWidthPreview(
+      mainRowRef,
       "--rs-output-width-preview",
-      `${clamp(width, OUTPUT_WIDTH_MIN, OUTPUT_WIDTH_MAX)}px`,
+      OUTPUT_WIDTH_MIN,
+      OUTPUT_WIDTH_MAX,
     );
-  }, []);
-
-  const clearSidebarWidthPreview = useCallback(() => {
-    mainRowRef.current?.style.removeProperty("--rs-sidebar-width-preview");
-  }, []);
-
-  const clearOutputWidthPreview = useCallback(() => {
-    mainRowRef.current?.style.removeProperty("--rs-output-width-preview");
-  }, []);
 
   const handleSidebarWidthChange = useCallback(
     (width: number) => {
@@ -475,7 +336,7 @@ export function AppShell() {
     runDisabled,
   });
 
-  if (!backendReady || !workspaceLoaded || !envLoaded || !tabsLoaded) {
+  if (!appReady) {
     return (
       <div
         className={`app-shell app-shell--loading${appShellDesktopClass()}`}

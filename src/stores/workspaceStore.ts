@@ -47,6 +47,28 @@ function entryName(path: string): string {
   return path.split(/[/\\]/).pop() ?? path;
 }
 
+function clearedFileTree(filesRevision: number) {
+  return {
+    rootFiles: [] as FileEntry[],
+    expandedDirs: new Set<string>(),
+    filesRevision: filesRevision + 1,
+  };
+}
+
+function emptyWorkspaceState(
+  get: () => WorkspaceStore,
+  onboardingComplete: boolean,
+): Partial<WorkspaceStore> {
+  return {
+    workspace: null,
+    workspaces: [],
+    ...clearedFileTree(get().filesRevision),
+    onboardingComplete,
+    onboardingRequired: !onboardingComplete,
+    loaded: true,
+  };
+}
+
 async function replaceEntryIfConfirmed(
   workspaceId: string,
   relativePath: string,
@@ -78,14 +100,8 @@ function applyNoActiveWorkspaceState(
 ): void {
   useEditorTabsStore.getState().clearTabs();
   set({
-    workspace: null,
-    workspaces: [],
-    rootFiles: [],
-    expandedDirs: new Set<string>(),
-    filesRevision: get().filesRevision + 1,
-    onboardingComplete: true,
+    ...emptyWorkspaceState(get, true),
     onboardingRequired: false,
-    loaded: true,
   });
 }
 
@@ -102,11 +118,11 @@ async function activateWorkspace(
 ): Promise<void> {
   const session = await runspaceInvoke<SessionData>("read_session");
   useEditorTabsStore.getState().clearTabs();
+  const { filesRevision, expandedDirs } = useWorkspaceStore.getState();
   useWorkspaceStore.setState({
     workspace,
-    rootFiles: [],
-    expandedDirs: resetExpanded ? new Set<string>() : useWorkspaceStore.getState().expandedDirs,
-    filesRevision: useWorkspaceStore.getState().filesRevision + 1,
+    ...clearedFileTree(filesRevision),
+    expandedDirs: resetExpanded ? new Set<string>() : expandedDirs,
   });
   await useWorkspaceStore.getState().refreshFiles();
   await useEditorTabsStore.getState().restoreForWorkspace(session, runtimeId, workspace.id);
@@ -126,30 +142,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     const onboardingComplete = get().onboardingComplete || isOnboardingComplete();
 
     if (!runtimeId) {
-      set({
-        workspace: null,
-        workspaces: [],
-        rootFiles: [],
-        expandedDirs: new Set<string>(),
-        onboardingComplete,
-        onboardingRequired: !onboardingComplete,
-        loaded: true,
-      });
+      set(emptyWorkspaceState(get, onboardingComplete));
       return;
     }
 
     const allWorkspaces = await runspaceInvoke<WorkspaceInfo[]>("list_workspaces", {});
 
     if (allWorkspaces.length === 0) {
-      set({
-        workspace: null,
-        workspaces: [],
-        rootFiles: [],
-        expandedDirs: new Set<string>(),
-        onboardingComplete,
-        onboardingRequired: !onboardingComplete,
-        loaded: true,
-      });
+      set(emptyWorkspaceState(get, onboardingComplete));
       return;
     }
 
@@ -162,14 +162,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     );
     if (!workspace) {
       set({
-        workspace: null,
-        workspaces: [],
-        rootFiles: [],
-        expandedDirs: new Set<string>(),
-        filesRevision: get().filesRevision + 1,
-        onboardingComplete: true,
+        ...emptyWorkspaceState(get, true),
         onboardingRequired: false,
-        loaded: true,
       });
       await get().loadWorkspaces(runtimeId);
       return;
@@ -177,9 +171,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
     set({
       workspace,
-      rootFiles: [],
-      expandedDirs: new Set<string>(),
-      filesRevision: get().filesRevision + 1,
+      ...clearedFileTree(get().filesRevision),
       onboardingComplete: true,
       onboardingRequired: false,
       loaded: true,
@@ -228,20 +220,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return false;
     }
 
-    useEditorTabsStore.getState().clearTabs();
-
-    set({
-      workspace,
-      rootFiles: [],
-      expandedDirs: new Set<string>(),
-      filesRevision: get().filesRevision + 1,
-    });
+    await activateWorkspace(workspace, runtimeId);
     await get().loadWorkspaces(runtimeId);
-    await get().refreshFiles();
     await useEnvironmentStore.getState().select(runtimeId as EnvironmentId);
-
-    const session = await runspaceInvoke<SessionData>("read_session");
-    await useEditorTabsStore.getState().restoreForWorkspace(session, runtimeId, workspace.id);
     return true;
   },
 
