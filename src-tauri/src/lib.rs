@@ -1,4 +1,5 @@
 mod commands;
+mod error;
 mod engine;
 mod environment;
 #[cfg(debug_assertions)]
