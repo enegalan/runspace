@@ -594,7 +594,8 @@ mod tests {
 
     fn temp_manager() -> (WorkspaceManager, PathBuf) {
         let temp_base = env::temp_dir().join(format!("runspace-ws-test-{}", uuid::Uuid::new_v4()));
-        let manager = WorkspaceManager::with_base_dir(temp_base.join(".runspace")).expect("manager");
+        let manager =
+            WorkspaceManager::with_base_dir(temp_base.join(".runspace")).expect("manager");
         (manager, temp_base)
     }
 

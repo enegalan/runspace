@@ -37,17 +37,16 @@ pub fn start_execution(
     };
 
     let resolved = {
-        let manager = lock_err(
-            state.environment_manager.lock(),
-            "Environment manager",
-        )?;
+        let manager = lock_err(state.environment_manager.lock(), "Environment manager")?;
         let env_id = match environment_id.as_deref() {
             Some(id) => id.to_string(),
-            None => manager
-                .get_selected()
-                .ok_or_else(|| "No selected environment".to_string())?
-                .definition
-                .id,
+            None => {
+                manager
+                    .get_selected()
+                    .ok_or_else(|| "No selected environment".to_string())?
+                    .definition
+                    .id
+            }
         };
         map_err(manager.resolve_for_execution(&env_id))?
     };
