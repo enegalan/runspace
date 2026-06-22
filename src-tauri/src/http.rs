@@ -23,6 +23,8 @@ use crate::services::invoke::dispatch_invoke;
 use crate::state::SharedState;
 use crate::terminal::TerminalEvent;
 
+pub const DEV_API_PORT: u16 = 1422;
+
 pub type TauriHandleSlot = Arc<Mutex<Option<AppHandle>>>;
 
 #[derive(Clone)]
@@ -97,7 +99,7 @@ async fn run_server(
         .layer(cors)
         .with_state(http_state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], super::DEV_API_PORT));
+    let addr = SocketAddr::from(([127, 0, 0, 1], DEV_API_PORT));
     let listener = tokio::net::TcpListener::bind(addr).await?;
     eprintln!("Runspace HTTP API listening on http://{addr}");
     axum::serve(listener, app).await?;

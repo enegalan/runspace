@@ -76,21 +76,3 @@ pub(crate) fn resolve_for_execution(
     let manager = lock_environment_manager(state)?;
     map_err(manager.resolve_for_execution(environment_id))
 }
-
-pub(crate) fn resolve_for_run(
-    state: &SharedState,
-    environment_id: Option<String>,
-) -> Result<ResolvedEnvironment, String> {
-    let manager = lock_environment_manager(state)?;
-    let env_id = match environment_id.as_deref() {
-        Some(id) => id.to_string(),
-        None => {
-            manager
-                .get_selected()
-                .ok_or_else(|| "No selected environment".to_string())?
-                .definition
-                .id
-        }
-    };
-    map_err(manager.resolve_for_execution(&env_id))
-}

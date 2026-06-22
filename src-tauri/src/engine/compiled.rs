@@ -85,7 +85,7 @@ pub fn run_compiled(
         return Ok(());
     }
 
-    crate::security::layer::validate_path_in_workspace(workspace, &output_binary).map_err(|e| {
+    crate::security::validate_path_in_workspace(workspace, &output_binary).map_err(|e| {
         cleanup_artifacts(workspace, binary_name);
         ExecutionError::SpawnFailed(e.to_string())
     })?;

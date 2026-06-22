@@ -72,12 +72,9 @@ fn prefix_stderr_lines(text: &str, prefix: &str) -> String {
     result
 }
 
-#[allow(dead_code)]
 pub struct ExecutionResult {
     pub exit_code: Option<i32>,
     pub timed_out: bool,
-    pub stdout: String,
-    pub stderr: String,
 }
 
 #[derive(Clone)]
@@ -147,24 +144,16 @@ impl ExecutionEngine {
             *guard = Some(child);
         }
 
-        let stdout_acc = Arc::new(Mutex::new(String::new()));
-        let stderr_acc = Arc::new(Mutex::new(String::new()));
-
         let stdout_emitter = emitter.clone();
-        let stdout_acc_clone = Arc::clone(&stdout_acc);
         let stdout_handle = std::thread::spawn(move || {
             let mut reader = BufReader::new(stdout);
             let mut buffer = String::new();
             if reader.read_to_string(&mut buffer).is_ok() && !buffer.is_empty() {
-                if let Ok(mut acc) = stdout_acc_clone.lock() {
-                    acc.push_str(&buffer);
-                }
                 stdout_emitter.emit_output("stdout", &buffer);
             }
         });
 
         let stderr_emitter = emitter.clone();
-        let stderr_acc_clone = Arc::clone(&stderr_acc);
         let stderr_prefix = request.stderr_prefix.clone();
         let stderr_handle = std::thread::spawn(move || {
             let mut reader = BufReader::new(stderr);
@@ -172,11 +161,8 @@ impl ExecutionEngine {
             if reader.read_to_string(&mut buffer).is_ok() && !buffer.is_empty() {
                 let emitted = match &stderr_prefix {
                     Some(prefix) => prefix_stderr_lines(&buffer, prefix),
-                    None => buffer.clone(),
+                    None => buffer,
                 };
-                if let Ok(mut acc) = stderr_acc_clone.lock() {
-                    acc.push_str(&emitted);
-                }
                 stderr_emitter.emit_output("stderr", &emitted);
             }
         });
@@ -187,35 +173,33 @@ impl ExecutionEngine {
         let mut exit_code: Option<i32> = None;
 
         loop {
-            let status = {
-                let mut guard = self.active_process.lock().map_err(|_| {
-                    ExecutionError::SpawnFailed("Failed to lock active process".to_string())
-                })?;
+            let mut guard = self.active_process.lock().map_err(|_| {
+                ExecutionError::SpawnFailed("Failed to lock active process".to_string())
+            })?;
 
-                if let Some(ref mut child) = *guard {
-                    match child.try_wait() {
-                        Ok(Some(status)) => {
-                            exit_code = status.code();
+            if let Some(ref mut child) = *guard {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        exit_code = status.code();
+                        guard.take();
+                        break;
+                    }
+                    Ok(None) => {
+                        if start.elapsed() >= timeout {
+                            child.kill().map_err(ExecutionError::Io)?;
+                            let _ = child.wait();
                             guard.take();
+                            timed_out = true;
                             break;
                         }
-                        Ok(None) => {
-                            if start.elapsed() >= timeout {
-                                child.kill().map_err(ExecutionError::Io)?;
-                                let _ = child.wait();
-                                guard.take();
-                                timed_out = true;
-                                break;
-                            }
-                        }
-                        Err(e) => return Err(ExecutionError::Io(e)),
                     }
-                } else {
-                    break;
+                    Err(e) => return Err(ExecutionError::Io(e)),
                 }
-            };
+            } else {
+                break;
+            }
 
-            let _ = status;
+            drop(guard);
             std::thread::sleep(Duration::from_millis(50));
         }
 
@@ -229,8 +213,6 @@ impl ExecutionEngine {
         Ok(ExecutionResult {
             exit_code,
             timed_out,
-            stdout: stdout_acc.lock().map(|s| s.clone()).unwrap_or_default(),
-            stderr: stderr_acc.lock().map(|s| s.clone()).unwrap_or_default(),
         })
     }
 }
@@ -290,6 +272,7 @@ mod tests {
             eprintln!("skipping: node not found on PATH");
             return;
         };
+
         let engine = ExecutionEngine::new();
         let temp_dir = std::env::temp_dir().join(format!(
             "runspace-test-{}",
@@ -311,19 +294,27 @@ mod tests {
             vec![],
         );
 
-        // Integration test without Tauri app handle — run command directly
-        let mut cmd = Command::new(&request.program);
-        for arg in &request.args {
-            cmd.arg(arg);
-        }
-        cmd.current_dir(&request.cwd).stdout(Stdio::piped());
+        use crate::engine::{ExecutionEmitter, ExecutionEventBus};
 
-        let output = cmd.output().expect("node output");
-        let stdout = String::from_utf8_lossy(&output.stdout);
+        let bus = ExecutionEventBus::new();
+        let emitter = ExecutionEmitter::bus_only(bus.clone());
+        let result = engine.run(&emitter, request).expect("node run");
 
+        assert!(!result.timed_out, "node timed out");
+        assert_eq!(result.exit_code, Some(0));
+
+        let events = bus.replay_snapshot();
+        let stdout: String = events
+            .iter()
+            .filter_map(|event| match event {
+                crate::engine::ExecutionEvent::Output { stream, chunk } if stream == "stdout" => {
+                    Some(chunk.as_str())
+                }
+                _ => None,
+            })
+            .collect();
         assert!(stdout.contains('1'));
 
         let _ = std::fs::remove_dir_all(&temp_dir);
-        let _ = engine;
     }
 }

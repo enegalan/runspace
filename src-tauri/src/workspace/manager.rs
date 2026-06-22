@@ -5,7 +5,7 @@ use chrono::Utc;
 use uuid::Uuid;
 
 use crate::engine::adapters::get_adapter;
-use crate::security::layer::{validate_path_in_workspace, SecurityError};
+use crate::security::{validate_path_in_workspace, SecurityError};
 
 use super::types::{FileEntry, SessionData, WorkspaceInfo, WorkspaceManifest, MANIFEST_FILENAME};
 

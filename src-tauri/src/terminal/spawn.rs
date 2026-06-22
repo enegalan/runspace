@@ -147,7 +147,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            file_extension: "js".to_string(),
         };
 
         let merged = merge_path(&resolved);
@@ -168,7 +167,6 @@ mod tests {
                 "composer_path".to_string(),
                 "/usr/local/bin/composer".to_string(),
             )]),
-            file_extension: "php".to_string(),
         };
 
         let merged = merge_path(&resolved);
@@ -186,7 +184,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            file_extension: "js".to_string(),
         };
 
         let env_vars = build_env_vars(&resolved);
@@ -207,7 +204,6 @@ mod tests {
             binary_path: "/usr/local/bin/php".to_string(),
             env_vars: HashMap::from([("PATH".to_string(), "/old".to_string())]),
             extra_paths: HashMap::new(),
-            file_extension: "php".to_string(),
         };
 
         let env_vars = build_env_vars(&resolved);

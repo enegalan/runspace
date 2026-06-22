@@ -7,8 +7,7 @@ use crate::engine::adapters::{
 };
 use crate::engine::compiled::run_compiled;
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
-use crate::error::map_err;
-use crate::services::environment::resolve_for_run;
+use crate::error::{lock_err, map_err};
 use crate::services::settings::execution_settings;
 use crate::services::workspace::{ensure_active_workspace, lock_workspace_manager};
 use crate::state::SharedState;
@@ -37,7 +36,21 @@ pub fn start_execution(
         None => ExecutionEmitter::bus_only(state.execution_events.clone()),
     };
 
-    let resolved = resolve_for_run(state, environment_id)?;
+    let resolved = {
+        let manager = lock_err(
+            state.environment_manager.lock(),
+            "Environment manager",
+        )?;
+        let env_id = match environment_id.as_deref() {
+            Some(id) => id.to_string(),
+            None => manager
+                .get_selected()
+                .ok_or_else(|| "No selected environment".to_string())?
+                .definition
+                .id,
+        };
+        map_err(manager.resolve_for_execution(&env_id))?
+    };
 
     let environment_id = resolved.id.clone();
     let adapter = map_err(get_adapter(&environment_id))?;
@@ -64,7 +77,7 @@ pub fn start_execution(
         }
 
         let snippet_path = workspace.path.join(&resolved_entry);
-        map_err(crate::security::layer::validate_path_in_workspace(
+        map_err(crate::security::validate_path_in_workspace(
             &workspace.path,
             &snippet_path,
         ))?;
@@ -78,7 +91,7 @@ pub fn start_execution(
         let mut env_vars: Vec<(String, String)> = resolved
             .env_vars
             .into_iter()
-            .chain(adapter_prepared.extra_env.into_iter())
+            .chain(adapter_prepared.extra_env)
             .collect();
 
         env_vars.sort_by(|a, b| a.0.cmp(&b.0));

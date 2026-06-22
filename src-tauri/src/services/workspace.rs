@@ -230,9 +230,9 @@ pub fn initialize_workspace(
     Ok(info)
 }
 
-fn resolve_workspace<'a>(
+fn resolve_workspace(
     state: &SharedState,
-    manager: &'a crate::workspace::WorkspaceManager,
+    manager: &crate::workspace::WorkspaceManager,
     workspace_id: Option<&str>,
 ) -> Result<Workspace, String> {
     match workspace_id {
