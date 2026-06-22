@@ -33,6 +33,10 @@ interface TerminalStoreState {
   getTabsForContext: (workspaceId: string, environmentId: string) => TerminalTabState[];
 }
 
+/**
+ * The useTerminalStore hook.
+ * @returns The useTerminalStore hook.
+ */
 export const useTerminalStore = create<TerminalStoreState>((set, get) => ({
   tabs: {},
   tabOrderByContext: {},

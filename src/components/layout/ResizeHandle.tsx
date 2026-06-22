@@ -5,6 +5,14 @@ interface ResizeHandleProps {
   "data-testid"?: string;
 }
 
+/**
+ * The ResizeHandle component.
+ * @param side - The side of the resize handle.
+ * @param orientation - The orientation of the resize handle.
+ * @param onPointerDown - The function to call when the pointer is down.
+ * @param testId - The test ID.
+ * @returns The ResizeHandle component.
+ */
 export function ResizeHandle({
   side,
   orientation = "vertical",

@@ -1,34 +1,28 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { matchesEnvironmentSearch } from "../../core/environment/search";
-import type { Environment, EnvironmentCategory } from "../../core/types/environment";
+import {
+  ENVIRONMENT_CATEGORY_LABELS,
+  groupByCategory,
+} from "../../core/constants/environmentPresentation";
+import type { EnvironmentCategory } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useSettingsUiStore } from "../../stores/settingsUiStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { Button } from "../ui/Button";
 import { IconClose } from "../ui/icons";
+import { matchesQuery } from "../../core/search/matchesQuery";
 
 interface EnvironmentPickerDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
-  language: "Languages",
-  framework: "Frameworks",
-};
-
-function groupByCategory(environments: Environment[]) {
-  const groups: Record<EnvironmentCategory, Environment[]> = {
-    language: [],
-    framework: [],
-  };
-  for (const env of environments) {
-    groups[env.definition.category].push(env);
-  }
-  return groups;
-}
-
+/**
+ * The EnvironmentPickerDialog component.
+ * @param open - Whether the environment picker dialog is open.
+ * @param onClose - The function to call when the environment picker dialog is closed.
+ * @returns The EnvironmentPickerDialog component.
+ */
 export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDialogProps) {
   const environments = useEnvironmentStore((state) => state.environments);
   const selectedId = useEnvironmentStore((state) => state.selectedId);
@@ -46,7 +40,7 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
   }
 
   const filteredEnvironments = environments.filter((env) =>
-    matchesEnvironmentSearch(env.definition.name, CATEGORY_LABELS[env.definition.category], search),
+    matchesQuery(search, env.definition.name, ENVIRONMENT_CATEGORY_LABELS[env.definition.category]),
   );
   const groups = groupByCategory(filteredEnvironments);
   const hasVisibleEnvironments = filteredEnvironments.length > 0;
@@ -114,11 +108,13 @@ export function EnvironmentPickerDialog({ open, onClose }: EnvironmentPickerDial
               }
               return (
                 <section key={category} className="env-picker__group">
-                  <h3 className="env-picker__group-label">{CATEGORY_LABELS[category]}</h3>
+                  <h3 className="env-picker__group-label">
+                    {ENVIRONMENT_CATEGORY_LABELS[category]}
+                  </h3>
                   <ul
                     className="env-picker__list"
                     role="listbox"
-                    aria-label={CATEGORY_LABELS[category]}
+                    aria-label={ENVIRONMENT_CATEGORY_LABELS[category]}
                   >
                     {items.map((env) => (
                       <li key={env.definition.id} role="presentation">

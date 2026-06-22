@@ -1,14 +1,14 @@
+import {
+  createEmptyKeyValueRow,
+  type KeyValueRow,
+  validateKeyValueRows,
+} from "../../core/keyValueRows";
 import { Button } from "../ui/Button";
 import { IconPlus, IconTrash } from "../ui/icons";
 
-interface EnvVarRow {
-  key: string;
-  value: string;
-}
-
 interface EnvVarsEditorProps {
-  rows: EnvVarRow[];
-  onChange: (rows: EnvVarRow[]) => void;
+  rows: KeyValueRow[];
+  onChange: (rows: KeyValueRow[]) => void;
   disabled?: boolean;
 }
 
@@ -23,7 +23,7 @@ export function EnvVarsEditor({ rows, onChange, disabled = false }: EnvVarsEdito
   };
 
   const addRow = () => {
-    onChange([...rows, { key: "", value: "" }]);
+    onChange([...rows, createEmptyKeyValueRow()]);
   };
 
   return (
@@ -84,32 +84,9 @@ export function EnvVarsEditor({ rows, onChange, disabled = false }: EnvVarsEdito
   );
 }
 
-export function envVarsToRows(envVars: Record<string, string>): EnvVarRow[] {
-  return Object.entries(envVars).map(([key, value]) => ({ key, value }));
-}
-
-export function rowsToEnvVars(rows: EnvVarRow[]): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const row of rows) {
-    const key = row.key.trim();
-    if (key) {
-      result[key] = row.value;
-    }
-  }
-  return result;
-}
-
-export function validateEnvVarRows(rows: EnvVarRow[]): string | null {
-  const seen = new Set<string>();
-  for (const row of rows) {
-    const key = row.key.trim();
-    if (!key) {
-      return "Environment variable keys cannot be empty";
-    }
-    if (seen.has(key)) {
-      return `Duplicate environment variable key: ${key}`;
-    }
-    seen.add(key);
-  }
-  return null;
+export function validateEnvVarRows(rows: KeyValueRow[]): string | null {
+  return validateKeyValueRows(rows, {
+    emptyKeyMessage: "Environment variable keys cannot be empty",
+    duplicateKeyMessage: (key) => `Duplicate environment variable key: ${key}`,
+  });
 }

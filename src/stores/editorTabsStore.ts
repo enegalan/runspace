@@ -3,15 +3,24 @@ import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { useDialogStore } from "./dialogStore";
 import { getAppSettings } from "./settingsStore";
 import { languageFromExtension } from "../core/languageFromExtension";
-import type { OpenFile, SessionData } from "../core/types/workspace";
+import type { SessionData } from "../core/types/workspace";
 import {
   pickNextActiveTab,
   rememberTabFocus,
   removeFromTabFocusHistory,
 } from "../core/editor/tabFocusHistory";
 import { reorderByIndex } from "../core/editor/tabReorder";
-import { getEnvironmentSession, uniquePaths } from "../core/workspace/session";
+import { basename } from "../core/path/basename";
+import { unique } from "../core/unique";
+import { getEnvironmentSession } from "../core/workspace/session";
 import { useWorkspaceStore } from "./workspaceStore";
+
+interface OpenFile {
+  path: string;
+  content: string;
+  dirty: boolean;
+  language: string;
+}
 
 interface TabSessionSnapshot {
   runtimeId: string;
@@ -51,13 +60,13 @@ interface EditorTabsStore {
   ) => Promise<void>;
 }
 
-function basename(path: string): string {
-  const parts = path.split("/");
-  return parts[parts.length - 1] ?? path;
-}
-
 let tabSessionPersistQueue = Promise.resolve();
 
+/**
+ * The queueTabSessionPersist function.
+ * @param get - The function to get the editor tabs store.
+ * @returns The queueTabSessionPersist function.
+ */
 function queueTabSessionPersist(get: () => EditorTabsStore): void {
   const workspace = useWorkspaceStore.getState().workspace;
   if (!workspace) {
@@ -83,6 +92,10 @@ function queueTabSessionPersist(get: () => EditorTabsStore): void {
     });
 }
 
+/**
+ * The useEditorTabsStore hook.
+ * @returns The useEditorTabsStore hook.
+ */
 export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   openFiles: [],
   activePath: null,
@@ -272,7 +285,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   restoreForWorkspace: async (session, runtimeId, workspaceId) => {
     const envSession = getEnvironmentSession(session, runtimeId);
     const savedTabs = envSession.workspace_tabs[workspaceId];
-    const paths = uniquePaths(savedTabs?.open_files ?? []);
+    const paths = unique(savedTabs?.open_files ?? []);
 
     if (paths.length === 0) {
       set({ openFiles: [], activePath: null, focusHistory: [] });
@@ -311,7 +324,7 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
     if (workspaceId) {
       envSession.workspace_id = workspaceId;
       envSession.workspace_tabs[workspaceId] = {
-        open_files: uniquePaths(openFiles.map((file) => file.path)),
+        open_files: unique(openFiles.map((file) => file.path)),
         active_file: activePath,
       };
     }

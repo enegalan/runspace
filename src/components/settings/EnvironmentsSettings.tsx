@@ -1,36 +1,39 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
-import { matchesEnvironmentSearch } from "../../core/environment/search";
-import { pickNativePath } from "../../core/api/pickNativePath";
+import { ENVIRONMENT_CATEGORY_ROW_LABELS } from "../../core/constants/environmentPresentation";
+import { openPathBrowser } from "../../core/environment/pathBrowser";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import type {
   ConfigFieldType,
   Environment,
-  EnvironmentCategory,
   EnvironmentDefinition,
   EnvironmentId,
   ValidationResult,
 } from "../../core/types/environment";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { IconCheck, IconChevronDown, IconChevronRight } from "../ui/icons";
-import { EnvVarsEditor, envVarsToRows, rowsToEnvVars, validateEnvVarRows } from "./EnvVarsEditor";
+import { recordToKeyValueRows, keyValueRowsToRecord } from "../../core/keyValueRows";
+import { EnvVarsEditor, validateEnvVarRows } from "./EnvVarsEditor";
 import { SettingsPageHeader, SettingsSearchInput } from "./SettingsUi";
-
-const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
-  language: "Language",
-  framework: "Framework",
-};
+import { matchesQuery } from "../../core/search/matchesQuery";
 
 interface EnvironmentCardProps {
   environment: Environment;
 }
 
+/**
+ * The EnvironmentCard component.
+ * @param environment - The environment.
+ * @returns The EnvironmentCard component.
+ */
 function EnvironmentCard({ environment }: EnvironmentCardProps) {
   const refresh = useEnvironmentStore((state) => state.refresh);
   const uninstall = useEnvironmentStore((state) => state.uninstall);
   const [expanded, setExpanded] = useState(false);
   const [paths, setPaths] = useState<Record<string, string>>(environment.user_config.paths);
-  const [envRows, setEnvRows] = useState(() => envVarsToRows(environment.user_config.env_vars));
+  const [envRows, setEnvRows] = useState(() =>
+    recordToKeyValueRows(environment.user_config.env_vars),
+  );
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -40,14 +43,11 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
   const { definition, configured, version } = environment;
 
   const browsePath = async (fieldType: ConfigFieldType, key: string) => {
-    try {
-      const selected = await pickNativePath(fieldType === "directory_path");
-      if (selected) {
-        setPaths((prev) => ({ ...prev, [key]: selected }));
-      }
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : String(err));
-    }
+    await openPathBrowser(
+      fieldType,
+      (selected) => setPaths((prev) => ({ ...prev, [key]: selected })),
+      setMessage,
+    );
   };
 
   const handleSave = async () => {
@@ -66,7 +66,7 @@ function EnvironmentCard({ environment }: EnvironmentCardProps) {
       });
       await runspaceInvoke("set_environment_env_vars", {
         environmentId: definition.id,
-        envVars: rowsToEnvVars(envRows),
+        envVars: keyValueRowsToRecord(envRows),
       });
       await refresh();
       setMessage("Saved");
@@ -234,6 +234,11 @@ interface AvailableEnvironmentRowProps {
   definition: EnvironmentDefinition;
 }
 
+/**
+ * The AvailableEnvironmentRow component.
+ * @param definition - The environment definition.
+ * @returns The AvailableEnvironmentRow component.
+ */
 function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
   const install = useEnvironmentStore((state) => state.install);
   const [installing, setInstalling] = useState(false);
@@ -255,7 +260,9 @@ function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
     <div className="env-available-row" data-testid={`env-available-${definition.id}`}>
       <div className="env-available-row__info">
         <span className="env-available-row__name">{definition.name}</span>
-        <span className="env-available-row__category">{CATEGORY_LABELS[definition.category]}</span>
+        <span className="env-available-row__category">
+          {ENVIRONMENT_CATEGORY_ROW_LABELS[definition.category]}
+        </span>
       </div>
       <div className="env-available-row__actions">
         <a
@@ -282,16 +289,24 @@ function AvailableEnvironmentRow({ definition }: AvailableEnvironmentRowProps) {
   );
 }
 
+/**
+ * The EnvironmentsSettings component.
+ * @returns The EnvironmentsSettings component.
+ */
 export function EnvironmentsSettings() {
   const environments = useEnvironmentStore((state) => state.environments);
   const available = useEnvironmentStore((state) => state.available);
   const [search, setSearch] = useState("");
 
   const filteredEnvironments = environments.filter((env) =>
-    matchesEnvironmentSearch(env.definition.name, CATEGORY_LABELS[env.definition.category], search),
+    matchesQuery(
+      search,
+      env.definition.name,
+      ENVIRONMENT_CATEGORY_ROW_LABELS[env.definition.category],
+    ),
   );
   const filteredAvailable = available.filter((definition) =>
-    matchesEnvironmentSearch(definition.name, CATEGORY_LABELS[definition.category], search),
+    matchesQuery(search, definition.name, ENVIRONMENT_CATEGORY_ROW_LABELS[definition.category]),
   );
   const showAvailableSection = available.length > 0;
   const hasSearch = search.trim().length > 0;

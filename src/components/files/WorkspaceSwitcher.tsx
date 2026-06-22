@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { requireWorkspaceName } from "../../core/workspace/promptWorkspaceName";
+import { useActiveRuntimeId } from "../../hooks/useActiveRuntimeId";
+import { requireWorkspaceName } from "../../core/workspace/prompts/workspaceNamePrompt";
 import type { WorkspaceInfo } from "../../core/types/workspace";
 import { useDialogStore } from "../../stores/dialogStore";
-import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconChevronDown, IconPlus } from "../ui/icons";
@@ -13,11 +13,14 @@ interface WorkspaceMenuState {
   item: WorkspaceInfo;
 }
 
+/**
+ * The WorkspaceSwitcher component.
+ * @returns The WorkspaceSwitcher component.
+ */
 export function WorkspaceSwitcher() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
-  const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
-  const runtimeId = workspace?.runtime_id ?? selectedRuntimeId;
+  const runtimeId = useActiveRuntimeId();
   const switchWorkspace = useWorkspaceStore((state) => state.switchWorkspace);
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
   const renameWorkspace = useWorkspaceStore((state) => state.renameWorkspace);

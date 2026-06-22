@@ -5,6 +5,10 @@ const STORAGE_KEY = "runspace.onboarding.complete";
 
 let sessionComplete = false;
 
+/**
+ * Reads the local onboarding complete flag.
+ * @returns The local onboarding complete flag.
+ */
 function readLocalOnboardingComplete(): boolean {
   if (typeof localStorage === "undefined") {
     return false;
@@ -12,6 +16,11 @@ function readLocalOnboardingComplete(): boolean {
   return localStorage.getItem(STORAGE_KEY) === "1";
 }
 
+/**
+ * Syncs the onboarding from the session.
+ * @param session - The session data.
+ * @returns The onboarding complete flag.
+ */
 export function syncOnboardingFromSession(session: SessionData): boolean {
   sessionComplete = session.onboarding_complete === true || readLocalOnboardingComplete();
   if (sessionComplete && typeof localStorage !== "undefined") {
@@ -20,10 +29,17 @@ export function syncOnboardingFromSession(session: SessionData): boolean {
   return sessionComplete;
 }
 
+/**
+ * Checks if the onboarding is complete.
+ * @returns The onboarding complete flag.
+ */
 export function isOnboardingComplete(): boolean {
   return sessionComplete || readLocalOnboardingComplete();
 }
 
+/**
+ * Marks the onboarding as complete.
+ */
 export async function markOnboardingComplete(): Promise<void> {
   sessionComplete = true;
   if (typeof localStorage !== "undefined") {
@@ -43,6 +59,9 @@ export async function markOnboardingComplete(): Promise<void> {
   }
 }
 
+/**
+ * Clears the onboarding complete flag.
+ */
 export function clearOnboardingComplete(): void {
   sessionComplete = false;
   if (typeof localStorage === "undefined") {

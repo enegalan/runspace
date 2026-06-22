@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect } from "react";
-import { shouldUseHttpApi } from "../core/api/backendTransport";
-import { subscribeExecutionEvents } from "../core/api/executionEvents";
+import { subscribeExecutionEvents } from "../core/api/events/executionEvents";
+import { subscribeNativeOrHttp } from "../core/api/events/subscribeNativeOrHttp";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { DEFAULT_APP_SETTINGS } from "../core/constants/settingsDefaults";
 import type {
@@ -13,6 +13,10 @@ import type {
 import { useExecutionStore } from "../stores/executionStore";
 import { getAppSettings } from "../stores/settingsStore";
 
+/**
+ * This hook is used to handle the execution.
+ * @returns The execution.
+ */
 export function useExecution() {
   const {
     status,
@@ -33,65 +37,45 @@ export function useExecution() {
   } = useExecutionStore();
 
   useEffect(() => {
-    if (shouldUseHttpApi()) {
-      return subscribeExecutionEvents({
-        onStarted: setStarted,
-        onOutput: appendOutput,
-        onPhase: setPhase,
-        onFinished: (payload) => {
-          setFinished(payload.exit_code, payload.timed_out, payload.compile_failed);
-        },
-      });
-    }
+    return subscribeNativeOrHttp(
+      () =>
+        subscribeExecutionEvents({
+          onStarted: setStarted,
+          onOutput: appendOutput,
+          onPhase: setPhase,
+          onFinished: (payload) => {
+            setFinished(payload.exit_code, payload.timed_out, payload.compile_failed);
+          },
+        }),
+      async (register) => {
+        const outputUnlisten = await listen<ExecutionOutputEvent>("execution-output", (event) => {
+          appendOutput(event.payload.stream, event.payload.chunk);
+        });
+        register(outputUnlisten);
 
-    let cancelled = false;
-    const unlisteners: Array<() => void> = [];
+        const finishedUnlisten = await listen<ExecutionFinishedEvent>(
+          "execution-finished",
+          (event) => {
+            setFinished(
+              event.payload.exit_code,
+              event.payload.timed_out,
+              event.payload.compile_failed,
+            );
+          },
+        );
+        register(finishedUnlisten);
 
-    const register = (unlisten: () => void) => {
-      if (cancelled) {
-        unlisten();
-        return;
-      }
-      unlisteners.push(unlisten);
-    };
+        const phaseUnlisten = await listen<ExecutionPhaseEvent>("execution-phase", (event) => {
+          setPhase(event.payload.phase);
+        });
+        register(phaseUnlisten);
 
-    const setup = async () => {
-      const outputUnlisten = await listen<ExecutionOutputEvent>("execution-output", (event) => {
-        appendOutput(event.payload.stream, event.payload.chunk);
-      });
-      register(outputUnlisten);
-
-      const finishedUnlisten = await listen<ExecutionFinishedEvent>(
-        "execution-finished",
-        (event) => {
-          setFinished(
-            event.payload.exit_code,
-            event.payload.timed_out,
-            event.payload.compile_failed,
-          );
-        },
-      );
-      register(finishedUnlisten);
-
-      const phaseUnlisten = await listen<ExecutionPhaseEvent>("execution-phase", (event) => {
-        setPhase(event.payload.phase);
-      });
-      register(phaseUnlisten);
-
-      const startedUnlisten = await listen("execution-started", () => {
-        setStarted();
-      });
-      register(startedUnlisten);
-    };
-
-    void setup();
-
-    return () => {
-      cancelled = true;
-      for (const unlisten of unlisteners) {
-        unlisten();
-      }
-    };
+        const startedUnlisten = await listen("execution-started", () => {
+          setStarted();
+        });
+        register(startedUnlisten);
+      },
+    );
   }, [appendOutput, setFinished, setPhase, setStarted]);
 
   const run = useCallback(

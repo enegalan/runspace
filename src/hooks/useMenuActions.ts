@@ -20,6 +20,11 @@ interface MenuActionHandlers {
   onAction: (action: MenuAction) => void;
 }
 
+/**
+ * The useMenuActions hook.
+ * @param onAction - The function to call when an action is triggered.
+ * @returns The useMenuActions hook.
+ */
 export function useMenuActions({ onAction }: MenuActionHandlers) {
   useEffect(() => {
     if (!isTauri()) {

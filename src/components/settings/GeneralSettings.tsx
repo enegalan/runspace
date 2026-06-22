@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { SHORTCUT_ACTIONS } from "../../core/constants/keyboardShortcuts";
 import { EDITOR_FONT_OPTIONS } from "../../core/constants/settingsDefaults";
-import { matchesSettingsSearch } from "../../core/settings/search";
 import type { TabSize, ThemeMode, UiDensity } from "../../core/types/settings";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { ShortcutsSettingsCard } from "./ShortcutsSettings";
@@ -16,18 +15,31 @@ import {
   SettingsSelect,
   SettingsToggleRow,
 } from "./SettingsUi";
+import { matchesQuery } from "../../core/search/matchesQuery";
 
+/**
+ * The theme options.
+ * @returns The theme options.
+ */
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: "dark", label: "Dark" },
   { value: "light", label: "Light" },
   { value: "system", label: "System" },
 ];
 
+/**
+ * The density options.
+ * @returns The density options.
+ */
 const DENSITY_OPTIONS: { value: UiDensity; label: string }[] = [
   { value: "comfortable", label: "Comfortable" },
   { value: "compact", label: "Compact" },
 ];
 
+/**
+ * The tab size options.
+ * @returns The tab size options.
+ */
 const TAB_SIZE_OPTIONS: { value: TabSize; label: string }[] = [
   { value: 2, label: "2" },
   { value: 4, label: "4" },
@@ -47,16 +59,20 @@ const SHORTCUTS_SEARCH = [
   ...SHORTCUT_ACTIONS.map((action) => action.label),
 ].join(" ");
 
+/**
+ * The GeneralSettings component.
+ * @returns The GeneralSettings component.
+ */
 export function GeneralSettings() {
   const settings = useSettingsStore((state) => state.settings);
   const update = useSettingsStore((state) => state.update);
   const [search, setSearch] = useState("");
 
-  const showAppearance = matchesSettingsSearch(search, APPEARANCE_SEARCH);
-  const showEditor = matchesSettingsSearch(search, EDITOR_SEARCH);
-  const showExecution = matchesSettingsSearch(search, EXECUTION_SEARCH);
-  const showLayout = matchesSettingsSearch(search, LAYOUT_SEARCH);
-  const showShortcuts = matchesSettingsSearch(search, SHORTCUTS_SEARCH);
+  const showAppearance = matchesQuery(search, APPEARANCE_SEARCH);
+  const showEditor = matchesQuery(search, EDITOR_SEARCH);
+  const showExecution = matchesQuery(search, EXECUTION_SEARCH);
+  const showLayout = matchesQuery(search, LAYOUT_SEARCH);
+  const showShortcuts = matchesQuery(search, SHORTCUTS_SEARCH);
   const hasSearch = search.trim().length > 0;
   const hasVisibleResults =
     showAppearance || showEditor || showExecution || showLayout || showShortcuts;

@@ -6,6 +6,10 @@ import { editorFontFamilyCss } from "../../core/constants/settingsDefaults";
 import { getMonacoThemeId } from "../../core/settings/applyAppSettings";
 import { useSettingsStore } from "../../stores/settingsStore";
 
+/**
+ * Read the editor background color.
+ * @returns The editor background color.
+ */
 function readEditorBackground(): string {
   if (typeof document === "undefined") {
     return "#1e1e1e";
@@ -18,6 +22,10 @@ function readEditorBackground(): string {
   return value || "#1e1e1e";
 }
 
+/**
+ * Define the Monaco themes.
+ * @param monaco - The Monaco instance.
+ */
 function defineMonacoThemes(monaco: Monaco) {
   const background = readEditorBackground();
   monaco.editor.defineTheme("runspace-dark", {
@@ -38,6 +46,10 @@ function defineMonacoThemes(monaco: Monaco) {
   });
 }
 
+/**
+ * Handle the before mount event.
+ * @param monaco - The Monaco instance.
+ */
 const handleBeforeMount: BeforeMount = (monaco) => {
   defineMonacoThemes(monaco);
 };
@@ -49,6 +61,14 @@ export interface MonacoWrapperProps {
   onSave: (autoRun?: boolean) => void;
 }
 
+/**
+ * The MonacoWrapper component.
+ * @param value - The value of the editor.
+ * @param onChange - The function to call when the value changes.
+ * @param language - The language of the editor.
+ * @param onSave - The function to call when the editor is saved.
+ * @returns The MonacoWrapper component.
+ */
 export default memo(function MonacoWrapper({
   value,
   onChange,

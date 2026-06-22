@@ -1,11 +1,15 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useState } from "react";
-import { pickNativePath } from "../../core/api/pickNativePath";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import {
   DEFAULT_ENVIRONMENT_ID,
   ENVIRONMENT_CATALOG,
 } from "../../core/constants/environmentCatalog";
+import {
+  ENVIRONMENT_CATEGORY_LABELS,
+  groupCatalogByCategory,
+} from "../../core/constants/environmentPresentation";
+import { openPathBrowser } from "../../core/environment/pathBrowser";
 import type {
   ConfigFieldType,
   EnvironmentCategory,
@@ -15,11 +19,10 @@ import { Button } from "../ui/Button";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
-const CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
-  language: "Languages",
-  framework: "Frameworks",
-};
-
+/**
+ * The welcome screen concepts.
+ * @returns The concepts.
+ */
 const CONCEPTS = [
   {
     title: "Workspaces",
@@ -39,6 +42,10 @@ const CONCEPTS = [
 
 type WelcomeStep = "intro" | "concepts" | "setup";
 
+/**
+ * The WelcomeScreen component.
+ * @returns The WelcomeScreen component.
+ */
 export function WelcomeScreen() {
   const environments = useEnvironmentStore((state) => state.environments);
   const available = useEnvironmentStore((state) => state.available);
@@ -66,16 +73,7 @@ export function WelcomeScreen() {
     (definition) => definition.id === primaryRuntimeId,
   );
 
-  const groupedCatalog = useMemo(() => {
-    const groups: Record<EnvironmentCategory, typeof ENVIRONMENT_CATALOG> = {
-      language: [],
-      framework: [],
-    };
-    for (const definition of ENVIRONMENT_CATALOG) {
-      groups[definition.category].push(definition);
-    }
-    return groups;
-  }, []);
+  const groupedCatalog = useMemo(() => groupCatalogByCategory(), []);
 
   useEffect(() => {
     const installed = environments.find((env) => env.definition.id === primaryRuntimeId);
@@ -102,14 +100,11 @@ export function WelcomeScreen() {
   };
 
   const browsePath = async (fieldType: ConfigFieldType, key: string) => {
-    try {
-      const selected = await pickNativePath(fieldType === "directory_path");
-      if (selected) {
-        setPaths((prev) => ({ ...prev, [key]: selected }));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
+    await openPathBrowser(
+      fieldType,
+      (selected) => setPaths((prev) => ({ ...prev, [key]: selected })),
+      setError,
+    );
   };
 
   const handleCreateWorkspace = async () => {
@@ -285,7 +280,7 @@ export function WelcomeScreen() {
                   return (
                     <div key={category} className="welcome-screen__runtime-group">
                       <div className="welcome-screen__runtime-group-label">
-                        {CATEGORY_LABELS[category]}
+                        {ENVIRONMENT_CATEGORY_LABELS[category]}
                       </div>
                       <div className="welcome-screen__runtime-list">
                         {items.map((definition) => {

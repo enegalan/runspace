@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useFileTreeDropTarget } from "../../hooks/useFileTreeDropTarget";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { IconChevronDown, IconChevronRight } from "../ui/icons";
 import { FileIcon } from "./FileIcon";
 import type { FileEntry } from "../../core/types/workspace";
@@ -10,7 +9,9 @@ import {
 } from "../../core/workspace/externalFileDrop";
 import {
   clearFileTreeDropTarget,
+  getFileTreeDropTarget,
   setFileTreeDropTarget,
+  subscribeFileTreeDropTarget,
 } from "../../core/workspace/fileTreeDropTarget";
 import {
   clearFileDragData,
@@ -39,6 +40,13 @@ interface MenuState {
   y: number;
 }
 
+/**
+ * The FileTreeItem component.
+ * @param entry - The file entry.
+ * @param depth - The depth of the file entry.
+ * @param workspaceId - The ID of the workspace.
+ * @returns The FileTreeItem component.
+ */
 export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   const expandedDirs = useWorkspaceStore((state) => state.expandedDirs);
   const filesRevision = useWorkspaceStore((state) => state.filesRevision);
@@ -57,7 +65,11 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   const [renameValue, setRenameValue] = useState(entry.name);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const autoExpandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dropTargetPath = useFileTreeDropTarget();
+  const dropTargetPath = useSyncExternalStore(
+    subscribeFileTreeDropTarget,
+    getFileTreeDropTarget,
+    getFileTreeDropTarget,
+  );
 
   const expanded = expandedDirs.has(entry.path);
   const isDropTarget = entry.is_directory && dropTargetPath === entry.path;

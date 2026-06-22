@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { getRuntimeFileExtension, normalizeFileName } from "../../src/core/workspace/fileExtension";
+import { getFileExtension, normalizeFileName } from "../../src/core/workspace/fileExtension";
 
 describe("fileExtension", () => {
   it("maps runtime ids to file extensions", () => {
-    expect(getRuntimeFileExtension("nodejs")).toBe("js");
-    expect(getRuntimeFileExtension("php")).toBe("php");
-    expect(getRuntimeFileExtension("python")).toBe("py");
-    expect(getRuntimeFileExtension("laravel")).toBe("php");
-    expect(getRuntimeFileExtension("gcc")).toBe("c");
-    expect(getRuntimeFileExtension("gpp")).toBe("cpp");
+    expect(getFileExtension("nodejs")).toBe("js");
+    expect(getFileExtension("php")).toBe("php");
+    expect(getFileExtension("python")).toBe("py");
+    expect(getFileExtension("laravel")).toBe("php");
+    expect(getFileExtension("gcc")).toBe("c");
+    expect(getFileExtension("gpp")).toBe("cpp");
   });
 
   it("appends the runtime extension when the name has none", () => {

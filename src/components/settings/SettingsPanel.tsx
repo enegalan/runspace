@@ -10,6 +10,10 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
+/**
+ * The navigation items.
+ * @returns The navigation items.
+ */
 const NAV_ITEMS: {
   id: SettingsTab;
   label: string;
@@ -19,6 +23,12 @@ const NAV_ITEMS: {
   { id: "environments", label: "Environments", icon: IconPlay },
 ];
 
+/**
+ * The SettingsPanel component.
+ * @param open - Whether the settings panel is open.
+ * @param onClose - The function to call when the settings panel is closed.
+ * @returns The SettingsPanel component.
+ */
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const tab = useSettingsUiStore((state) => state.tab);
   const setTab = useSettingsUiStore((state) => state.setTab);

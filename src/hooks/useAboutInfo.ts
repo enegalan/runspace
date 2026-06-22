@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { APP_AUTHOR, APP_LICENSE, APP_NAME, APP_VERSION } from "../core/constants/appMetadata";
 import { isTauri } from "../core/platform/isTauri";
 
-export interface AboutInfo {
+interface AboutInfo {
   appName: string;
   version: string;
   tauriVersion: string | null;
@@ -12,6 +12,10 @@ export interface AboutInfo {
   license: string;
 }
 
+/**
+ * The default information about the app.
+ * @returns The default information about the app.
+ */
 const DEFAULT_INFO: AboutInfo = {
   appName: APP_NAME,
   version: APP_VERSION,
@@ -21,6 +25,11 @@ const DEFAULT_INFO: AboutInfo = {
   license: APP_LICENSE,
 };
 
+/**
+ * This hook is used to get the information about the app.
+ * @param open - Whether the about dialog is open.
+ * @returns The information about the app.
+ */
 export function useAboutInfo(open: boolean): AboutInfo {
   const [info, setInfo] = useState<AboutInfo>(DEFAULT_INFO);
 

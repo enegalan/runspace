@@ -28,10 +28,3 @@ export interface SessionData {
   active_file?: string | null;
   onboarding_complete?: boolean;
 }
-
-export interface OpenFile {
-  path: string;
-  content: string;
-  dirty: boolean;
-  language: string;
-}

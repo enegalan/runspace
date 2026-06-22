@@ -22,6 +22,11 @@ interface EditorAreaProps {
   onSave: (autoRun?: boolean) => void;
 }
 
+/**
+ * The EditorArea component.
+ * @param onSave - The function to call when the editor is saved.
+ * @returns The EditorArea component.
+ */
 export function EditorArea({ onSave }: EditorAreaProps) {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);

@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { basename } from "../../core/path/basename";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useTabDragReorder } from "../../hooks/useTabDragReorder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
@@ -7,15 +8,15 @@ import { FileIcon } from "../files/FileIcon";
 import { ContextMenu, type ContextMenuItem } from "../ui/ContextMenu";
 import { IconClose, IconDot, IconPlus } from "../ui/icons";
 
-function tabLabel(path: string): string {
-  const parts = path.split("/");
-  return parts[parts.length - 1] ?? path;
-}
-
 interface EditorTabsProps {
   inTitlebar?: boolean;
 }
 
+/**
+ * The EditorTabs component.
+ * @param inTitlebar - Whether the editor tabs are in the titlebar.
+ * @returns The EditorTabs component.
+ */
 export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
   const hasWorkspace = useWorkspaceStore((state) => state.workspace !== null);
   const openFiles = useEditorTabsStore((state) => state.openFiles);
@@ -135,7 +136,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
                   <IconDot size={8} className="editor-tabs__dirty" aria-label="Unsaved" />
                 )}
                 <FileIcon path={file.path} isDirectory={false} />
-                <span className="editor-tabs__label">{tabLabel(file.path)}</span>
+                <span className="editor-tabs__label">{basename(file.path)}</span>
               </button>
               <button
                 type="button"
@@ -145,7 +146,7 @@ export function EditorTabs({ inTitlebar = false }: EditorTabsProps) {
                   event.stopPropagation();
                   void closeFile(file.path);
                 }}
-                aria-label={`Close ${tabLabel(file.path)}`}
+                aria-label={`Close ${basename(file.path)}`}
               >
                 <IconClose size={14} />
               </button>

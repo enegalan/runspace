@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ExecutionPhase, ExecutionStatus } from "../../core/types/execution";
-import { OUTPUT_WIDTH_MAX, OUTPUT_WIDTH_MIN } from "../../core/layout/panelLayout";
+import { OUTPUT_WIDTH_MAX, OUTPUT_WIDTH_MIN } from "../../core/constants/panelLayout";
 import { isTauri } from "../../core/platform/isTauri";
 import { usePointerDragResize } from "../../hooks/usePointerDragResize";
 import { ResizeHandle } from "../layout/ResizeHandle";
@@ -22,6 +22,21 @@ interface OutputPanelProps {
   autoScrollEnabled: boolean;
 }
 
+/**
+ * The OutputPanel component.
+ * @param stdout - The stdout.
+ * @param stderr - The stderr.
+ * @param status - The status.
+ * @param phase - The phase.
+ * @param timedOut - Whether the execution timed out.
+ * @param error - The error.
+ * @param width - The width.
+ * @param onWidthChange - The function to call when the width changes.
+ * @param onWidthCommit - The function to call when the width is committed.
+ * @param onClear - The function to call when the clear button is clicked.
+ * @param autoScrollEnabled - Whether the auto scroll is enabled.
+ * @returns The OutputPanel component.
+ */
 export function OutputPanel({
   stdout,
   stderr,

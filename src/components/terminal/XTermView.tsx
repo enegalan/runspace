@@ -19,6 +19,13 @@ interface XTermViewProps {
   onResize?: (cols: number, rows: number) => void;
 }
 
+/**
+ * The XTermView component.
+ * @param onData - The function to call when data is received.
+ * @param onResize - The function to call when the terminal is resized.
+ * @param ref - The ref.
+ * @returns The XTermView component.
+ */
 export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XTermView(
   { onData, onResize },
   ref,

@@ -6,6 +6,10 @@ import { IconButton } from "./IconButton";
 import { IconClose } from "./icons";
 import { Input } from "./Input";
 
+/**
+ * The AppDialogs component.
+ * @returns The AppDialogs component.
+ */
 export function AppDialogs() {
   const prompt = useDialogStore((state) => state.prompt);
   const confirm = useDialogStore((state) => state.confirm);

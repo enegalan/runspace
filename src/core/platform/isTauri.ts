@@ -1,3 +1,7 @@
+/**
+ * Checks if the current environment is a Tauri desktop app.
+ * @returns `true` if the current environment is a Tauri desktop app, `false` otherwise.
+ */
 export function isTauri(): boolean {
   if (typeof window === "undefined") {
     return false;

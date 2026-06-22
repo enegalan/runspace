@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
-import { activateRuntime } from "../../src/core/workspace/activateRuntime";
+import { activateRuntime } from "../../src/stores/workspaceStore";
 
 const mockWorkspace = {
   id: "ws-1",

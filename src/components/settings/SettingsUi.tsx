@@ -2,6 +2,12 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react
 import { Input } from "../ui/Input";
 import { Toggle } from "../ui/Toggle";
 
+/**
+ * The SettingsPageHeader component.
+ * @param title - The title.
+ * @param description - The description.
+ * @returns The SettingsPageHeader component.
+ */
 export function SettingsPageHeader({ title, description }: { title: string; description: string }) {
   return (
     <header className="settings-page-header">
@@ -11,6 +17,14 @@ export function SettingsPageHeader({ title, description }: { title: string; desc
   );
 }
 
+/**
+ * The SettingsSearchInput component.
+ * @param value - The value.
+ * @param onChange - The function to call when the value changes.
+ * @param placeholder - The placeholder.
+ * @param testId - The test ID.
+ * @returns The SettingsSearchInput component.
+ */
 export function SettingsSearchInput({
   value,
   onChange,
@@ -36,6 +50,14 @@ export function SettingsSearchInput({
   );
 }
 
+/**
+ * The SettingsCard component.
+ * @param title - The title.
+ * @param description - The description.
+ * @param headerAction - The header action.
+ * @param children - The children.
+ * @returns The SettingsCard component.
+ */
 export function SettingsCard({
   title,
   description,
@@ -65,6 +87,14 @@ export function SettingsCard({
   );
 }
 
+/**
+ * The SettingsRow component.
+ * @param label - The label.
+ * @param hint - The hint.
+ * @param children - The children.
+ * @param htmlFor - The HTML for.
+ * @returns The SettingsRow component.
+ */
 export function SettingsRow({
   label,
   hint,
@@ -93,6 +123,12 @@ export function SettingsRow({
   );
 }
 
+/**
+ * The SettingsSelect component.
+ * @param className - The class name.
+ * @param props - The props.
+ * @returns The SettingsSelect component.
+ */
 export function SettingsSelect({
   className = "",
   ...props
@@ -104,6 +140,12 @@ export function SettingsSelect({
   );
 }
 
+/**
+ * The SettingsNumberInput component.
+ * @param className - The class name.
+ * @param props - The props.
+ * @returns The SettingsNumberInput component.
+ */
 export function SettingsNumberInput({
   className = "",
   ...props
@@ -122,6 +164,15 @@ interface SegmentedOption<T extends string | number> {
   label: string;
 }
 
+/**
+ * The SettingsSegmented component.
+ * @param value - The value.
+ * @param options - The options.
+ * @param onChange - The function to call when the value changes.
+ * @param name - The name.
+ * @param testId - The test ID.
+ * @returns The SettingsSegmented component.
+ */
 export function SettingsSegmented<T extends string | number>({
   value,
   options,
@@ -154,6 +205,13 @@ export function SettingsSegmented<T extends string | number>({
   );
 }
 
+/**
+ * The SettingsToggleRow component.
+ * @param label - The label.
+ * @param description - The description.
+ * @param props - The props.
+ * @returns The SettingsToggleRow component.
+ */
 export function SettingsToggleRow({
   label,
   description,
@@ -162,6 +220,10 @@ export function SettingsToggleRow({
   return <Toggle className="toggle--row" label={label} description={description} {...props} />;
 }
 
+/**
+ * The SettingsDivider component.
+ * @returns The SettingsDivider component.
+ */
 export function SettingsDivider() {
   return <div className="settings-divider" role="separator" />;
 }

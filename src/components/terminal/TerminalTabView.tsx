@@ -12,6 +12,17 @@ interface TerminalTabViewProps {
   onClearReady?: (clear: (() => void) | null) => void;
 }
 
+/**
+ * The TerminalTabView component.
+ * @param tabId - The tab ID.
+ * @param workspaceId - The workspace ID.
+ * @param environmentId - The environment ID.
+ * @param configured - Whether the environment is configured.
+ * @param enabled - Whether the terminal is enabled.
+ * @param active - Whether the tab is active.
+ * @param onClearReady - The function to call when the clear is ready.
+ * @returns The TerminalTabView component.
+ */
 export function TerminalTabView({
   tabId,
   workspaceId,
