@@ -152,7 +152,6 @@ fn merge_json(base: Value, patch: Value) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_home_lock::home_test_lock;
 
     fn temp_settings_path() -> PathBuf {
         std::env::temp_dir().join(format!("runspace-settings-test-{}", std::process::id()))
@@ -160,7 +159,6 @@ mod tests {
 
     #[test]
     fn defaults_when_missing_file() {
-        let _lock = home_test_lock();
         let temp_dir = temp_settings_path();
         let _ = fs::remove_dir_all(&temp_dir);
         fs::create_dir_all(&temp_dir).unwrap();
@@ -175,7 +173,6 @@ mod tests {
 
     #[test]
     fn partial_update_merges_nested() {
-        let _lock = home_test_lock();
         let temp_dir = temp_settings_path();
         let _ = fs::remove_dir_all(&temp_dir);
         fs::create_dir_all(&temp_dir).unwrap();
@@ -203,7 +200,6 @@ mod tests {
 
     #[test]
     fn shortcut_update_clears_removed_modifiers() {
-        let _lock = home_test_lock();
         let temp_dir = temp_settings_path();
         let _ = fs::remove_dir_all(&temp_dir);
         fs::create_dir_all(&temp_dir).unwrap();

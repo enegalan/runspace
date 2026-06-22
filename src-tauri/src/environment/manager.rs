@@ -228,7 +228,6 @@ impl EnvironmentManager {
             binary_path,
             env_vars: user_config.env_vars.clone(),
             extra_paths,
-            file_extension: definition.file_extension.clone(),
         })
     }
 

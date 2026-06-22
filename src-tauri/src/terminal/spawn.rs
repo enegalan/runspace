@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::engine::adapters::{ensure_framework_ready, framework_terminal_env};
 use crate::environment::catalog::get_definition;
 use crate::environment::types::{EnvironmentCategory, ResolvedEnvironment};
+use crate::error::map_err;
 use crate::workspace::manager::Workspace;
 
 pub struct ShellContext {
@@ -25,10 +26,11 @@ pub fn build_shell_context(
             welcome: None,
         }),
         EnvironmentCategory::Framework => {
-            let adapter = crate::engine::adapters::get_adapter(&resolved.id)
-                .map_err(|error| error.to_string())?;
-            let skeleton_root = ensure_framework_ready(adapter.as_ref(), &resolved.extra_paths)
-                .map_err(|error| error.to_string())?;
+            let adapter = map_err(crate::engine::adapters::get_adapter(&resolved.id))?;
+            let skeleton_root = map_err(ensure_framework_ready(
+                adapter.as_ref(),
+                &resolved.extra_paths,
+            ))?;
             let framework_env = framework_terminal_env(&skeleton_root, &workspace.path);
 
             let mut env_vars = build_env_vars(resolved);
@@ -145,7 +147,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            file_extension: "js".to_string(),
         };
 
         let merged = merge_path(&resolved);
@@ -166,7 +167,6 @@ mod tests {
                 "composer_path".to_string(),
                 "/usr/local/bin/composer".to_string(),
             )]),
-            file_extension: "php".to_string(),
         };
 
         let merged = merge_path(&resolved);
@@ -184,7 +184,6 @@ mod tests {
             binary_path: "/opt/node/bin/node".to_string(),
             env_vars: HashMap::new(),
             extra_paths: HashMap::new(),
-            file_extension: "js".to_string(),
         };
 
         let env_vars = build_env_vars(&resolved);
@@ -205,7 +204,6 @@ mod tests {
             binary_path: "/usr/local/bin/php".to_string(),
             env_vars: HashMap::from([("PATH".to_string(), "/old".to_string())]),
             extra_paths: HashMap::new(),
-            file_extension: "php".to_string(),
         };
 
         let env_vars = build_env_vars(&resolved);

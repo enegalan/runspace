@@ -70,13 +70,11 @@ pub struct ValidationResult {
 }
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub struct ResolvedEnvironment {
     pub id: String,
     pub binary_path: String,
     pub env_vars: HashMap<String, String>,
     pub extra_paths: HashMap<String, String>,
-    pub file_extension: String,
 }
 
 #[derive(Debug)]

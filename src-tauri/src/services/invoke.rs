@@ -4,7 +4,17 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use tauri::AppHandle;
 
-use crate::services::execution::{start_execution_http, start_execution_tauri};
+use crate::services::environment::{
+    get_selected, install, list_available, list_installed, set_env_vars, set_paths, set_selected,
+    uninstall, validate,
+};
+use crate::services::execution::{kill_process, start_execution};
+use crate::services::settings::{read_settings, update_settings};
+use crate::services::workspace::{
+    create_directory, create_workspace, delete_file, delete_workspace, get_active_workspace,
+    import_external, initialize_workspace, list_files, list_workspaces, open_workspace, read_file,
+    read_session, rename_file, rename_workspace, update_manifest, write_file, write_session,
+};
 use crate::state::SharedState;
 
 #[derive(Debug, Deserialize)]
@@ -40,6 +50,24 @@ struct SetEnvVarsArgs {
     env_vars: HashMap<String, String>,
 }
 
+fn str_arg(args: &Value, key: &str) -> Result<String, String> {
+    args.get(key)
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .ok_or_else(|| format!("Missing {key}"))
+}
+
+fn opt_str_arg<'a>(args: &'a Value, key: &str) -> Option<&'a str> {
+    args.get(key).and_then(|v| v.as_str())
+}
+
+fn u16_arg(args: &Value, key: &str) -> Result<u16, String> {
+    args.get(key)
+        .and_then(|v| v.as_u64())
+        .map(|v| v as u16)
+        .ok_or_else(|| format!("Missing {key}"))
+}
+
 pub async fn dispatch_invoke(
     state: &SharedState,
     app: Option<AppHandle>,
@@ -47,392 +75,117 @@ pub async fn dispatch_invoke(
     args: Value,
 ) -> Result<Value, String> {
     match cmd {
-        "list_environments" => {
-            let manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            Ok(json!(manager.list_installed()))
-        }
-        "list_available_environments" => {
-            let manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            Ok(json!(manager.list_available()))
-        }
-        "get_selected_environment" => {
-            let manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            Ok(match manager.get_selected() {
-                Some(environment) => json!(environment),
-                None => Value::Null,
-            })
-        }
+        "list_environments" => Ok(json!(list_installed(state)?)),
+        "list_available_environments" => Ok(json!(list_available(state)?)),
+        "get_selected_environment" => Ok(match get_selected(state)? {
+            Some(environment) => json!(environment),
+            None => Value::Null,
+        }),
         "install_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid install_environment args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            manager
-                .install(&args.environment_id)
-                .map_err(|e| e.to_string())?;
+            install(state, &args.environment_id)?;
             Ok(Value::Null)
         }
         "uninstall_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid uninstall_environment args: {e}"))?;
-            uninstall_environment(state, &args.environment_id)
+            uninstall(state, &args.environment_id)?;
+            Ok(Value::Null)
         }
         "set_selected_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid set_selected_environment args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            manager
-                .set_selected(&args.environment_id)
-                .map_err(|e| e.to_string())?;
+            set_selected(state, &args.environment_id)?;
             Ok(Value::Null)
         }
         "set_environment_paths" => {
             let args: SetPathsArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid set_environment_paths args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            manager
-                .set_paths(&args.environment_id, args.paths)
-                .map_err(|e| e.to_string())?;
+            set_paths(state, &args.environment_id, args.paths)?;
             Ok(Value::Null)
         }
         "set_environment_env_vars" => {
             let args: SetEnvVarsArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid set_environment_env_vars args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            manager
-                .set_env_vars(&args.environment_id, args.env_vars)
-                .map_err(|e| e.to_string())?;
+            set_env_vars(state, &args.environment_id, args.env_vars)?;
             Ok(Value::Null)
         }
         "validate_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid validate_environment args: {e}"))?;
-            let mut manager = state
-                .environment_manager
-                .lock()
-                .map_err(|_| "Environment manager lock poisoned".to_string())?;
-            let result = manager
-                .validate_environment(&args.environment_id)
-                .map_err(|e| e.to_string())?;
-            Ok(json!(result))
+            Ok(json!(validate(state, &args.environment_id)?))
         }
-        "read_settings" => {
-            let manager = state
-                .settings_manager
-                .lock()
-                .map_err(|_| "Settings manager lock poisoned".to_string())?;
-            Ok(json!(manager.get().clone()))
-        }
-        "update_settings" => {
-            let mut manager = state
-                .settings_manager
-                .lock()
-                .map_err(|_| "Settings manager lock poisoned".to_string())?;
-            let updated = manager.update(args).map_err(|e| e.to_string())?;
-            Ok(json!(updated))
-        }
+        "read_settings" => Ok(json!(read_settings(state)?)),
+        "update_settings" => Ok(json!(update_settings(state, args)?)),
         "execute_code" => {
             let args: ExecuteArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid execute_code args: {e}"))?;
-            if let Some(app) = app {
-                start_execution_tauri(
-                    state,
-                    app,
-                    args.code,
-                    args.environment_id,
-                    args.file,
-                    args.timeout_secs,
-                    args.compile_timeout_secs,
-                )?;
-            } else {
-                start_execution_http(
-                    state,
-                    args.code,
-                    args.environment_id,
-                    args.file,
-                    args.timeout_secs,
-                    args.compile_timeout_secs,
-                )?;
-            }
+            start_execution(
+                state,
+                app,
+                args.code,
+                args.environment_id,
+                args.file,
+                args.timeout_secs,
+                args.compile_timeout_secs,
+            )?;
+            Ok(Value::Null)
+        }
+        "kill_process" => {
+            kill_process(state)?;
             Ok(Value::Null)
         }
         "list_workspaces" => {
-            let runtime_id = args
-                .get("runtimeId")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            Ok(json!(manager
-                .list_workspaces_for_runtime(runtime_id.as_deref())
-                .map_err(|e| e.to_string())?))
+            let runtime_id = opt_str_arg(&args, "runtimeId");
+            Ok(json!(list_workspaces(state, runtime_id)?))
         }
-        "open_workspace" => {
-            let id: String = args
-                .get("id")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing workspace id")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let workspace = manager.open_workspace(&id).map_err(|e| e.to_string())?;
-            let info = manager
-                .workspace_info(&workspace)
-                .map_err(|e| e.to_string())?;
-            {
-                let mut active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                *active = Some(workspace);
-            }
-            Ok(json!(info))
-        }
+        "open_workspace" => Ok(json!(open_workspace(state, &str_arg(&args, "id")?)?)),
         "create_workspace" => {
-            let name = args
-                .get("name")
-                .and_then(|v| v.as_str())
-                .unwrap_or("Untitled")
-                .to_string();
-            let runtime_id = args
-                .get("runtimeId")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing runtimeId")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let workspace = manager
-                .create_named_workspace(&name, &runtime_id)
-                .map_err(|e| e.to_string())?;
-            let info = manager
-                .workspace_info(&workspace)
-                .map_err(|e| e.to_string())?;
-            {
-                let mut active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                *active = Some(workspace);
-            }
-            Ok(json!(info))
+            let name = opt_str_arg(&args, "name").unwrap_or("Untitled");
+            let runtime_id = str_arg(&args, "runtimeId")?;
+            Ok(json!(create_workspace(state, name, &runtime_id)?))
         }
-        "get_active_workspace" => {
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            match active.as_ref() {
-                Some(workspace) => {
-                    let info = manager
-                        .workspace_info(workspace)
-                        .map_err(|e| e.to_string())?;
-                    Ok(json!(info))
-                }
-                None => Ok(Value::Null),
-            }
-        }
+        "get_active_workspace" => Ok(match get_active_workspace(state)? {
+            Some(info) => json!(info),
+            None => Value::Null,
+        }),
         "initialize_workspace" => {
-            let runtime_id = args
-                .get("runtimeId")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing runtimeId")?
-                .to_string();
+            let runtime_id = str_arg(&args, "runtimeId")?;
             let use_session = args
                 .get("useSession")
                 .and_then(|v| v.as_bool())
                 .unwrap_or(true);
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let session = manager.load_session().map_err(|e| e.to_string())?;
-            let (workspace, info) = manager
-                .initialize_active_workspace(&runtime_id, &session, use_session)
-                .map_err(|e| e.to_string())?;
-            {
-                let mut active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                *active = Some(workspace);
-            }
-            Ok(json!(info))
+            Ok(json!(initialize_workspace(
+                state,
+                &runtime_id,
+                use_session
+            )?))
         }
         "list_files" => {
-            let relative_path = args
-                .get("relativePath")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let workspace_id = args.get("id").and_then(|v| v.as_str());
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let workspace = if let Some(id) = workspace_id {
-                manager.open_workspace(id).map_err(|e| e.to_string())?
-            } else {
-                let active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                active
-                    .as_ref()
-                    .ok_or_else(|| "No active workspace".to_string())?
-                    .clone()
-            };
-            let files = manager
-                .list_files(&workspace, relative_path.as_deref())
-                .map_err(|e| e.to_string())?;
-            Ok(json!(files))
+            let relative_path = opt_str_arg(&args, "relativePath");
+            let workspace_id = opt_str_arg(&args, "id");
+            Ok(json!(list_files(state, relative_path, workspace_id)?))
         }
-        "read_file" => {
-            let path = args
-                .get("path")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing path")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            let content = manager
-                .read_file(workspace, &path)
-                .map_err(|e| e.to_string())?;
-            Ok(json!(content))
-        }
+        "read_file" => Ok(json!(read_file(state, &str_arg(&args, "path")?)?)),
         "write_file" => {
-            let path = args
-                .get("path")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing path")?
-                .to_string();
-            let content = args
-                .get("content")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing content")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            manager
-                .write_file(workspace, &path, &content)
-                .map_err(|e| e.to_string())?;
+            write_file(state, &str_arg(&args, "path")?, &str_arg(&args, "content")?)?;
             Ok(Value::Null)
         }
         "delete_file" => {
-            let path = args
-                .get("path")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing path")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            manager
-                .delete_file(workspace, &path)
-                .map_err(|e| e.to_string())?;
+            delete_file(state, &str_arg(&args, "path")?)?;
             Ok(Value::Null)
         }
         "rename_file" => {
-            let old_path = args
-                .get("oldPath")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing oldPath")?
-                .to_string();
-            let new_path = args
-                .get("newPath")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing newPath")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            manager
-                .rename_file(workspace, &old_path, &new_path)
-                .map_err(|e| e.to_string())?;
+            rename_file(
+                state,
+                &str_arg(&args, "oldPath")?,
+                &str_arg(&args, "newPath")?,
+            )?;
             Ok(Value::Null)
         }
         "create_directory" => {
-            let path = args
-                .get("path")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing path")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            manager
-                .create_directory(workspace, &path)
-                .map_err(|e| e.to_string())?;
+            create_directory(state, &str_arg(&args, "path")?)?;
             Ok(Value::Null)
         }
         "import_external" => {
@@ -446,229 +199,50 @@ pub async fn dispatch_invoke(
             if source_paths.is_empty() {
                 return Err("Missing sourcePaths".to_string());
             }
-            let target_dir = args
-                .get("targetDir")
-                .and_then(|v| v.as_str())
-                .map(|value| value.to_string());
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let active = state
-                .active_workspace
-                .lock()
-                .map_err(|_| "Active workspace lock poisoned".to_string())?;
-            let workspace = active
-                .as_ref()
-                .ok_or_else(|| "No active workspace".to_string())?;
-            let imported = manager
-                .import_external(workspace, &source_paths, target_dir.as_deref())
-                .map_err(|e| e.to_string())?;
-            Ok(json!(imported))
+            let target_dir = opt_str_arg(&args, "targetDir");
+            Ok(json!(import_external(state, &source_paths, target_dir)?))
         }
-        "read_session" => {
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            Ok(json!(manager.load_session().map_err(|e| e.to_string())?))
-        }
-        "delete_workspace" => {
-            let id = args
-                .get("id")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing workspace id")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            manager.delete_workspace(&id).map_err(|e| e.to_string())?;
-            let mut session = manager.load_session().map_err(|e| e.to_string())?;
-            manager
-                .purge_workspace_from_session(&mut session, &id)
-                .map_err(|e| e.to_string())?;
-            {
-                let mut active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                if active.as_ref().is_some_and(|current| current.id == id) {
-                    *active = None;
-                }
-            }
-            Ok(Value::Null)
-        }
-        "rename_workspace" => {
-            let id = args
-                .get("id")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing workspace id")?
-                .to_string();
-            let name = args
-                .get("name")
-                .and_then(|v| v.as_str())
-                .ok_or("Missing project name")?
-                .to_string();
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let workspace = manager.open_workspace(&id).map_err(|e| e.to_string())?;
-            let trimmed = name.trim();
-            if trimmed.is_empty() {
-                return Err("Project name cannot be empty".to_string());
-            }
-            let mut manifest = manager
-                .read_manifest(&workspace)
-                .map_err(|e| e.to_string())?;
-            manifest.name = trimmed.to_string();
-            manifest.updated_at = chrono::Utc::now().to_rfc3339();
-            manager
-                .write_manifest(&workspace, &manifest)
-                .map_err(|e| e.to_string())?;
-            let info = manager
-                .workspace_info(&workspace)
-                .map_err(|e| e.to_string())?;
-            {
-                let mut active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                if active.as_ref().is_some_and(|current| current.id == id) {
-                    *active = Some(workspace);
-                }
-            }
-            Ok(json!(info))
-        }
-        "update_manifest" => {
-            let name = args
-                .get("name")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            let workspace = {
-                let active = state
-                    .active_workspace
-                    .lock()
-                    .map_err(|_| "Active workspace lock poisoned".to_string())?;
-                active
-                    .clone()
-                    .ok_or_else(|| "No active workspace".to_string())?
-            };
-            let mut manifest = manager
-                .read_manifest(&workspace)
-                .map_err(|e| e.to_string())?;
-            if let Some(next_name) = name {
-                let trimmed = next_name.trim();
-                if trimmed.is_empty() {
-                    return Err("Project name cannot be empty".to_string());
-                }
-                manifest.name = trimmed.to_string();
-            }
-            manifest.updated_at = chrono::Utc::now().to_rfc3339();
-            manager
-                .write_manifest(&workspace, &manifest)
-                .map_err(|e| e.to_string())?;
-            let info = manager
-                .workspace_info(&workspace)
-                .map_err(|e| e.to_string())?;
-            Ok(json!(info))
-        }
+        "read_session" => Ok(json!(read_session(state)?)),
         "write_session" => {
             let payload = args.get("session").cloned().unwrap_or(args);
             let session: crate::workspace::SessionData = serde_json::from_value(payload)
                 .map_err(|e| format!("Invalid write_session args: {e}"))?;
-            let manager = state
-                .workspace_manager
-                .lock()
-                .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-            manager.save_session(&session).map_err(|e| e.to_string())?;
+            write_session(state, &session)?;
             Ok(Value::Null)
         }
-        "kill_process" => {
-            state.execution_engine.kill().map_err(|e| e.to_string())?;
+        "delete_workspace" => {
+            delete_workspace(state, &str_arg(&args, "id")?)?;
             Ok(Value::Null)
+        }
+        "rename_workspace" => Ok(json!(rename_workspace(
+            state,
+            &str_arg(&args, "id")?,
+            &str_arg(&args, "name")?,
+        )?)),
+        "update_manifest" => {
+            let name = opt_str_arg(&args, "name");
+            Ok(json!(update_manifest(state, name)?))
         }
         "spawn_terminal" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid spawn_terminal args: {e}"))?;
             crate::services::terminal::spawn_terminal(state, app, &args.environment_id).await
         }
-        "write_terminal" => {
-            let session_id = args
-                .get("sessionId")
-                .and_then(|value| value.as_str())
-                .ok_or_else(|| "Missing sessionId".to_string())?
-                .to_string();
-            let data = args
-                .get("data")
-                .and_then(|value| value.as_str())
-                .ok_or_else(|| "Missing data".to_string())?
-                .to_string();
-            crate::services::terminal::write_terminal(state, &session_id, &data)
-        }
-        "resize_terminal" => {
-            let session_id = args
-                .get("sessionId")
-                .and_then(|value| value.as_str())
-                .ok_or_else(|| "Missing sessionId".to_string())?
-                .to_string();
-            let cols = args
-                .get("cols")
-                .and_then(|value| value.as_u64())
-                .ok_or_else(|| "Missing cols".to_string())? as u16;
-            let rows = args
-                .get("rows")
-                .and_then(|value| value.as_u64())
-                .ok_or_else(|| "Missing rows".to_string())? as u16;
-            crate::services::terminal::resize_terminal(state, &session_id, cols, rows)
-        }
+        "write_terminal" => crate::services::terminal::write_terminal(
+            state,
+            &str_arg(&args, "sessionId")?,
+            &str_arg(&args, "data")?,
+        ),
+        "resize_terminal" => crate::services::terminal::resize_terminal(
+            state,
+            &str_arg(&args, "sessionId")?,
+            u16_arg(&args, "cols")?,
+            u16_arg(&args, "rows")?,
+        ),
         "close_terminal" => {
-            let session_id = args
-                .get("sessionId")
-                .and_then(|value| value.as_str())
-                .ok_or_else(|| "Missing sessionId".to_string())?
-                .to_string();
-            crate::services::terminal::close_terminal(state, &session_id)
+            crate::services::terminal::close_terminal(state, &str_arg(&args, "sessionId")?)
         }
         "list_terminal_sessions" => crate::services::terminal::list_terminal_sessions(state),
         _ => Err(format!("Unknown command: {cmd}")),
     }
-}
-
-fn uninstall_environment(state: &SharedState, runtime_id: &str) -> Result<Value, String> {
-    {
-        let mut manager = state
-            .environment_manager
-            .lock()
-            .map_err(|_| "Environment manager lock poisoned".to_string())?;
-        manager.uninstall(runtime_id).map_err(|e| e.to_string())?;
-    }
-
-    let deleted_workspace_ids = {
-        let manager = state
-            .workspace_manager
-            .lock()
-            .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-        manager
-            .delete_workspaces_for_runtime(runtime_id)
-            .map_err(|e| e.to_string())?
-    };
-
-    let mut active = state
-        .active_workspace
-        .lock()
-        .map_err(|_| "Active workspace lock poisoned".to_string())?;
-    if active
-        .as_ref()
-        .is_some_and(|current| deleted_workspace_ids.contains(&current.id))
-    {
-        *active = None;
-    }
-
-    Ok(Value::Null)
 }

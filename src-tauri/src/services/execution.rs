@@ -7,6 +7,9 @@ use crate::engine::adapters::{
 };
 use crate::engine::compiled::run_compiled;
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
+use crate::error::{lock_err, map_err};
+use crate::services::settings::execution_settings;
+use crate::services::workspace::{ensure_active_workspace, lock_workspace_manager};
 use crate::state::SharedState;
 
 struct PreparedExecution {
@@ -15,106 +18,79 @@ struct PreparedExecution {
     env_vars: Vec<(String, String)>,
 }
 
+pub fn kill_process(state: &SharedState) -> Result<(), String> {
+    map_err(state.execution_engine.kill())
+}
+
 pub fn start_execution(
     state: &SharedState,
-    emitter: ExecutionEmitter,
+    app: Option<AppHandle>,
     code: Option<String>,
     environment_id: Option<String>,
     file: Option<String>,
     timeout_secs: Option<u64>,
     compile_timeout_secs: Option<u64>,
 ) -> Result<(), String> {
-    let resolved = {
-        let manager = state
-            .environment_manager
-            .lock()
-            .map_err(|_| "Environment manager lock poisoned".to_string())?;
+    let emitter = match app {
+        Some(app) => ExecutionEmitter::tauri(app, state.execution_events.clone()),
+        None => ExecutionEmitter::bus_only(state.execution_events.clone()),
+    };
 
+    let resolved = {
+        let manager = lock_err(state.environment_manager.lock(), "Environment manager")?;
         let env_id = match environment_id.as_deref() {
             Some(id) => id.to_string(),
             None => {
                 manager
                     .get_selected()
-                    .ok_or("No selected environment")?
+                    .ok_or_else(|| "No selected environment".to_string())?
                     .definition
                     .id
             }
         };
-
-        manager
-            .resolve_for_execution(&env_id)
-            .map_err(|e| e.to_string())?
+        map_err(manager.resolve_for_execution(&env_id))?
     };
 
     let environment_id = resolved.id.clone();
-    let adapter = get_adapter(&environment_id).map_err(|e| e.to_string())?;
+    let adapter = map_err(get_adapter(&environment_id))?;
     let is_compiled = is_compiled_environment(&environment_id);
 
-    let settings = {
-        let manager = state
-            .settings_manager
-            .lock()
-            .map_err(|_| "Settings manager lock poisoned".to_string())?;
-        manager.get().execution.clone()
-    };
+    let settings = execution_settings(state)?;
 
-    let timeout = if is_compiled {
-        timeout_secs.unwrap_or(settings.run_timeout_secs)
-    } else {
-        timeout_secs.unwrap_or(settings.run_timeout_secs)
-    };
-
+    let timeout = timeout_secs.unwrap_or(settings.run_timeout_secs);
     let compile_timeout = compile_timeout_secs.unwrap_or(settings.compile_timeout_secs);
     let binary = PathBuf::from(&resolved.binary_path);
 
     let _ = state.execution_engine.kill();
 
     let prepared = {
-        let workspace_manager = state
-            .workspace_manager
-            .lock()
-            .map_err(|_| "Workspace manager lock poisoned".to_string())?;
-        let mut active_workspace = state
-            .active_workspace
-            .lock()
-            .map_err(|_| "Active workspace lock poisoned".to_string())?;
-
-        if active_workspace.is_none() {
-            let workspace = workspace_manager
-                .create_workspace()
-                .map_err(|e| e.to_string())?;
-            eprintln!("Created workspace {}", workspace.id);
-            *active_workspace = Some(workspace);
-        }
-
-        let workspace = active_workspace.as_ref().ok_or("No active workspace")?;
+        let workspace = ensure_active_workspace(state)?;
+        let workspace_manager = lock_workspace_manager(state)?;
 
         let relative_path = file.as_deref().ok_or("No file selected to run")?;
-        let resolved_entry = workspace_manager
-            .resolve_run_file(workspace, relative_path)
-            .map_err(|e| e.to_string())?;
+        let resolved_entry =
+            map_err(workspace_manager.resolve_run_file(&workspace, relative_path))?;
 
         if let Some(editor_code) = code {
-            workspace_manager
-                .write_file(workspace, &resolved_entry, &editor_code)
-                .map_err(|e| e.to_string())?;
+            map_err(workspace_manager.write_file(&workspace, &resolved_entry, &editor_code))?;
         }
 
         let snippet_path = workspace.path.join(&resolved_entry);
-        validate_snippet_path(workspace, &snippet_path)?;
+        map_err(crate::security::validate_path_in_workspace(
+            &workspace.path,
+            &snippet_path,
+        ))?;
 
-        let adapter_prepared = adapter
-            .prepare(PrepareContext {
-                workspace_path: &workspace.path,
-                snippet_path: &snippet_path,
-                extra_paths: &resolved.extra_paths,
-            })
-            .map_err(|e| e.to_string())?;
+        let adapter_prepared = map_err(adapter.prepare(PrepareContext {
+            workspace_path: &workspace.path,
+            snippet_path: &snippet_path,
+            extra_paths: &resolved.extra_paths,
+        }))?;
 
         let mut env_vars: Vec<(String, String)> = resolved
             .env_vars
             .into_iter()
-            .chain(adapter_prepared.extra_env.into_iter())
+            .chain(adapter_prepared.extra_env)
             .collect();
 
         env_vars.sort_by(|a, b| a.0.cmp(&b.0));
@@ -187,53 +163,4 @@ pub fn start_execution(
     });
 
     Ok(())
-}
-
-fn validate_snippet_path(
-    workspace: &crate::workspace::Workspace,
-    snippet_path: &std::path::Path,
-) -> Result<(), String> {
-    crate::security::layer::validate_path_in_workspace(&workspace.path, snippet_path)
-        .map_err(|e| e.to_string())
-}
-
-pub fn start_execution_tauri(
-    state: &SharedState,
-    app: AppHandle,
-    code: Option<String>,
-    environment_id: Option<String>,
-    file: Option<String>,
-    timeout_secs: Option<u64>,
-    compile_timeout_secs: Option<u64>,
-) -> Result<(), String> {
-    let emitter = ExecutionEmitter::tauri(app, state.execution_events.clone());
-    start_execution(
-        state,
-        emitter,
-        code,
-        environment_id,
-        file,
-        timeout_secs,
-        compile_timeout_secs,
-    )
-}
-
-pub fn start_execution_http(
-    state: &SharedState,
-    code: Option<String>,
-    environment_id: Option<String>,
-    file: Option<String>,
-    timeout_secs: Option<u64>,
-    compile_timeout_secs: Option<u64>,
-) -> Result<(), String> {
-    let emitter = ExecutionEmitter::bus_only(state.execution_events.clone());
-    start_execution(
-        state,
-        emitter,
-        code,
-        environment_id,
-        file,
-        timeout_secs,
-        compile_timeout_secs,
-    )
 }
