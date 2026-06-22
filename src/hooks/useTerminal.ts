@@ -37,6 +37,8 @@ export function useTerminal({
   const xtermRef = useRef<XTermViewHandle | null>(null);
   const sessionIdRef = useRef<string | null>(null);
   const activeRef = useRef(active);
+  const readyRef = useRef(false);
+  const pendingOutputRef = useRef<string[]>([]);
   const tab = useTerminalStore((state) => state.tabs[tabId]);
   const setConnecting = useTerminalStore((state) => state.setConnecting);
   const setSession = useTerminalStore((state) => state.setSession);
@@ -45,12 +47,24 @@ export function useTerminal({
 
   useEffect(() => {
     activeRef.current = active;
+    if (!active) {
+      readyRef.current = false;
+      pendingOutputRef.current = [];
+    }
   }, [active]);
 
   useEffect(() => {
     const sessionId = tab?.sessionId;
     sessionIdRef.current = sessionId && tab?.status === "running" ? sessionId : null;
   }, [tab?.sessionId, tab?.status]);
+
+  const handleReady = useCallback(() => {
+    readyRef.current = true;
+    for (const chunk of pendingOutputRef.current) {
+      xtermRef.current?.write(chunk);
+    }
+    pendingOutputRef.current = [];
+  }, []);
 
   useEffect(() => {
     if (!enabled || !configured) {
@@ -73,19 +87,6 @@ export function useTerminal({
         }
         sessionIdRef.current = result.sessionId;
         setSession(tabId, result.sessionId);
-        window.setTimeout(() => {
-          if (!activeRef.current) {
-            return;
-          }
-          xtermRef.current?.fit();
-          const cols = xtermRef.current?.getCols() ?? 80;
-          const rows = xtermRef.current?.getRows() ?? 24;
-          void runspaceInvoke("resize_terminal", {
-            sessionId: result.sessionId,
-            cols,
-            rows,
-          });
-        }, 0);
       } catch (error) {
         if (!cancelled) {
           setError(tabId, error instanceof Error ? error.message : String(error));
@@ -111,31 +112,17 @@ export function useTerminal({
   }, [configured, enabled, environmentId, setConnecting, setError, setSession, tabId, workspaceId]);
 
   useEffect(() => {
-    if (!active || tab?.status !== "running" || !sessionIdRef.current) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      xtermRef.current?.fit();
-      const sessionId = sessionIdRef.current;
-      if (!sessionId) {
+    const handleData = (sessionId: string, data: string) => {
+      if (sessionIdRef.current !== sessionId || !activeRef.current) {
         return;
       }
-      const cols = xtermRef.current?.getCols() ?? 80;
-      const rows = xtermRef.current?.getRows() ?? 24;
-      void runspaceInvoke("resize_terminal", {
-        sessionId,
-        cols,
-        rows,
-      });
-    }, 0);
-  }, [active, tab?.status]);
 
-  useEffect(() => {
-    const handleData = (sessionId: string, data: string) => {
-      if (sessionIdRef.current === sessionId) {
+      if (readyRef.current) {
         xtermRef.current?.write(data);
+        return;
       }
+
+      pendingOutputRef.current.push(data);
     };
 
     const handleExit = (sessionId: string) => {
@@ -195,6 +182,7 @@ export function useTerminal({
     tab,
     handleData,
     handleResize,
+    handleReady,
     clearTerminal,
   };
 }

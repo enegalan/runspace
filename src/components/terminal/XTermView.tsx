@@ -17,39 +17,54 @@ export interface XTermViewHandle {
 interface XTermViewProps {
   onData: (data: string) => void;
   onResize?: (cols: number, rows: number) => void;
+  onReady?: () => void;
+}
+
+function canOpen(container: HTMLDivElement): boolean {
+  return container.isConnected && container.clientWidth > 0 && container.clientHeight > 0;
 }
 
 /**
  * The XTermView component.
  * @param onData - The function to call when data is received.
  * @param onResize - The function to call when the terminal is resized.
+ * @param onReady - The function to call after the terminal opens.
  * @param ref - The ref.
  * @returns The XTermView component.
  */
 export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XTermView(
-  { onData, onResize },
+  { onData, onResize, onReady },
   ref,
 ) {
   const settings = useSettingsStore((state) => state.settings);
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const onDataRef = useRef(onData);
-  const onResizeRef = useRef(onResize);
+  const openedRef = useRef(false);
+  const callbacksRef = useRef({ onData, onResize, onReady });
 
-  onDataRef.current = onData;
-  onResizeRef.current = onResize;
+  callbacksRef.current = { onData, onResize, onReady };
+
+  const fit = () => {
+    const container = containerRef.current;
+    if (!openedRef.current || !container || !canOpen(container)) {
+      return;
+    }
+    fitAddonRef.current?.fit();
+  };
 
   useImperativeHandle(ref, () => ({
     write: (data: string) => {
-      terminalRef.current?.write(data);
+      if (openedRef.current) {
+        terminalRef.current?.write(data);
+      }
     },
     clear: () => {
-      terminalRef.current?.clear();
+      if (openedRef.current) {
+        terminalRef.current?.clear();
+      }
     },
-    fit: () => {
-      fitAddonRef.current?.fit();
-    },
+    fit,
     getCols: () => terminalRef.current?.cols ?? 80,
     getRows: () => terminalRef.current?.rows ?? 24,
   }));
@@ -60,6 +75,8 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XT
       return;
     }
 
+    openedRef.current = false;
+
     const { editorFontFamily, editorFontSize } = useSettingsStore.getState().settings.appearance;
     const terminal = new Terminal({
       cursorBlink: true,
@@ -69,54 +86,81 @@ export const XTermView = forwardRef<XTermViewHandle, XTermViewProps>(function XT
     });
     const fitAddon = new FitAddon();
     terminal.loadAddon(fitAddon);
-    terminal.open(container);
-    fitAddon.fit();
 
-    const applyTheme = () => {
-      terminal.options.theme = readTerminalTheme();
+    let themeObserver: MutationObserver | undefined;
+    let dataDisposable: { dispose: () => void } | undefined;
+    let resizeDisposable: { dispose: () => void } | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    let openFrameId = 0;
+    let readyFrameId = 0;
+    let disposeFrameId = 0;
+
+    const tryOpen = () => {
+      if (openedRef.current || !canOpen(container)) {
+        return;
+      }
+
+      terminal.open(container);
+      openedRef.current = true;
+      terminalRef.current = terminal;
+      fitAddonRef.current = fitAddon;
+
+      const applyTheme = () => {
+        terminal.options.theme = readTerminalTheme();
+      };
+      themeObserver = new MutationObserver(applyTheme);
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+
+      dataDisposable = terminal.onData((data) => {
+        callbacksRef.current.onData(data);
+      });
+      resizeDisposable = terminal.onResize(({ cols, rows }) => {
+        callbacksRef.current.onResize?.(cols, rows);
+      });
+      resizeObserver = new ResizeObserver(fit);
+      resizeObserver.observe(container);
+
+      readyFrameId = requestAnimationFrame(() => {
+        fit();
+        callbacksRef.current.onReady?.();
+      });
     };
-    const themeObserver = new MutationObserver(applyTheme);
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
 
-    const dataDisposable = terminal.onData((data) => {
-      onDataRef.current(data);
-    });
-    const resizeDisposable = terminal.onResize(({ cols, rows }) => {
-      onResizeRef.current?.(cols, rows);
-    });
-
-    terminalRef.current = terminal;
-    fitAddonRef.current = fitAddon;
-
-    const resizeObserver = new ResizeObserver(() => {
-      fitAddon.fit();
-      onResizeRef.current?.(terminal.cols, terminal.rows);
-    });
-    resizeObserver.observe(container);
+    const openObserver = new ResizeObserver(tryOpen);
+    openObserver.observe(container);
+    openFrameId = requestAnimationFrame(tryOpen);
 
     return () => {
-      themeObserver.disconnect();
-      resizeObserver.disconnect();
-      dataDisposable.dispose();
-      resizeDisposable.dispose();
-      terminal.dispose();
+      cancelAnimationFrame(openFrameId);
+      cancelAnimationFrame(readyFrameId);
+      cancelAnimationFrame(disposeFrameId);
+      openObserver.disconnect();
+      themeObserver?.disconnect();
+      resizeObserver?.disconnect();
+      dataDisposable?.dispose();
+      resizeDisposable?.dispose();
+      openedRef.current = false;
       terminalRef.current = null;
       fitAddonRef.current = null;
+      const term = terminal;
+      disposeFrameId = requestAnimationFrame(() => {
+        term.dispose();
+      });
     };
   }, []);
 
   useEffect(() => {
     const terminal = terminalRef.current;
-    if (!terminal) {
+    if (!terminal || !openedRef.current) {
       return;
     }
 
     terminal.options.fontFamily = editorFontFamilyCss(settings.appearance.editorFontFamily);
     terminal.options.fontSize = settings.appearance.editorFontSize;
-    fitAddonRef.current?.fit();
+    fit();
   }, [settings.appearance.editorFontFamily, settings.appearance.editorFontSize]);
 
   return <div ref={containerRef} className="xterm-view" data-testid="xterm-view" />;

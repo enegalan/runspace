@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTerminal } from "../../hooks/useTerminal";
 import { XTermView } from "./XTermView";
 
@@ -32,7 +32,7 @@ export function TerminalTabView({
   active,
   onClearReady,
 }: TerminalTabViewProps) {
-  const { xtermRef, tab, handleData, handleResize, clearTerminal } = useTerminal({
+  const { xtermRef, tab, handleData, handleResize, handleReady, clearTerminal } = useTerminal({
     tabId,
     workspaceId,
     environmentId,
@@ -40,14 +40,6 @@ export function TerminalTabView({
     enabled,
     active,
   });
-
-  const [xtermMounted, setXtermMounted] = useState(active);
-
-  useEffect(() => {
-    if (active) {
-      setXtermMounted(true);
-    }
-  }, [active]);
 
   useEffect(() => {
     if (!onClearReady) {
@@ -61,18 +53,19 @@ export function TerminalTabView({
     return () => onClearReady(null);
   }, [active, clearTerminal, onClearReady]);
 
-  if (!xtermMounted) {
+  if (!active) {
     return null;
   }
 
   return (
-    <div
-      className={`terminal-tab-pane${active ? "" : " terminal-tab-pane--hidden"}`}
-      data-testid={`terminal-tab-pane-${tabId}`}
-      aria-hidden={!active}
-    >
-      {tab?.error && active && <p className="terminal-panel__error">{tab.error}</p>}
-      <XTermView ref={xtermRef} onData={handleData} onResize={handleResize} />
+    <div className="terminal-tab-pane" data-testid={`terminal-tab-pane-${tabId}`}>
+      {tab?.error && <p className="terminal-panel__error">{tab.error}</p>}
+      <XTermView
+        ref={xtermRef}
+        onData={handleData}
+        onResize={handleResize}
+        onReady={handleReady}
+      />
     </div>
   );
 }
