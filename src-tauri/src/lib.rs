@@ -9,8 +9,6 @@ mod services;
 mod settings;
 mod state;
 mod terminal;
-#[cfg(test)]
-mod test_home_lock;
 mod workspace;
 
 use commands::{

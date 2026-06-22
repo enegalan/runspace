@@ -57,7 +57,10 @@ impl WorkspaceManager {
         let home = std::env::var("HOME").map_err(|_| {
             WorkspaceError::InvalidPath("Could not resolve home directory".to_string())
         })?;
-        let base_dir = PathBuf::from(home).join(".runspace");
+        Self::with_base_dir(PathBuf::from(home).join(".runspace"))
+    }
+
+    fn with_base_dir(base_dir: PathBuf) -> Result<Self, WorkspaceError> {
         fs::create_dir_all(base_dir.join("workspaces"))?;
         Ok(Self { base_dir })
     }
@@ -588,35 +591,11 @@ mod tests {
     use super::*;
     use std::env;
     use std::fs;
-    use std::path::Path;
-
-    struct HomeGuard {
-        original: Option<String>,
-    }
-
-    impl HomeGuard {
-        fn set(path: &Path) -> Self {
-            let original = env::var("HOME").ok();
-            env::set_var("HOME", path);
-            Self { original }
-        }
-    }
-
-    impl Drop for HomeGuard {
-        fn drop(&mut self) {
-            if let Some(ref home) = self.original {
-                env::set_var("HOME", home);
-            }
-        }
-    }
 
     fn temp_manager() -> (WorkspaceManager, PathBuf) {
-        let _home_lock = crate::test_home_lock::home_test_lock();
-        let temp_home = env::temp_dir().join(format!("runspace-ws-test-{}", uuid::Uuid::new_v4()));
-        fs::create_dir_all(&temp_home).expect("temp home");
-        let _guard = HomeGuard::set(&temp_home);
-        let manager = WorkspaceManager::new().expect("manager");
-        (manager, temp_home)
+        let temp_base = env::temp_dir().join(format!("runspace-ws-test-{}", uuid::Uuid::new_v4()));
+        let manager = WorkspaceManager::with_base_dir(temp_base.join(".runspace")).expect("manager");
+        (manager, temp_base)
     }
 
     #[test]
