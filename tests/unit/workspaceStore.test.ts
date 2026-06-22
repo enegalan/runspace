@@ -3,6 +3,7 @@ import { markOnboardingComplete } from "../../src/core/onboarding/onboardingStat
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { useDialogStore } from "../../src/stores/dialogStore";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useExecutionStore } from "../../src/stores/executionStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
@@ -30,6 +31,12 @@ describe("workspaceStore", () => {
       openFiles: [],
       activePath: null,
       focusHistory: [],
+      loaded: false,
+    });
+    useEnvironmentStore.setState({
+      environments: [],
+      available: [],
+      selectedId: null,
       loaded: false,
     });
   });
@@ -186,6 +193,90 @@ describe("workspaceStore", () => {
     expect(useEditorTabsStore.getState().activePath).toBeNull();
     expect(useWorkspaceStore.getState().workspace).toEqual(nodeWorkspace);
     expect(runspaceInvoke).toHaveBeenCalledWith("kill_process");
+  });
+
+  it("selects the new environment before restoring tabs", async () => {
+    const phpWorkspace = { id: "ws-php", name: "PHP project", runtime_id: "php" };
+    const nodeWorkspace = { id: "ws-node", name: "Node project", runtime_id: "nodejs" };
+    const callOrder: Array<{ cmd: string; environmentId?: string }> = [];
+
+    useWorkspaceStore.setState({
+      workspace: phpWorkspace,
+      workspaces: [phpWorkspace],
+      loaded: true,
+    });
+    useEnvironmentStore.setState({
+      selectedId: "php",
+      loaded: true,
+    });
+    useEditorTabsStore.setState({
+      openFiles: [
+        {
+          path: "main.php",
+          content: "<?php echo 1;",
+          dirty: false,
+          language: "php",
+        },
+      ],
+      activePath: "main.php",
+      loaded: true,
+    });
+
+    vi.mocked(runspaceInvoke).mockImplementation(async (cmd, args) => {
+      callOrder.push({
+        cmd: cmd as string,
+        environmentId:
+          cmd === "set_selected_environment"
+            ? (args as { environmentId?: string }).environmentId
+            : undefined,
+      });
+      if (cmd === "read_session") {
+        return {
+          environments: {
+            nodejs: {
+              workspace_id: nodeWorkspace.id,
+              workspace_tabs: {
+                [nodeWorkspace.id]: {
+                  open_files: ["index.js"],
+                  active_file: "index.js",
+                },
+              },
+            },
+          },
+          last_runtime_id: "nodejs",
+        };
+      }
+      if (cmd === "write_session" || cmd === "set_selected_environment") {
+        if (cmd === "set_selected_environment" && args?.environmentId === "nodejs") {
+          useEnvironmentStore.setState({ selectedId: "nodejs" });
+        }
+        return undefined;
+      }
+      if (cmd === "list_workspaces") {
+        return [nodeWorkspace];
+      }
+      if (cmd === "initialize_workspace" || cmd === "open_workspace") {
+        return nodeWorkspace;
+      }
+      if (cmd === "list_files") {
+        return [];
+      }
+      if (cmd === "read_file") {
+        return "console.log(1);";
+      }
+      return undefined;
+    });
+
+    await useWorkspaceStore.getState().switchEnvironment("nodejs");
+
+    const selectNewEnvIdx = callOrder.findIndex(
+      (entry) => entry.cmd === "set_selected_environment" && entry.environmentId === "nodejs",
+    );
+    const readFileIdx = callOrder.findIndex((entry) => entry.cmd === "read_file");
+    expect(selectNewEnvIdx).toBeGreaterThan(-1);
+    expect(readFileIdx).toBeGreaterThan(-1);
+    expect(selectNewEnvIdx).toBeLessThan(readFileIdx);
+    expect(useEnvironmentStore.getState().selectedId).toBe("nodejs");
   });
 
   it("saves dirty files and clears execution output when switching environments", async () => {

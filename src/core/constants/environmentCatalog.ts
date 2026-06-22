@@ -1,7 +1,28 @@
 import type { EnvironmentDefinition } from "../types/environment";
 
+/**
+ * The default file extension.
+ * @returns The default file extension.
+ */
+export const DEFAULT_FILE_EXTENSION = "txt";
+
+/**
+ * The default environment ID.
+ * @returns The default environment ID.
+ */
 export const DEFAULT_ENVIRONMENT_ID = "nodejs";
 
+/**
+ * Creates a language definition.
+ * @param id - The ID of the language.
+ * @param name - The name of the language.
+ * @param fileExtension - The file extension of the language.
+ * @param monacoLanguage - The Monaco language ID.
+ * @param installGuideUrl - The URL of the install guide.
+ * @param binaryKey - The key of the binary field.
+ * @param binaryLabel - The label of the binary field.
+ * @returns The language definition.
+ */
 function languageDefinition(
   id: string,
   name: string,
@@ -24,6 +45,13 @@ function languageDefinition(
   };
 }
 
+/**
+ * Creates a framework definition.
+ * @param id - The ID of the framework.
+ * @param name - The name of the framework.
+ * @param installGuideUrl - The URL of the install guide.
+ * @returns The framework definition.
+ */
 function frameworkDefinition(
   id: string,
   name: string,
@@ -48,6 +76,10 @@ function frameworkDefinition(
   };
 }
 
+/**
+ * The environment catalog.
+ * @returns The environment catalog.
+ */
 export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   languageDefinition(
     "nodejs",
@@ -107,6 +139,11 @@ export const ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   frameworkDefinition("symfony", "Symfony", "https://symfony.com/download"),
 ];
 
+/**
+ * Gets the definition for the given ID.
+ * @param id - The ID of the definition.
+ * @returns The definition for the given ID.
+ */
 export function getCatalogDefinition(id: string): EnvironmentDefinition | undefined {
   return ENVIRONMENT_CATALOG.find((definition) => definition.id === id);
 }

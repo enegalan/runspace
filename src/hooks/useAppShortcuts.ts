@@ -17,6 +17,10 @@ interface AppShortcutHandlers {
   runDisabled?: boolean;
 }
 
+/**
+ * The action handlers.
+ * @returns The action handlers.
+ */
 const ACTION_HANDLERS: Record<ShortcutActionId, keyof AppShortcutHandlers> = {
   run: "onRun",
   stop: "onStop",
@@ -29,6 +33,10 @@ const ACTION_HANDLERS: Record<ShortcutActionId, keyof AppShortcutHandlers> = {
   toggleOutput: "onToggleOutput",
 };
 
+/**
+ * This hook is used to handle the app shortcuts.
+ * @param handlers - The handlers for the shortcuts.
+ */
 export function useAppShortcuts(handlers: AppShortcutHandlers) {
   const shortcuts = useSettingsStore((state) => state.settings.shortcuts);
 

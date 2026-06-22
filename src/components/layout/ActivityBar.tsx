@@ -16,6 +16,18 @@ interface ActivityBarProps {
   onOpenSettings: () => void;
 }
 
+/**
+ * The ActivityBar component.
+ * @param status - The status of the execution.
+ * @param runDisabled - Whether the run button is disabled.
+ * @param runDisabledReason - The reason the run button is disabled.
+ * @param terminalVisible - Whether the terminal is visible.
+ * @param onRun - The function to call when the run button is clicked.
+ * @param onStop - The function to call when the stop button is clicked.
+ * @param onToggleTerminal - The function to call when the terminal toggle button is clicked.
+ * @param onOpenSettings - The function to call when the settings button is clicked.
+ * @returns The ActivityBar component.
+ */
 export function ActivityBar({
   status,
   runDisabled,

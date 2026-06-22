@@ -1,4 +1,4 @@
-import { SIDEBAR_WIDTH_MAX, SIDEBAR_WIDTH_MIN } from "../../core/layout/panelLayout";
+import { SIDEBAR_WIDTH_MAX, SIDEBAR_WIDTH_MIN } from "../../core/constants/panelLayout";
 import { usePointerDragResize } from "../../hooks/usePointerDragResize";
 import { FileTree } from "../files/FileTree";
 import { ResizeHandle } from "./ResizeHandle";
@@ -10,6 +10,13 @@ interface SidebarProps {
   onWidthCommit: (width: number) => void;
 }
 
+/**
+ * The Sidebar component.
+ * @param width - The width of the sidebar.
+ * @param onWidthChange - The function to call when the width changes.
+ * @param onWidthCommit - The function to call when the width is committed.
+ * @returns The Sidebar component.
+ */
 export function Sidebar({ width, onWidthChange, onWidthCommit }: SidebarProps) {
   const { currentSize, onPointerDown } = usePointerDragResize(
     width,

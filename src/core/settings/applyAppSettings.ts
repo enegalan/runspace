@@ -1,6 +1,7 @@
 import { editorFontFamilyCss } from "../constants/settingsDefaults";
 import type { AppSettings, ThemeMode } from "../types/settings";
 
+/** @type {{ xs: number; sm: number; md: number; lg: number }} Base font sizes in pixels. */
 const BASE_FONT_SIZES = {
   xs: 11,
   sm: 12,
@@ -96,7 +97,7 @@ export function getMonacoThemeId(theme: ThemeMode): string {
   return resolveTheme(theme) === "light" ? "runspace-light" : "runspace-dark";
 }
 
-export interface TerminalThemeColors {
+interface TerminalThemeColors {
   background: string;
   foreground: string;
   cursor: string;
@@ -104,6 +105,7 @@ export interface TerminalThemeColors {
   selectionBackground: string;
 }
 
+/** Default terminal theme colors used when CSS variables are unavailable. */
 const DEFAULT_TERMINAL_THEME: TerminalThemeColors = {
   background: "#1e1e1e",
   foreground: "#f2f3f5",

@@ -4,12 +4,17 @@ import type {
   ShortcutBinding,
   ShortcutSettings,
 } from "../types/shortcuts";
+import { isMacOS } from "../platform/windowChrome";
 
 export interface AppShortcut {
   action: string;
   keys: string[];
 }
 
+/**
+ * The shortcut actions.
+ * @returns The shortcut actions.
+ */
 export const SHORTCUT_ACTIONS: ShortcutActionMeta[] = [
   { id: "run", label: "Run" },
   { id: "stop", label: "Stop" },
@@ -22,6 +27,10 @@ export const SHORTCUT_ACTIONS: ShortcutActionMeta[] = [
   { id: "openSettings", label: "Settings" },
 ];
 
+/**
+ * The default shortcut settings.
+ * @returns The default shortcut settings.
+ */
 export const DEFAULT_SHORTCUT_SETTINGS: ShortcutSettings = {
   run: { key: "enter", mod: true, shift: false, alt: false },
   stop: { key: ".", mod: true, shift: false, alt: false },
@@ -36,10 +45,11 @@ export const DEFAULT_SHORTCUT_SETTINGS: ShortcutSettings = {
 
 const CLOSE_WINDOW_BINDING: ShortcutBinding = { key: "w", mod: true, shift: false, alt: false };
 
-export function isMacPlatform(): boolean {
-  return typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-}
-
+/**
+ * Normalizes the given shortcut key.
+ * @param key - The key to normalize.
+ * @returns The normalized key.
+ */
 export function normalizeShortcutKey(key: string): string {
   if (key === "Enter") {
     return "enter";
@@ -47,10 +57,21 @@ export function normalizeShortcutKey(key: string): string {
   return key.toLowerCase();
 }
 
+/**
+ * Checks if the given bindings are equal.
+ * @param a - The first binding.
+ * @param b - The second binding.
+ * @returns `true` if the bindings are equal, `false` otherwise.
+ */
 export function bindingsEqual(a: ShortcutBinding, b: ShortcutBinding): boolean {
   return a.key === b.key && a.mod === b.mod && a.shift === b.shift && a.alt === b.alt;
 }
 
+/**
+ * Normalizes the given shortcut binding.
+ * @param binding - The binding to normalize.
+ * @returns The normalized binding.
+ */
 export function normalizeShortcutBinding(binding: ShortcutBinding): ShortcutBinding {
   return {
     key: normalizeShortcutKey(binding.key),
@@ -60,6 +81,11 @@ export function normalizeShortcutBinding(binding: ShortcutBinding): ShortcutBind
   };
 }
 
+/**
+ * Converts the given keyboard event into a shortcut binding.
+ * @param event - The keyboard event to convert.
+ * @returns The shortcut binding.
+ */
 export function bindingFromKeyboardEvent(event: KeyboardEvent): ShortcutBinding | null {
   const key = normalizeShortcutKey(event.key);
   if (key === "control" || key === "meta" || key === "shift" || key === "alt") {
@@ -79,6 +105,12 @@ export function bindingFromKeyboardEvent(event: KeyboardEvent): ShortcutBinding 
   };
 }
 
+/**
+ * Checks if the given keyboard event matches the given shortcut binding.
+ * @param event - The keyboard event to check.
+ * @param binding - The shortcut binding to check.
+ * @returns `true` if the keyboard event matches the shortcut binding, `false` otherwise.
+ */
 export function matchesShortcut(event: KeyboardEvent, binding: ShortcutBinding): boolean {
   const mod = event.metaKey || event.ctrlKey;
   if (binding.mod !== mod) {
@@ -93,6 +125,11 @@ export function matchesShortcut(event: KeyboardEvent, binding: ShortcutBinding):
   return normalizeShortcutKey(event.key) === binding.key;
 }
 
+/**
+ * Formats the given key label.
+ * @param key - The key to format.
+ * @returns The formatted key label.
+ */
 function formatKeyLabel(key: string): string {
   if (key === "enter") {
     return "↵";
@@ -106,8 +143,13 @@ function formatKeyLabel(key: string): string {
   return key.length === 1 ? key.toUpperCase() : key;
 }
 
+/**
+ * Formats the given shortcut binding.
+ * @param binding - The shortcut binding to format.
+ * @returns The formatted shortcut binding.
+ */
 export function formatShortcutBinding(binding: ShortcutBinding): string[] {
-  const modLabel = isMacPlatform() ? "⌘" : "Ctrl";
+  const modLabel = isMacOS() ? "⌘" : "Ctrl";
   const keys: string[] = [];
   if (binding.mod) {
     keys.push(modLabel);
@@ -116,14 +158,19 @@ export function formatShortcutBinding(binding: ShortcutBinding): string[] {
     keys.push("Shift");
   }
   if (binding.alt) {
-    keys.push(isMacPlatform() ? "⌥" : "Alt");
+    keys.push(isMacOS() ? "⌥" : "Alt");
   }
   keys.push(formatKeyLabel(binding.key));
   return keys;
 }
 
+/**
+ * Formats the given shortcut binding in compact form.
+ * @param binding - The shortcut binding to format.
+ * @returns The formatted shortcut binding.
+ */
 export function formatShortcutCompact(binding: ShortcutBinding): string {
-  if (isMacPlatform()) {
+  if (isMacOS()) {
     let label = "";
     if (binding.mod) {
       label += "⌘";
@@ -152,6 +199,11 @@ export function formatShortcutCompact(binding: ShortcutBinding): string {
   return parts.join("+");
 }
 
+/**
+ * Normalizes the given shortcut settings.
+ * @param shortcuts - The shortcut settings to normalize.
+ * @returns The normalized shortcut settings.
+ */
 export function normalizeShortcutSettings(
   shortcuts: Partial<ShortcutSettings> | undefined,
 ): ShortcutSettings {
@@ -170,6 +222,13 @@ export function normalizeShortcutSettings(
   return next;
 }
 
+/**
+ * Finds the conflicting action for the given shortcut settings.
+ * @param shortcuts - The shortcut settings to find the conflicting action for.
+ * @param actionId - The action ID to find the conflicting action for.
+ * @param binding - The binding to find the conflicting action for.
+ * @returns The conflicting action ID, or `null` if there is no conflicting action.
+ */
 export function findConflictingAction(
   shortcuts: ShortcutSettings,
   actionId: ShortcutActionId,
@@ -186,6 +245,11 @@ export function findConflictingAction(
   return null;
 }
 
+/**
+ * Converts the given shortcut settings to app shortcuts.
+ * @param shortcuts - The shortcut settings to convert.
+ * @returns The app shortcuts.
+ */
 export function shortcutsToAppShortcuts(shortcuts: ShortcutSettings): AppShortcut[] {
   const items = SHORTCUT_ACTIONS.map((action) => ({
     action: action.label,
@@ -199,5 +263,3 @@ export function shortcutsToAppShortcuts(shortcuts: ShortcutSettings): AppShortcu
 
   return items;
 }
-
-export const APP_SHORTCUTS: AppShortcut[] = shortcutsToAppShortcuts(DEFAULT_SHORTCUT_SETTINGS);

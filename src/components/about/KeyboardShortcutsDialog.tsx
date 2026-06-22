@@ -7,6 +7,12 @@ interface KeyboardShortcutsDialogProps {
   onClose: () => void;
 }
 
+/**
+ * The KeyboardShortcutsDialog component.
+ * @param open - Whether the keyboard shortcuts dialog is open.
+ * @param onClose - The function to call when the keyboard shortcuts dialog is closed.
+ * @returns The KeyboardShortcutsDialog component.
+ */
 export function KeyboardShortcutsDialog({ open, onClose }: KeyboardShortcutsDialogProps) {
   if (!open || typeof document === "undefined") {
     return null;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { TERMINAL_HEIGHT_MAX, TERMINAL_HEIGHT_MIN } from "../../core/layout/panelLayout";
+import { TERMINAL_HEIGHT_MAX, TERMINAL_HEIGHT_MIN } from "../../core/constants/panelLayout";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import { terminalContextKey } from "../../core/types/terminal";
 import { useVerticalDragResize } from "../../hooks/useVerticalDragResize";
@@ -19,6 +19,16 @@ interface TerminalPanelProps {
   disabledReason?: string;
 }
 
+/**
+ * The TerminalPanel component.
+ * @param height - The height.
+ * @param onHeightChange - The function to call when the height changes.
+ * @param workspaceId - The workspace ID.
+ * @param environmentId - The environment ID.
+ * @param configured - Whether the environment is configured.
+ * @param disabledReason - The reason the terminal is disabled.
+ * @returns The TerminalPanel component.
+ */
 export function TerminalPanel({
   height,
   onHeightChange,

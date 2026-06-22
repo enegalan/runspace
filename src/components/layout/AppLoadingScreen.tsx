@@ -1,3 +1,7 @@
+/**
+ * The AppLoadingScreen component.
+ * @returns The AppLoadingScreen component.
+ */
 export function AppLoadingScreen() {
   return (
     <div

@@ -18,6 +18,11 @@ interface AboutDialogProps {
   onClose: () => void;
 }
 
+/**
+ * Open the external URL.
+ * @param url - The URL to open.
+ * @returns The promise.
+ */
 async function openExternal(url: string) {
   if (isTauri()) {
     await openUrl(url);
@@ -26,6 +31,12 @@ async function openExternal(url: string) {
   window.open(url, "_blank");
 }
 
+/**
+ * The AboutDialog component.
+ * @param open - Whether the about dialog is open.
+ * @param onClose - The function to call when the about dialog is closed.
+ * @returns The AboutDialog component.
+ */
 export function AboutDialog({ open, onClose }: AboutDialogProps) {
   const aboutInfo = useAboutInfo(open);
 

@@ -1,14 +1,16 @@
 import { useCallback } from "react";
-import { requireFileName } from "../core/workspace/promptFileName";
+import { useActiveRuntimeId } from "./useActiveRuntimeId";
+import { requireFileName } from "../core/workspace/prompts/fileNamePrompt";
 import { useEditorTabsStore } from "../stores/editorTabsStore";
-import { useEnvironmentStore } from "../stores/environmentStore";
 import { useWorkspaceStore } from "../stores/workspaceStore";
 
+/**
+ * The useNewFile hook.
+ * @returns The useNewFile hook.
+ */
 export function useNewFile() {
-  const workspaceRuntimeId = useWorkspaceStore((state) => state.workspace?.runtime_id);
+  const runtimeId = useActiveRuntimeId();
   const workspaceId = useWorkspaceStore((state) => state.workspace?.id);
-  const selectedRuntimeId = useEnvironmentStore((state) => state.selectedId);
-  const runtimeId = workspaceRuntimeId ?? selectedRuntimeId;
   const createFile = useWorkspaceStore((state) => state.createFile);
   const openFile = useEditorTabsStore((state) => state.openFile);
 
@@ -29,5 +31,5 @@ export function useNewFile() {
     }
   }, [createFile, openFile, runtimeId, workspaceId]);
 
-  return { createAndOpenFile, runtimeId };
+  return { createAndOpenFile };
 }

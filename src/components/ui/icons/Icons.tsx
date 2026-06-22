@@ -1,9 +1,18 @@
 import type { ReactNode, SVGAttributes } from "react";
 
-export interface IconProps extends SVGAttributes<SVGSVGElement> {
+interface IconProps extends SVGAttributes<SVGSVGElement> {
   size?: number;
 }
 
+/**
+ * The Icon component.
+ * @param size - The size.
+ * @param className - The class name.
+ * @param children - The children.
+ * @param viewBox - The view box.
+ * @param props - The props.
+ * @returns The Icon component.
+ */
 function Icon({
   size = 16,
   className = "",
@@ -26,6 +35,10 @@ function Icon({
   );
 }
 
+/**
+ * The stroke.
+ * @returns The stroke.
+ */
 const stroke = {
   stroke: "currentColor",
   strokeWidth: 2,
@@ -33,6 +46,11 @@ const stroke = {
   strokeLinejoin: "round" as const,
 };
 
+/**
+ * The IconChevronDown component.
+ * @param props - The props.
+ * @returns The IconChevronDown component.
+ */
 export function IconChevronDown(props: IconProps) {
   return (
     <Icon {...props}>
@@ -41,6 +59,11 @@ export function IconChevronDown(props: IconProps) {
   );
 }
 
+/**
+ * The IconChevronRight component.
+ * @param props - The props.
+ * @returns The IconChevronRight component.
+ */
 export function IconChevronRight(props: IconProps) {
   return (
     <Icon {...props}>
@@ -49,6 +72,11 @@ export function IconChevronRight(props: IconProps) {
   );
 }
 
+/**
+ * The IconPlus component.
+ * @param props - The props.
+ * @returns The IconPlus component.
+ */
 export function IconPlus(props: IconProps) {
   return (
     <Icon {...props}>
@@ -57,6 +85,11 @@ export function IconPlus(props: IconProps) {
   );
 }
 
+/**
+ * The IconClose component.
+ * @param props - The props.
+ * @returns The IconClose component.
+ */
 export function IconClose(props: IconProps) {
   return (
     <Icon {...props}>
@@ -65,6 +98,11 @@ export function IconClose(props: IconProps) {
   );
 }
 
+/**
+ * The IconSettings component.
+ * @param props - The props.
+ * @returns The IconSettings component.
+ */
 export function IconSettings(props: IconProps) {
   return (
     <Icon {...props}>
@@ -77,6 +115,11 @@ export function IconSettings(props: IconProps) {
   );
 }
 
+/**
+ * The IconRefresh component.
+ * @param props - The props.
+ * @returns The IconRefresh component.
+ */
 export function IconRefresh(props: IconProps) {
   return (
     <Icon {...props}>
@@ -86,6 +129,11 @@ export function IconRefresh(props: IconProps) {
   );
 }
 
+/**
+ * The IconFolderPlus component.
+ * @param props - The props.
+ * @returns The IconFolderPlus component.
+ */
 export function IconFolderPlus(props: IconProps) {
   return (
     <Icon {...props}>
@@ -98,6 +146,11 @@ export function IconFolderPlus(props: IconProps) {
   );
 }
 
+/**
+ * The IconFilePlus component.
+ * @param props - The props.
+ * @returns The IconFilePlus component.
+ */
 export function IconFilePlus(props: IconProps) {
   return (
     <Icon {...props}>
@@ -108,6 +161,11 @@ export function IconFilePlus(props: IconProps) {
   );
 }
 
+/**
+ * The IconPlay component.
+ * @param props - The props.
+ * @returns The IconPlay component.
+ */
 export function IconPlay(props: IconProps) {
   return (
     <Icon {...props}>
@@ -116,6 +174,11 @@ export function IconPlay(props: IconProps) {
   );
 }
 
+/**
+ * The IconStop component.
+ * @param props - The props.
+ * @returns The IconStop component.
+ */
 export function IconStop(props: IconProps) {
   return (
     <Icon {...props}>
@@ -124,6 +187,11 @@ export function IconStop(props: IconProps) {
   );
 }
 
+/**
+ * The IconCopy component.
+ * @param props - The props.
+ * @returns The IconCopy component.
+ */
 export function IconCopy(props: IconProps) {
   return (
     <Icon {...props}>
@@ -138,6 +206,11 @@ export function IconCopy(props: IconProps) {
   );
 }
 
+/**
+ * The IconClear component.
+ * @param props - The props.
+ * @returns The IconClear component.
+ */
 export function IconClear(props: IconProps) {
   return (
     <Icon {...props}>
@@ -149,6 +222,11 @@ export function IconClear(props: IconProps) {
   );
 }
 
+/**
+ * The IconTrash component.
+ * @param props - The props.
+ * @returns The IconTrash component.
+ */
 export function IconTrash(props: IconProps) {
   return (
     <Icon {...props}>
@@ -157,6 +235,13 @@ export function IconTrash(props: IconProps) {
   );
 }
 
+/**
+ * The IconDot component.
+ * @param size - The size.
+ * @param className - The class name.
+ * @param props - The props.
+ * @returns The IconDot component.
+ */
 export function IconDot({ size = 8, className = "" }: IconProps) {
   return (
     <svg
@@ -171,6 +256,11 @@ export function IconDot({ size = 8, className = "" }: IconProps) {
   );
 }
 
+/**
+ * The IconTerminal component.
+ * @param props - The props.
+ * @returns The IconTerminal component.
+ */
 export function IconTerminal(props: IconProps) {
   return (
     <Icon {...props}>
@@ -180,6 +270,11 @@ export function IconTerminal(props: IconProps) {
   );
 }
 
+/**
+ * The IconCheck component.
+ * @param props - The props.
+ * @returns The IconCheck component.
+ */
 export function IconCheck(props: IconProps) {
   return (
     <Icon {...props}>

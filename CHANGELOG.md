@@ -11,7 +11,7 @@
 - Onboarding welcome flow
 - Workspace sandbox (isolated cwd, sanitized env)
 - Design system with Inter and JetBrains Mono typography
-- Shared UI primitives (Button, Badge, Input, Panel, Kbd)
+- Shared UI primitives (Button, Input, Kbd)
 - About dialog and keyboard shortcuts reference
 - macOS application menu (File, Edit, Run, View, Help)
 - Global shortcuts: sidebar/output toggle, new workspace, settings

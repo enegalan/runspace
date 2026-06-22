@@ -10,9 +10,13 @@ import {
   TERMINAL_HEIGHT_DEFAULT,
   TERMINAL_HEIGHT_MAX,
   TERMINAL_HEIGHT_MIN,
-} from "../layout/panelLayout";
+} from "./panelLayout";
 import type { AppSettings, AppSettingsPatch } from "../types/settings";
 
+/**
+ * The editor font options.
+ * @returns The editor font options.
+ */
 export const EDITOR_FONT_OPTIONS = [
   { label: "JetBrains Mono", value: "JetBrains Mono" },
   { label: "SF Mono", value: "SF Mono" },
@@ -22,6 +26,10 @@ export const EDITOR_FONT_OPTIONS = [
   { label: "System", value: "ui-monospace, SFMono-Regular, Menlo, monospace" },
 ] as const;
 
+/**
+ * The default app settings.
+ * @returns The default app settings.
+ */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   appearance: {
     theme: "dark",
@@ -58,6 +66,11 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   shortcuts: DEFAULT_SHORTCUT_SETTINGS,
 };
 
+/**
+ * Normalizes the given app settings.
+ * @param settings - The app settings to normalize.
+ * @returns The normalized app settings.
+ */
 export function normalizeAppSettings(settings: AppSettings): AppSettings {
   return {
     appearance: {
@@ -87,6 +100,12 @@ export function normalizeAppSettings(settings: AppSettings): AppSettings {
   };
 }
 
+/**
+ * Merges the given app settings with the given patch.
+ * @param current - The current app settings.
+ * @param patch - The patch to merge with the current app settings.
+ * @returns The merged app settings.
+ */
 export function mergeAppSettings(current: AppSettings, patch: AppSettingsPatch): AppSettings {
   return normalizeAppSettings({
     appearance: { ...current.appearance, ...patch.appearance },
@@ -97,6 +116,11 @@ export function mergeAppSettings(current: AppSettings, patch: AppSettingsPatch):
   });
 }
 
+/**
+ * Converts the given editor font family to a CSS string.
+ * @param family - The editor font family to convert.
+ * @returns The CSS string.
+ */
 export function editorFontFamilyCss(family: string): string {
   if (family.includes(",")) {
     return family;

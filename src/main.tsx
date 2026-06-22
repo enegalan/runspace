@@ -10,6 +10,10 @@ import { suppressNativeContextMenu } from "./core/platform/suppressNativeContext
 import { useSettingsStore } from "./stores/settingsStore";
 import "./styles/globals.css";
 
+/**
+ * The renderApp function.
+ * @returns The rendered app.
+ */
 function renderApp() {
   suppressNativeContextMenu();
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -19,11 +23,21 @@ function renderApp() {
   );
 }
 
+/**
+ * The renderBootstrapError function.
+ * @param error - The error.
+ * @returns The rendered bootstrap error.
+ */
 function renderBootstrapError(error: unknown) {
   console.error("Failed to start Runspace:", error);
   void useSettingsStore.getState().load().finally(renderApp);
 }
 
+/**
+ * Waits for the backend to be ready and then renders the app.
+ * If the backend is not ready, it renders the bootstrap error.
+ * @returns The main function.
+ */
 void waitForBackendReady()
   .then(() => useSettingsStore.getState().load())
   .then(renderApp)

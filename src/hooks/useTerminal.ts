@@ -1,8 +1,8 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef } from "react";
-import { shouldUseHttpApi } from "../core/api/backendTransport";
+import { subscribeNativeOrHttp } from "../core/api/events/subscribeNativeOrHttp";
+import { subscribeTerminalEvents } from "../core/api/events/terminalEvents";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
-import { subscribeTerminalEvents } from "../core/api/terminalEvents";
 import type { SpawnTerminalResult } from "../core/types/terminal";
 import { useTerminalStore } from "../stores/terminalStore";
 import type { XTermViewHandle } from "../components/terminal/XTermView";
@@ -16,6 +16,16 @@ interface UseTerminalOptions {
   active: boolean;
 }
 
+/**
+ * The useTerminal hook.
+ * @param tabId - The tab ID.
+ * @param workspaceId - The workspace ID.
+ * @param environmentId - The environment ID.
+ * @param configured - Whether the environment is configured.
+ * @param enabled - Whether the terminal is enabled.
+ * @param active - Whether the tab is active.
+ * @returns The useTerminal hook.
+ */
 export function useTerminal({
   tabId,
   workspaceId,
@@ -134,50 +144,30 @@ export function useTerminal({
       }
     };
 
-    if (shouldUseHttpApi()) {
-      return subscribeTerminalEvents({
-        onData: (payload) => handleData(payload.session_id, payload.data),
-        onExit: (payload) => handleExit(payload.session_id),
-      });
-    }
+    return subscribeNativeOrHttp(
+      () =>
+        subscribeTerminalEvents({
+          onData: (payload) => handleData(payload.session_id, payload.data),
+          onExit: (payload) => handleExit(payload.session_id),
+        }),
+      async (register) => {
+        const dataUnlisten = await listen<{ session_id: string; data: string }>(
+          "terminal-data",
+          (event) => {
+            handleData(event.payload.session_id, event.payload.data);
+          },
+        );
+        register(dataUnlisten);
 
-    let cancelled = false;
-    const unlisteners: Array<() => void> = [];
-
-    const setup = async () => {
-      const dataUnlisten = await listen<{ session_id: string; data: string }>(
-        "terminal-data",
-        (event) => {
-          handleData(event.payload.session_id, event.payload.data);
-        },
-      );
-      if (cancelled) {
-        dataUnlisten();
-        return;
-      }
-      unlisteners.push(dataUnlisten);
-
-      const exitUnlisten = await listen<{ session_id: string; exit_code: number | null }>(
-        "terminal-exit",
-        (event) => {
-          handleExit(event.payload.session_id);
-        },
-      );
-      if (cancelled) {
-        exitUnlisten();
-        return;
-      }
-      unlisteners.push(exitUnlisten);
-    };
-
-    void setup();
-
-    return () => {
-      cancelled = true;
-      for (const unlisten of unlisteners) {
-        unlisten();
-      }
-    };
+        const exitUnlisten = await listen<{ session_id: string; exit_code: number | null }>(
+          "terminal-exit",
+          (event) => {
+            handleExit(event.payload.session_id);
+          },
+        );
+        register(exitUnlisten);
+      },
+    );
   }, [setExited]);
 
   const handleData = useCallback((data: string) => {

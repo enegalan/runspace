@@ -8,6 +8,10 @@ import { useSettingsStore } from "../../stores/settingsStore";
 import { ShortcutRecorder } from "./ShortcutRecorder";
 import { SettingsCard } from "./SettingsUi";
 
+/**
+ * The ShortcutsSettingsCard component.
+ * @returns The ShortcutsSettingsCard component.
+ */
 export function ShortcutsSettingsCard() {
   const shortcuts = useSettingsStore((state) => state.settings.shortcuts);
   const update = useSettingsStore((state) => state.update);
