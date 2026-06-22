@@ -33,7 +33,10 @@ pub(crate) fn ensure_active_workspace(state: &SharedState) -> Result<Workspace, 
     Ok(workspace)
 }
 
-pub(crate) fn set_active_workspace(state: &SharedState, workspace: Workspace) -> Result<(), String> {
+pub(crate) fn set_active_workspace(
+    state: &SharedState,
+    workspace: Workspace,
+) -> Result<(), String> {
     let mut active = lock_active_workspace(state)?;
     *active = Some(workspace);
     Ok(())
@@ -169,7 +172,11 @@ pub fn delete_workspace(state: &SharedState, id: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn rename_workspace(state: &SharedState, id: &str, name: &str) -> Result<WorkspaceInfo, String> {
+pub fn rename_workspace(
+    state: &SharedState,
+    id: &str,
+    name: &str,
+) -> Result<WorkspaceInfo, String> {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return Err("Project name cannot be empty".to_string());
@@ -192,10 +199,7 @@ pub fn rename_workspace(state: &SharedState, id: &str, name: &str) -> Result<Wor
     Ok(info)
 }
 
-pub fn update_manifest(
-    state: &SharedState,
-    name: Option<&str>,
-) -> Result<WorkspaceInfo, String> {
+pub fn update_manifest(state: &SharedState, name: Option<&str>) -> Result<WorkspaceInfo, String> {
     let manager = lock_workspace_manager(state)?;
     let workspace = require_active_workspace(state)?;
     let mut manifest = map_err(manager.read_manifest(&workspace))?;

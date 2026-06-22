@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
 
-use crate::error::map_err;
 use crate::engine::adapters::{ensure_framework_ready, framework_terminal_env};
 use crate::environment::catalog::get_definition;
 use crate::environment::types::{EnvironmentCategory, ResolvedEnvironment};
+use crate::error::map_err;
 use crate::workspace::manager::Workspace;
 
 pub struct ShellContext {
@@ -27,7 +27,10 @@ pub fn build_shell_context(
         }),
         EnvironmentCategory::Framework => {
             let adapter = map_err(crate::engine::adapters::get_adapter(&resolved.id))?;
-            let skeleton_root = map_err(ensure_framework_ready(adapter.as_ref(), &resolved.extra_paths))?;
+            let skeleton_root = map_err(ensure_framework_ready(
+                adapter.as_ref(),
+                &resolved.extra_paths,
+            ))?;
             let framework_env = framework_terminal_env(&skeleton_root, &workspace.path);
 
             let mut env_vars = build_env_vars(resolved);

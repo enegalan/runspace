@@ -156,7 +156,11 @@ pub async fn dispatch_invoke(
                 .get("useSession")
                 .and_then(|v| v.as_bool())
                 .unwrap_or(true);
-            Ok(json!(initialize_workspace(state, &runtime_id, use_session)?))
+            Ok(json!(initialize_workspace(
+                state,
+                &runtime_id,
+                use_session
+            )?))
         }
         "list_files" => {
             let relative_path = opt_str_arg(&args, "relativePath");
@@ -165,11 +169,7 @@ pub async fn dispatch_invoke(
         }
         "read_file" => Ok(json!(read_file(state, &str_arg(&args, "path")?)?)),
         "write_file" => {
-            write_file(
-                state,
-                &str_arg(&args, "path")?,
-                &str_arg(&args, "content")?,
-            )?;
+            write_file(state, &str_arg(&args, "path")?, &str_arg(&args, "content")?)?;
             Ok(Value::Null)
         }
         "delete_file" => {

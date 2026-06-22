@@ -2,12 +2,12 @@ use std::path::PathBuf;
 
 use tauri::AppHandle;
 
-use crate::error::map_err;
 use crate::engine::adapters::{
     get_adapter, get_compiled_adapter, is_compiled_environment, PrepareContext,
 };
 use crate::engine::compiled::run_compiled;
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
+use crate::error::map_err;
 use crate::services::environment::resolve_for_run;
 use crate::services::settings::execution_settings;
 use crate::services::workspace::{ensure_active_workspace, lock_workspace_manager};
@@ -56,7 +56,8 @@ pub fn start_execution(
         let workspace_manager = lock_workspace_manager(state)?;
 
         let relative_path = file.as_deref().ok_or("No file selected to run")?;
-        let resolved_entry = map_err(workspace_manager.resolve_run_file(&workspace, relative_path))?;
+        let resolved_entry =
+            map_err(workspace_manager.resolve_run_file(&workspace, relative_path))?;
 
         if let Some(editor_code) = code {
             map_err(workspace_manager.write_file(&workspace, &resolved_entry, &editor_code))?;

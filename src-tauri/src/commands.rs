@@ -157,9 +157,7 @@ pub async fn close_terminal(
 }
 
 #[tauri::command]
-pub async fn list_terminal_sessions(
-    state: State<'_, SharedState>,
-) -> Result<Value, String> {
+pub async fn list_terminal_sessions(state: State<'_, SharedState>) -> Result<Value, String> {
     terminal::list_terminal_sessions(state.inner())
 }
 
