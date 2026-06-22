@@ -87,13 +87,18 @@ export function OutputPanel({
             <IconButton
               label="Clear output"
               onClick={onClear}
-              disabled={!hasContent}
+              disabled={!hasContent || isRunning}
               data-testid="clear-button"
             >
               <IconClear size={16} />
             </IconButton>
             {hasContent && (
-              <IconButton label="Copy all output" onClick={() => void handleCopyAll()}>
+              <IconButton
+                label="Copy all output"
+                onClick={() => void handleCopyAll()}
+                disabled={isRunning}
+                data-testid="copy-button"
+              >
                 <IconCopy size={16} />
               </IconButton>
             )}
