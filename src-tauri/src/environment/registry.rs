@@ -103,11 +103,8 @@ impl EnvironmentRegistry {
         definitions
     }
 
+    #[cfg(test)]
     pub fn environment_ids(&self) -> Vec<String> {
-        self.ids()
-    }
-
-    fn ids(&self) -> Vec<String> {
         let mut ids: Vec<String> = self.manifests.keys().cloned().collect();
         ids.sort();
         ids
