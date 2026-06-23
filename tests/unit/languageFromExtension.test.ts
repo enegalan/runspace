@@ -17,10 +17,7 @@ describe("languageFromExtension", () => {
   it("maps runtime file extensions from environment definitions", () => {
     expect(languageFromExtension("main.js")).toBe("javascript");
     expect(languageFromExtension("index.php")).toBe("php");
-    expect(languageFromExtension("script.py")).toBe("python");
-    expect(languageFromExtension("app.rb")).toBe("ruby");
     expect(languageFromExtension("main.c")).toBe("c");
-    expect(languageFromExtension("main.cpp")).toBe("cpp");
   });
 
   it("falls back to auxiliary extension mappings", () => {

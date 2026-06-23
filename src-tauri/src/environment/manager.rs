@@ -3,8 +3,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition};
 use super::detect::detect_missing_binary_paths;
+use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition};
 use super::types::{
     Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore, ResolvedEnvironment,
     ValidationResult,

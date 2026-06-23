@@ -49,7 +49,6 @@ Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`).
 
 ```json
 "prepare": {
-  "type": "write_template",
   "output": "_runspace_bootstrap.php",
   "template": "php_vendor_bootstrap.tpl"
 }

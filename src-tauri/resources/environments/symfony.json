@@ -40,7 +40,6 @@
     }
   },
   "prepare": {
-    "type": "write_template",
     "output": "_runspace_bootstrap.php",
     "template": "php_vendor_bootstrap.tpl"
   },

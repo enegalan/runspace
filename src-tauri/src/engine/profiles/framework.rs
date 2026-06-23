@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::environment::manifest::{
-    DependencyInstallSpec, EnvironmentManifest, PostInstallStep, PrepareSpec, SkeletonSpec, StepCwd,
+    DependencyInstallSpec, EnvironmentManifest, PostInstallStep, SkeletonSpec, StepCwd,
 };
 
 use super::template::{
@@ -81,17 +81,15 @@ pub fn prepare(
         .as_ref()
         .ok_or_else(|| ProfileError::Prepare(format!("{}: missing prepare spec", manifest.id)))?;
 
-    let bootstrap_path = match prepare {
-        PrepareSpec::WriteTemplate { output, template } => write_template_bootstrap(
-            ctx.workspace_path,
-            ctx.snippet_path,
-            &skeleton_root,
-            ctx.extra_paths,
-            output,
-            template,
-        )
-        .map_err(|error| ProfileError::Prepare(error.to_string()))?,
-    };
+    let bootstrap_path = write_template_bootstrap(
+        ctx.workspace_path,
+        ctx.snippet_path,
+        &skeleton_root,
+        ctx.extra_paths,
+        &prepare.output,
+        &prepare.template,
+    )
+    .map_err(|error| ProfileError::Prepare(error.to_string()))?;
 
     Ok(PrepareResult {
         script_path: bootstrap_path,

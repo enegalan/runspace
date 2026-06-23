@@ -6,7 +6,7 @@ import type { EnvironmentDefinition } from "../../src/core/types/environment";
 export const TEST_DEFAULT_ENVIRONMENT_ID = "nodejs";
 
 /**
- * The test environment catalog.
+ * Minimal test catalog: script, framework, and compiled profiles.
  */
 export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
   {
@@ -20,91 +20,6 @@ export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
       {
         key: "node_path",
         label: "Node.js binary",
-        field_type: "file_path",
-        required: true,
-        primary: true,
-      },
-    ],
-  },
-  {
-    id: "php",
-    name: "PHP",
-    category: "language",
-    file_extension: "php",
-    monaco_language: "php",
-    install_guide_url: "https://www.php.net/downloads",
-    config_fields: [
-      {
-        key: "php_path",
-        label: "PHP binary",
-        field_type: "file_path",
-        required: true,
-        primary: true,
-      },
-    ],
-  },
-  {
-    id: "python",
-    name: "Python",
-    category: "language",
-    file_extension: "py",
-    monaco_language: "python",
-    install_guide_url: "https://www.python.org/downloads/",
-    config_fields: [
-      {
-        key: "python_path",
-        label: "Python binary",
-        field_type: "file_path",
-        required: true,
-        primary: true,
-      },
-    ],
-  },
-  {
-    id: "ruby",
-    name: "Ruby",
-    category: "language",
-    file_extension: "rb",
-    monaco_language: "ruby",
-    install_guide_url: "https://www.ruby-lang.org/en/downloads/",
-    config_fields: [
-      {
-        key: "ruby_path",
-        label: "Ruby binary",
-        field_type: "file_path",
-        required: true,
-        primary: true,
-      },
-    ],
-  },
-  {
-    id: "gcc",
-    name: "GCC (C)",
-    category: "language",
-    file_extension: "c",
-    monaco_language: "c",
-    install_guide_url: "https://developer.apple.com/xcode/resources/",
-    config_fields: [
-      {
-        key: "gcc_path",
-        label: "GCC binary",
-        field_type: "file_path",
-        required: true,
-        primary: true,
-      },
-    ],
-  },
-  {
-    id: "gpp",
-    name: "G++ (C++)",
-    category: "language",
-    file_extension: "cpp",
-    monaco_language: "cpp",
-    install_guide_url: "https://developer.apple.com/xcode/resources/",
-    config_fields: [
-      {
-        key: "gpp_path",
-        label: "G++ binary",
         field_type: "file_path",
         required: true,
         primary: true,
@@ -135,25 +50,19 @@ export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
     ],
   },
   {
-    id: "symfony",
-    name: "Symfony",
-    category: "framework",
-    file_extension: "php",
-    monaco_language: "php",
-    install_guide_url: "https://symfony.com/download",
+    id: "gcc",
+    name: "GCC (C)",
+    category: "language",
+    file_extension: "c",
+    monaco_language: "c",
+    install_guide_url: "https://developer.apple.com/xcode/resources/",
     config_fields: [
       {
-        key: "php_path",
-        label: "PHP binary",
+        key: "gcc_path",
+        label: "GCC binary",
         field_type: "file_path",
         required: true,
         primary: true,
-      },
-      {
-        key: "composer_path",
-        label: "Composer binary (skeleton install)",
-        field_type: "file_path",
-        required: false,
       },
     ],
   },

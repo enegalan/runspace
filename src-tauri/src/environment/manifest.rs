@@ -59,9 +59,9 @@ fn default_sync_exclude_dirs() -> Vec<String> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum PrepareSpec {
-    WriteTemplate { output: String, template: String },
+pub struct PrepareSpec {
+    pub output: String,
+    pub template: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

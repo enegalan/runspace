@@ -29,8 +29,7 @@ const CONCEPTS = [
   },
   {
     title: "Environments",
-    description:
-      "Connect the language runtimes installed on your machine.",
+    description: "Connect the language runtimes installed on your machine.",
   },
   {
     title: "Run",
