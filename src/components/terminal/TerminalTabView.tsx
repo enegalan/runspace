@@ -60,12 +60,7 @@ export function TerminalTabView({
   return (
     <div className="terminal-tab-pane" data-testid={`terminal-tab-pane-${tabId}`}>
       {tab?.error && <p className="terminal-panel__error">{tab.error}</p>}
-      <XTermView
-        ref={xtermRef}
-        onData={handleData}
-        onResize={handleResize}
-        onReady={handleReady}
-      />
+      <XTermView ref={xtermRef} onData={handleData} onResize={handleResize} onReady={handleReady} />
     </div>
   );
 }
