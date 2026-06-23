@@ -120,9 +120,7 @@ export default memo(function MonacoWrapper({
 
     editor.onDidBlurEditorWidget(() => {
       if (autoSaveRef.current) {
-        void Promise.resolve(onSaveRef.current(true)).finally(() => {
-          editor.focus();
-        });
+        void onSaveRef.current(true);
       }
     });
   };
