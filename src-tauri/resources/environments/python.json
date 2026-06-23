@@ -1,0 +1,25 @@
+{
+  "id": "python",
+  "name": "Python",
+  "category": "language",
+  "file_extension": "py",
+  "monaco_language": "python",
+  "install_guide_url": "https://www.python.org/downloads/",
+  "presentation": { "accent": "#3776ab" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "python_path",
+      "label": "Python binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["python3", "python"] }
+    }
+  ],
+  "run": {
+    "program": "{{python_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}

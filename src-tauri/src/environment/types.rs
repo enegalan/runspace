@@ -18,11 +18,25 @@ pub enum ConfigFieldType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetectConfig {
+    pub commands: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigField {
     pub key: String,
     pub label: String,
     pub field_type: ConfigFieldType,
     pub required: bool,
+    #[serde(default)]
+    pub primary: bool,
+    #[serde(default)]
+    pub detect: Option<DetectConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnvironmentPresentation {
+    pub accent: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,6 +48,8 @@ pub struct EnvironmentDefinition {
     pub monaco_language: String,
     pub install_guide_url: String,
     pub config_fields: Vec<ConfigField>,
+    #[serde(default)]
+    pub presentation: Option<EnvironmentPresentation>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -59,7 +75,7 @@ pub struct EnvironmentsStore {
 }
 
 fn default_installed_ids() -> Vec<String> {
-    vec!["nodejs".to_string()]
+    vec![crate::environment::registry::default_environment_id()]
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

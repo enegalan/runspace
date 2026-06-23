@@ -1,0 +1,26 @@
+{
+  "id": "gpp",
+  "name": "G++ (C++)",
+  "category": "language",
+  "file_extension": "cpp",
+  "monaco_language": "cpp",
+  "install_guide_url": "https://developer.apple.com/xcode/resources/",
+  "presentation": { "accent": "#00599c" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "gpp_path",
+      "label": "G++ binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["g++", "c++"] }
+    }
+  ],
+  "compile": {
+    "program": "{{gpp_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}", "-Wall", "-std=c++17"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}

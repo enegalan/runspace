@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use tauri::AppHandle;
 
 use crate::services::environment::{
-    get_selected, install, list_available, list_installed, set_env_vars, set_paths, set_selected,
-    uninstall, validate,
+    get_default_environment_id, get_selected, install, list_available, list_installed,
+    set_env_vars, set_paths, set_selected, uninstall, validate,
 };
 use crate::services::execution::{kill_process, start_execution};
 use crate::services::settings::{read_settings, update_settings};
@@ -81,6 +81,7 @@ pub async fn dispatch_invoke(
             Some(environment) => json!(environment),
             None => Value::Null,
         }),
+        "get_default_environment_id" => Ok(json!(get_default_environment_id(state)?)),
         "install_environment" => {
             let args: EnvironmentIdArgs = serde_json::from_value(args)
                 .map_err(|e| format!("Invalid install_environment args: {e}"))?;

@@ -1,0 +1,25 @@
+{
+  "id": "ruby",
+  "name": "Ruby",
+  "category": "language",
+  "file_extension": "rb",
+  "monaco_language": "ruby",
+  "install_guide_url": "https://www.ruby-lang.org/en/downloads/",
+  "presentation": { "accent": "#cc342d" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "ruby_path",
+      "label": "Ruby binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ruby"] }
+    }
+  ],
+  "run": {
+    "program": "{{ruby_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "php",
+  "name": "PHP",
+  "category": "language",
+  "file_extension": "php",
+  "monaco_language": "php",
+  "install_guide_url": "https://www.php.net/downloads",
+  "presentation": { "accent": "#8892bf" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "php_path",
+      "label": "PHP binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["php"] }
+    }
+  ],
+  "run": {
+    "program": "{{php_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}

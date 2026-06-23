@@ -1,7 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getFileExtension, normalizeFileName } from "../../src/core/workspace/fileExtension";
+import { useEnvironmentStore } from "../../src/stores/environmentStore";
+import { TEST_ENVIRONMENT_CATALOG } from "../fixtures/environmentCatalog";
 
 describe("fileExtension", () => {
+  beforeEach(() => {
+    useEnvironmentStore.setState({
+      environments: [],
+      available: TEST_ENVIRONMENT_CATALOG,
+      selectedId: null,
+      defaultEnvironmentId: null,
+      loaded: true,
+    });
+  });
+
   it("maps runtime ids to file extensions", () => {
     expect(getFileExtension("nodejs")).toBe("js");
     expect(getFileExtension("php")).toBe("php");

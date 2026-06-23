@@ -3,14 +3,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use super::catalog::{binary_field_key, get_catalog, get_definition};
+use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition};
 use super::detect::detect_missing_binary_paths;
 use super::types::{
     Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore, ResolvedEnvironment,
     ValidationResult,
 };
-
-const DEFAULT_SELECTED_ID: &str = "nodejs";
 
 pub struct EnvironmentManager {
     config_path: PathBuf,
@@ -23,8 +21,8 @@ impl EnvironmentManager {
         let mut manager = Self {
             config_path,
             store: EnvironmentsStore {
-                selected_environment_id: DEFAULT_SELECTED_ID.to_string(),
-                installed_ids: vec![DEFAULT_SELECTED_ID.to_string()],
+                selected_environment_id: default_environment_id(),
+                installed_ids: vec![default_environment_id()],
                 configs: HashMap::new(),
             },
             versions: HashMap::new(),
@@ -177,7 +175,7 @@ impl EnvironmentManager {
 
         if errors.is_empty() && is_fully_configured(&definition, &user_config.paths) {
             if let Some(binary_key) = binary_field_key(id) {
-                if let Some(binary_path) = user_config.paths.get(binary_key) {
+                if let Some(binary_path) = user_config.paths.get(&binary_key) {
                     match probe_version(id, binary_path) {
                         Ok(v) => {
                             version = Some(v.clone());
@@ -210,7 +208,7 @@ impl EnvironmentManager {
             .ok_or_else(|| EnvironmentError::InvalidConfig(format!("No binary field for {id}")))?;
         let binary_path = user_config
             .paths
-            .get(binary_key)
+            .get(&binary_key)
             .cloned()
             .ok_or_else(|| EnvironmentError::NotConfigured(id.to_string()))?;
 
@@ -430,8 +428,12 @@ fn validate_env_vars(env_vars: &HashMap<String, String>) -> Result<(), Environme
 }
 
 pub fn probe_version(environment_id: &str, binary_path: &str) -> Result<String, String> {
+    let version_arg = crate::environment::registry::get_manifest(environment_id)
+        .map(|manifest| manifest.version_probe_arg().to_string())
+        .unwrap_or_else(|| "--version".to_string());
+
     let output = Command::new(binary_path)
-        .arg("--version")
+        .arg(version_arg)
         .output()
         .map_err(|e| format!("Failed to run version probe: {e}"))?;
 
@@ -479,7 +481,7 @@ fn extract_semver(line: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::environment::catalog::get_definition;
+    use crate::environment::registry::get_definition;
     use std::collections::HashMap;
 
     #[test]

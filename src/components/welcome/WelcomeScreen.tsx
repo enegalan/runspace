@@ -2,8 +2,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useState } from "react";
 import { runspaceInvoke } from "../../core/api/runspaceInvoke";
 import {
-  DEFAULT_ENVIRONMENT_ID,
-  ENVIRONMENT_CATALOG,
+  findEnvironmentDefinition,
+  mergeEnvironmentCatalog,
 } from "../../core/constants/environmentCatalog";
 import {
   ENVIRONMENT_CATEGORY_LABELS,
@@ -21,7 +21,6 @@ import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 /**
  * The welcome screen concepts.
- * @returns The concepts.
  */
 const CONCEPTS = [
   {
@@ -31,7 +30,7 @@ const CONCEPTS = [
   {
     title: "Environments",
     description:
-      "Connect the language runtimes installed on your machine: Node.js, PHP, Python, Ruby, and more.",
+      "Connect the language runtimes installed on your machine.",
   },
   {
     title: "Run",
@@ -49,6 +48,7 @@ type WelcomeStep = "intro" | "concepts" | "setup";
 export function WelcomeScreen() {
   const environments = useEnvironmentStore((state) => state.environments);
   const available = useEnvironmentStore((state) => state.available);
+  const defaultEnvironmentId = useEnvironmentStore((state) => state.defaultEnvironmentId);
   const install = useEnvironmentStore((state) => state.install);
   const select = useEnvironmentStore((state) => state.select);
   const refresh = useEnvironmentStore((state) => state.refresh);
@@ -56,7 +56,7 @@ export function WelcomeScreen() {
 
   const [step, setStep] = useState<WelcomeStep>("intro");
   const [workspaceName, setWorkspaceName] = useState("");
-  const [primaryRuntimeId, setPrimaryRuntimeId] = useState<EnvironmentId>(DEFAULT_ENVIRONMENT_ID);
+  const [primaryRuntimeId, setPrimaryRuntimeId] = useState<EnvironmentId | null>(null);
   const [additionalRuntimeIds, setAdditionalRuntimeIds] = useState<Set<EnvironmentId>>(
     () => new Set(),
   );
@@ -69,13 +69,35 @@ export function WelcomeScreen() {
     [environments],
   );
 
-  const primaryDefinition = ENVIRONMENT_CATALOG.find(
-    (definition) => definition.id === primaryRuntimeId,
+  const catalog = useMemo(
+    () =>
+      mergeEnvironmentCatalog(
+        environments.map((env) => env.definition),
+        available,
+      ),
+    [environments, available],
   );
 
-  const groupedCatalog = useMemo(() => groupCatalogByCategory(), []);
+  const primaryDefinition = primaryRuntimeId
+    ? findEnvironmentDefinition(
+        primaryRuntimeId,
+        environments.map((env) => env.definition),
+        available,
+      )
+    : undefined;
+
+  const groupedCatalog = useMemo(() => groupCatalogByCategory(catalog), [catalog]);
 
   useEffect(() => {
+    if (primaryRuntimeId === null && defaultEnvironmentId) {
+      setPrimaryRuntimeId(defaultEnvironmentId);
+    }
+  }, [defaultEnvironmentId, primaryRuntimeId]);
+
+  useEffect(() => {
+    if (!primaryRuntimeId) {
+      return;
+    }
     const installed = environments.find((env) => env.definition.id === primaryRuntimeId);
     if (installed) {
       setPaths(installed.user_config.paths);
@@ -113,7 +135,7 @@ export function WelcomeScreen() {
       setError("Enter a workspace name to continue.");
       return;
     }
-    if (!primaryDefinition) {
+    if (!primaryRuntimeId || !primaryDefinition) {
       setError("Select a runtime for your first workspace.");
       return;
     }
@@ -202,7 +224,7 @@ export function WelcomeScreen() {
               beyond the runtimes you already have.
             </p>
             <ul className="welcome-screen__highlights">
-              <li>Bring your own runtimes: Node.js, PHP, Python, Ruby...</li>
+              <li>Bring your own runtimes already installed on your machine.</li>
               <li>Isolated execution on every run.</li>
               <li>Editor, files, and output in one flow.</li>
             </ul>
@@ -298,7 +320,7 @@ export function WelcomeScreen() {
                                 type="radio"
                                 name="primary-runtime"
                                 checked={isSelected}
-                                onChange={() => setPrimaryRuntimeId(definition.id as EnvironmentId)}
+                                onChange={() => setPrimaryRuntimeId(definition.id)}
                               />
                               <span className="welcome-screen__runtime-name">
                                 {definition.name}
@@ -371,9 +393,10 @@ export function WelcomeScreen() {
                 Optional. Install additional environments now so they are ready to select later.
               </p>
               <div className="welcome-screen__extras">
-                {ENVIRONMENT_CATALOG.filter((definition) => definition.id !== primaryRuntimeId).map(
-                  (definition) => {
-                    const checked = additionalRuntimeIds.has(definition.id as EnvironmentId);
+                {catalog
+                  .filter((definition) => definition.id !== primaryRuntimeId)
+                  .map((definition) => {
+                    const checked = additionalRuntimeIds.has(definition.id);
                     const isInstalled = installedIds.has(definition.id);
                     return (
                       <label
@@ -386,7 +409,7 @@ export function WelcomeScreen() {
                           type="checkbox"
                           checked={checked || isInstalled}
                           disabled={isInstalled}
-                          onChange={() => toggleAdditionalRuntime(definition.id as EnvironmentId)}
+                          onChange={() => toggleAdditionalRuntime(definition.id)}
                         />
                         <span>{definition.name}</span>
                         {isInstalled && (
@@ -406,8 +429,7 @@ export function WelcomeScreen() {
                         )}
                       </label>
                     );
-                  },
-                )}
+                  })}
               </div>
             </div>
 

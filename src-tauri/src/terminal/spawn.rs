@@ -1,9 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use crate::engine::adapters::{ensure_framework_ready, framework_terminal_env};
-use crate::environment::catalog::get_definition;
-use crate::environment::types::{EnvironmentCategory, ResolvedEnvironment};
-use crate::error::map_err;
+use crate::engine::profiles::{
+    ensure_framework_ready, framework_terminal_env, is_framework_environment,
+};
+use crate::environment::registry::get_definition;
+use crate::environment::registry::get_manifest;
+use crate::environment::types::ResolvedEnvironment;
 use crate::workspace::manager::Workspace;
 
 pub struct ShellContext {
@@ -16,35 +18,34 @@ pub fn build_shell_context(
     resolved: &ResolvedEnvironment,
     workspace: &Workspace,
 ) -> Result<ShellContext, String> {
-    let definition = get_definition(&resolved.id)
+    get_definition(&resolved.id)
         .ok_or_else(|| format!("Environment not found: {}", resolved.id))?;
 
-    match definition.category {
-        EnvironmentCategory::Language => Ok(ShellContext {
-            cwd: workspace.path.clone(),
-            env_vars: build_env_vars(resolved),
-            welcome: None,
-        }),
-        EnvironmentCategory::Framework => {
-            let adapter = map_err(crate::engine::adapters::get_adapter(&resolved.id))?;
-            let skeleton_root = map_err(ensure_framework_ready(
-                adapter.as_ref(),
-                &resolved.extra_paths,
-            ))?;
-            let framework_env = framework_terminal_env(&skeleton_root, &workspace.path);
+    if is_framework_environment(&resolved.id) {
+        let manifest = get_manifest(&resolved.id)
+            .ok_or_else(|| format!("Environment not found: {}", resolved.id))?;
+        let skeleton_root = ensure_framework_ready(&resolved.id, &resolved.extra_paths)
+            .map_err(|error| error.to_string())?;
+        let framework_env = framework_terminal_env(manifest, &skeleton_root, &workspace.path)
+            .map_err(|error| error.to_string())?;
 
-            let mut env_vars = build_env_vars(resolved);
-            for (key, value) in framework_env {
-                merge_env_var(&mut env_vars, key, value);
-            }
-
-            Ok(ShellContext {
-                cwd: skeleton_root,
-                env_vars,
-                welcome: None,
-            })
+        let mut env_vars = build_env_vars(resolved);
+        for (key, value) in framework_env {
+            merge_env_var(&mut env_vars, key, value);
         }
+
+        return Ok(ShellContext {
+            cwd: skeleton_root,
+            env_vars,
+            welcome: None,
+        });
     }
+
+    Ok(ShellContext {
+        cwd: workspace.path.clone(),
+        env_vars: build_env_vars(resolved),
+        welcome: None,
+    })
 }
 
 pub fn build_env_vars(resolved: &ResolvedEnvironment) -> Vec<(String, String)> {

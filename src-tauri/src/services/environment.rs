@@ -23,6 +23,10 @@ pub fn list_available(state: &SharedState) -> Result<Vec<EnvironmentDefinition>,
     Ok(manager.list_available())
 }
 
+pub fn get_default_environment_id(_state: &SharedState) -> Result<String, String> {
+    Ok(crate::environment::registry::default_environment_id())
+}
+
 pub fn get_selected(state: &SharedState) -> Result<Option<Environment>, String> {
     let manager = lock_environment_manager(state)?;
     Ok(manager.get_selected())

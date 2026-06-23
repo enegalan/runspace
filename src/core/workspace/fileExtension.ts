@@ -1,5 +1,19 @@
-import { getCatalogDefinition, DEFAULT_FILE_EXTENSION } from "../constants/environmentCatalog";
+import { DEFAULT_FILE_EXTENSION } from "../constants/environmentCatalog";
+import { useEnvironmentStore } from "../../stores/environmentStore";
 import { basename } from "../path/basename";
+
+/**
+ * Looks up the environment definition for the given environment ID.
+ * @param environmentId - The ID of the environment.
+ * @returns The environment definition for the given environment ID.
+ */
+function lookupDefinition(environmentId: string) {
+  const state = useEnvironmentStore.getState();
+  return (
+    state.environments.find((env) => env.definition.id === environmentId)?.definition ??
+    state.available.find((definition) => definition.id === environmentId)
+  );
+}
 
 /**
  * Gets the file extension for the given environment ID.
@@ -7,7 +21,7 @@ import { basename } from "../path/basename";
  * @returns The file extension for the given environment ID.
  */
 export function getFileExtension(environmentId: string): string {
-  return getCatalogDefinition(environmentId)?.file_extension ?? DEFAULT_FILE_EXTENSION;
+  return lookupDefinition(environmentId)?.file_extension ?? DEFAULT_FILE_EXTENSION;
 }
 
 /**

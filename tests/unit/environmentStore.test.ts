@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
-import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
+import {
+  TEST_DEFAULT_ENVIRONMENT_ID,
+  TEST_ENVIRONMENT_CATALOG,
+} from "../fixtures/environmentCatalog";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
-  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
+  const definition = TEST_ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
   return {
     definition,
     user_config: { paths: {}, env_vars: {} },
@@ -13,12 +16,26 @@ function mockInstalledEnvironment(id: string, configured = false) {
   };
 }
 
+function mockEnvironmentInvoke(handlers: Partial<Record<string, () => Promise<unknown>>>): void {
+  vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
+    const handler = handlers[cmd];
+    if (handler) {
+      return handler();
+    }
+    if (cmd === "get_default_environment_id") {
+      return Promise.resolve(TEST_DEFAULT_ENVIRONMENT_ID);
+    }
+    return Promise.resolve(undefined);
+  });
+}
+
 describe("environmentStore", () => {
   beforeEach(() => {
     useEnvironmentStore.setState({
       environments: [],
       available: [],
-      selectedId: "nodejs",
+      selectedId: null,
+      defaultEnvironmentId: null,
       loaded: false,
     });
     vi.mocked(runspaceInvoke).mockReset();
@@ -26,18 +43,11 @@ describe("environmentStore", () => {
 
   it("loads installed and available environments", async () => {
     const installed = [mockInstalledEnvironment("nodejs")];
-    const available: typeof ENVIRONMENT_CATALOG = [];
-    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
-      if (cmd === "list_environments") {
-        return Promise.resolve(installed);
-      }
-      if (cmd === "list_available_environments") {
-        return Promise.resolve(available);
-      }
-      if (cmd === "get_selected_environment") {
-        return Promise.resolve(mockInstalledEnvironment("nodejs"));
-      }
-      return Promise.resolve(undefined);
+    const available: typeof TEST_ENVIRONMENT_CATALOG = [];
+    mockEnvironmentInvoke({
+      list_environments: () => Promise.resolve(installed),
+      list_available_environments: () => Promise.resolve(available),
+      get_selected_environment: () => Promise.resolve(mockInstalledEnvironment("nodejs")),
     });
 
     await useEnvironmentStore.getState().load();
@@ -46,43 +56,34 @@ describe("environmentStore", () => {
     expect(useEnvironmentStore.getState().environments).toHaveLength(1);
     expect(useEnvironmentStore.getState().available).toHaveLength(0);
     expect(useEnvironmentStore.getState().selectedId).toBe("nodejs");
+    expect(useEnvironmentStore.getState().defaultEnvironmentId).toBe(TEST_DEFAULT_ENVIRONMENT_ID);
   });
 
   it("loads with no installed environments", async () => {
-    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
-      if (cmd === "list_environments") {
-        return Promise.resolve([]);
-      }
-      if (cmd === "list_available_environments") {
-        return Promise.resolve(ENVIRONMENT_CATALOG);
-      }
-      if (cmd === "get_selected_environment") {
-        return Promise.resolve(null);
-      }
-      return Promise.resolve(undefined);
+    mockEnvironmentInvoke({
+      list_environments: () => Promise.resolve([]),
+      list_available_environments: () => Promise.resolve(TEST_ENVIRONMENT_CATALOG),
+      get_selected_environment: () => Promise.resolve(null),
     });
 
     await useEnvironmentStore.getState().load();
 
     expect(useEnvironmentStore.getState().environments).toHaveLength(0);
-    expect(useEnvironmentStore.getState().available).toHaveLength(ENVIRONMENT_CATALOG.length);
+    expect(useEnvironmentStore.getState().available).toHaveLength(TEST_ENVIRONMENT_CATALOG.length);
     expect(useEnvironmentStore.getState().selectedId).toBeNull();
+    expect(useEnvironmentStore.getState().defaultEnvironmentId).toBe(TEST_DEFAULT_ENVIRONMENT_ID);
   });
 
   it("refreshes installed and available lists", async () => {
-    vi.mocked(runspaceInvoke).mockImplementation((cmd) => {
-      if (cmd === "list_environments") {
-        return Promise.resolve([mockInstalledEnvironment("nodejs", true)]);
-      }
-      if (cmd === "list_available_environments") {
-        return Promise.resolve([]);
-      }
-      return Promise.resolve(undefined);
+    mockEnvironmentInvoke({
+      list_environments: () => Promise.resolve([mockInstalledEnvironment("nodejs", true)]),
+      list_available_environments: () => Promise.resolve([]),
     });
 
     await useEnvironmentStore.getState().refresh();
 
     expect(useEnvironmentStore.getState().environments).toHaveLength(1);
     expect(useEnvironmentStore.getState().available).toHaveLength(0);
+    expect(useEnvironmentStore.getState().defaultEnvironmentId).toBe(TEST_DEFAULT_ENVIRONMENT_ID);
   });
 });
