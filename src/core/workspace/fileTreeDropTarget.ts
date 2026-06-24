@@ -59,6 +59,16 @@ export function resolveFileTreeDropTargetFromElement(element: Element | null): s
 }
 
 /**
+ * Resolves the file tree drop target from viewport coordinates.
+ * @param x - The horizontal coordinate.
+ * @param y - The vertical coordinate.
+ * @returns The file tree drop target path, or null when not over a target.
+ */
+export function resolveDropTargetFromPoint(x: number, y: number): string | null {
+  return resolveFileTreeDropTargetFromElement(document.elementFromPoint(x, y));
+}
+
+/**
  * Updates the file tree drop target from the drag event.
  * @param event - The drag event to update the file tree drop target from.
  */

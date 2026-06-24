@@ -209,7 +209,7 @@ export function FileTree() {
           </p>
         ) : rootFiles.length === 0 ? (
           <p className="file-tree__empty">
-            No files yet — drag files here or right-click for actions
+            No files yet — drag files or folders here or right-click for actions
           </p>
         ) : (
           rootFiles.map((entry) => (

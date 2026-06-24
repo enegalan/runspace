@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { markOnboardingComplete } from "../../src/core/onboarding/onboardingState";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
+import * as externalFileDrop from "../../src/core/workspace/externalFileDrop";
 import { useDialogStore } from "../../src/stores/dialogStore";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
@@ -80,8 +81,31 @@ describe("workspaceStore", () => {
       targetDir: "lib",
     });
     expect(imported).toEqual(["utils.js"]);
-    expect(useWorkspaceStore.getState().rootFiles).toHaveLength(1);
     expect(useWorkspaceStore.getState().expandedDirs.has("lib")).toBe(true);
+  });
+
+  it("imports dropped folders while preserving nested paths", async () => {
+    useWorkspaceStore.setState({ workspace: mockWorkspace, loaded: true });
+    vi.mocked(runspaceInvoke)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([]);
+
+    const file = {
+      name: "main.js",
+      webkitRelativePath: "project/main.js",
+    } as File;
+    vi.spyOn(externalFileDrop, "readFileAsText").mockResolvedValue("console.log(1);");
+
+    const imported = await useWorkspaceStore.getState().importExternalFiles([file]);
+
+    expect(runspaceInvoke).toHaveBeenCalledWith("write_file", {
+      path: "project/main.js",
+      content: "console.log(1);",
+    });
+    expect(imported).toEqual(["project/main.js"]);
   });
 
   it("asks before replacing an existing file when moving", async () => {

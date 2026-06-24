@@ -754,6 +754,33 @@ mod tests {
     }
 
     #[test]
+    fn import_external_copies_directory_into_workspace() {
+        let (manager, _temp) = temp_manager();
+        let workspace = manager
+            .create_named_workspace("Import folder", "nodejs")
+            .expect("workspace");
+        let source_dir =
+            env::temp_dir().join(format!("runspace-import-dir-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(source_dir.join("src")).expect("source nested dir");
+        fs::write(source_dir.join("src/main.js"), "console.log('imported');").expect("source file");
+
+        let imported = manager
+            .import_external(&workspace, &[source_dir.display().to_string()], None)
+            .expect("import");
+
+        let folder_name = source_dir.file_name().unwrap().to_str().unwrap();
+        assert_eq!(imported, vec![folder_name]);
+        let dest = workspace.path.join(folder_name).join("src/main.js");
+        assert!(dest.is_file());
+        assert_eq!(
+            fs::read_to_string(dest).expect("read imported"),
+            "console.log('imported');"
+        );
+
+        let _ = fs::remove_dir_all(source_dir);
+    }
+
+    #[test]
     fn import_external_errors_when_target_exists() {
         let (manager, _temp) = temp_manager();
         let workspace = manager
