@@ -39,7 +39,7 @@ Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`).
 
 ## Framework `post_install` steps
 
-| Type | Fields |
+| Type                  | Fields                                                        |
 |-----------------------|---------------------------------------------------------------|
 | `create_empty_file`   | `path` (relative to skeleton)                                 |
 | `create_dir`          | `path`                                                        |
