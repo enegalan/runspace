@@ -94,19 +94,13 @@ pub fn start_execution(
             extra_paths: &resolved.extra_paths,
         }))?;
 
-        let mut env_vars: Vec<(String, String)> = resolved
-            .env_vars
-            .into_iter()
-            .chain(profile_prepared.extra_env)
-            .collect();
-
-        env_vars.sort_by(|a, b| a.0.cmp(&b.0));
-        env_vars.dedup_by(|a, b| a.0 == b.0);
+        let mut env_vars = resolved.env_vars;
+        env_vars.extend(profile_prepared.extra_env);
 
         PreparedExecution {
             workspace_path: workspace.path.clone(),
             script_path: profile_prepared.script_path,
-            env_vars,
+            env_vars: env_vars.into_iter().collect(),
             paths,
         }
     };

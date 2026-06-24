@@ -36,9 +36,12 @@ pub struct EnvironmentRegistry {
 
 impl EnvironmentRegistry {
     pub fn load_bundled() -> Result<Self, RegistryError> {
-        let dir = bundled_environments_dir();
+        let dir = bundled_environments_dir().ok_or_else(|| {
+            RegistryError::Invalid("Bundled environment manifests directory not found".to_string())
+        })?;
         let mut manifests = HashMap::new();
         let mut default_id: Option<String> = None;
+        let mut default_count = 0usize;
 
         for entry in fs::read_dir(&dir)? {
             let entry = entry?;
@@ -54,6 +57,7 @@ impl EnvironmentRegistry {
             validate_manifest(&manifest)?;
 
             if manifest.default {
+                default_count += 1;
                 default_id = Some(manifest.id.clone());
             }
 
@@ -71,13 +75,13 @@ impl EnvironmentRegistry {
             ));
         }
 
-        let default_id = default_id.unwrap_or_else(|| {
-            manifests
-                .keys()
-                .next()
-                .cloned()
-                .expect("manifests not empty")
-        });
+        if default_count > 1 {
+            return Err(RegistryError::Invalid(
+                "Multiple environments marked as default".to_string(),
+            ));
+        }
+
+        let default_id = default_id.unwrap_or_else(|| deterministic_fallback_default_id(&manifests));
 
         Ok(Self {
             manifests,
@@ -116,8 +120,39 @@ impl EnvironmentRegistry {
     }
 }
 
-fn bundled_environments_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/environments")
+fn bundled_environments_dir() -> Option<PathBuf> {
+    let source_tree =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/environments");
+    if source_tree.is_dir() {
+        return Some(source_tree);
+    }
+
+    resolve_packaged_resource_dir("environments")
+}
+
+fn resolve_packaged_resource_dir(relative: &str) -> Option<PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let exe_dir = exe.parent()?;
+
+    for candidate in [
+        exe_dir.join("resources").join(relative),
+        exe_dir.join("../Resources").join(relative),
+        exe_dir.join("../Resources/resources").join(relative),
+    ] {
+        if candidate.is_dir() {
+            return Some(candidate);
+        }
+    }
+
+    None
+}
+
+fn deterministic_fallback_default_id(manifests: &HashMap<String, EnvironmentManifest>) -> String {
+    let mut ids: Vec<String> = manifests.keys().cloned().collect();
+    ids.sort();
+    ids.into_iter()
+        .next()
+        .expect("manifests not empty")
 }
 
 fn validate_manifest(manifest: &EnvironmentManifest) -> Result<(), RegistryError> {
@@ -180,7 +215,9 @@ pub fn registry() -> &'static EnvironmentRegistry {
 }
 
 pub fn default_environment_id() -> String {
-    registry().default_id().to_string()
+    EnvironmentRegistry::load_bundled()
+        .map(|registry| registry.default_id().to_string())
+        .unwrap_or_else(|_| "nodejs".to_string())
 }
 
 pub fn get_definition(id: &str) -> Option<EnvironmentDefinition> {

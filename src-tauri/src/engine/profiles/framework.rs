@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 
 use crate::environment::manifest::{
     DependencyInstallSpec, EnvironmentManifest, PostInstallStep, SkeletonSpec, StepCwd,
@@ -20,6 +21,7 @@ pub enum FrameworkSkeletonError {
     Copy(String),
     DependencyInstallerMissing(String),
     CommandFailed(String),
+    TimedOut(String),
     VendorMissing,
 }
 
@@ -33,6 +35,7 @@ impl std::fmt::Display for FrameworkSkeletonError {
                 "Dependency installer not found ({program}). Configure it in Settings or install it on PATH."
             ),
             FrameworkSkeletonError::CommandFailed(msg) => write!(f, "{msg}"),
+            FrameworkSkeletonError::TimedOut(msg) => write!(f, "Command timed out: {msg}"),
             FrameworkSkeletonError::VendorMissing => {
                 write!(f, "Framework vendor directory is missing after install.")
             }
@@ -62,10 +65,12 @@ pub fn framework_terminal_env(
 }
 
 const SKELETON_VERSION_FILE: &str = "skeleton.version";
+const FRAMEWORK_COMMAND_TIMEOUT_SECS: u64 = 300;
 
 pub struct SkeletonReady {
     pub path: PathBuf,
-    pub installed_vendor: bool,
+    pub skeleton_changed: bool,
+    pub vendor_installed: bool,
 }
 
 pub fn prepare(
@@ -115,9 +120,13 @@ fn ensure_framework_ready_with_workspace(
         .ok_or_else(|| FrameworkSkeletonError::Copy("Missing skeleton spec".to_string()))?;
 
     let ready = ensure_skeleton(&manifest.id, skeleton, extra_paths)?;
-    if ready.installed_vendor {
-        let workspace = workspace_path.unwrap_or(&ready.path);
-        run_post_install(&ready.path, workspace, &manifest.post_install, extra_paths)?;
+    if (ready.skeleton_changed || ready.vendor_installed) && !manifest.post_install.is_empty() {
+        run_post_install(
+            &ready.path,
+            workspace_path,
+            &manifest.post_install,
+            extra_paths,
+        )?;
     }
     Ok(ready.path)
 }
@@ -193,32 +202,38 @@ fn ensure_skeleton(
         .unwrap_or_default();
 
     let mut needs_dependency_install = false;
+    let mut skeleton_changed = false;
 
     if !target.exists() {
         copy_dir_recursive(&source, &target)?;
         needs_dependency_install = dependency.is_some();
+        skeleton_changed = true;
     } else if !skeleton_is_current(&source, &target) {
         sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
         needs_dependency_install = dependency.is_some();
+        skeleton_changed = true;
     } else if dependency.is_some_and(|spec| dependency_manifests_differ(&source, &target, spec)) {
         sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
         if let Some(parent) = vendor_marker.parent() {
             remove_path_if_exists(parent)?;
         }
         needs_dependency_install = true;
+        skeleton_changed = true;
     }
 
     if dependency.is_some() && vendor_marker.is_file() && !needs_dependency_install {
         return Ok(SkeletonReady {
             path: target,
-            installed_vendor: false,
+            skeleton_changed,
+            vendor_installed: false,
         });
     }
 
     let Some(spec) = dependency else {
         return Ok(SkeletonReady {
             path: target,
-            installed_vendor: false,
+            skeleton_changed,
+            vendor_installed: false,
         });
     };
 
@@ -231,13 +246,15 @@ fn ensure_skeleton(
 
         return Ok(SkeletonReady {
             path: target,
-            installed_vendor: true,
+            skeleton_changed,
+            vendor_installed: true,
         });
     }
 
     Ok(SkeletonReady {
         path: target,
-        installed_vendor: false,
+        skeleton_changed,
+        vendor_installed: false,
     })
 }
 
@@ -270,7 +287,7 @@ fn run_dependency_install(
 
 fn run_post_install(
     skeleton_root: &Path,
-    workspace_path: &Path,
+    workspace_path: Option<&Path>,
     steps: &[PostInstallStep],
     extra_paths: &HashMap<String, String>,
 ) -> Result<(), FrameworkSkeletonError> {
@@ -288,15 +305,22 @@ fn run_post_install(
             PostInstallStep::CreateDir { path } => {
                 fs::create_dir_all(skeleton_root.join(path)).map_err(FrameworkSkeletonError::Io)?;
             }
+            PostInstallStep::Run {
+                program,
+                args,
+                cwd: StepCwd::Workspace,
+                ..
+            } if workspace_path.is_none() => continue,
             PostInstallStep::Run { program, args, cwd } => {
-                let entry = workspace_path.join("_runspace_entry_placeholder");
+                let workspace = workspace_path.unwrap_or(skeleton_root);
+                let entry = workspace.join("_runspace_entry_placeholder");
                 let context =
-                    framework_template_context(extra_paths, skeleton_root, workspace_path, &entry);
+                    framework_template_context(extra_paths, skeleton_root, workspace, &entry);
                 let resolved_program = resolve_framework_path(program, &context);
                 let resolved_args = resolve_framework_args(args, &context);
                 let command_cwd = match cwd {
                     StepCwd::Skeleton => skeleton_root,
-                    StepCwd::Workspace => workspace_path,
+                    StepCwd::Workspace => workspace,
                 };
                 let arg_refs: Vec<&str> = resolved_args.iter().map(String::as_str).collect();
                 run_command(&resolved_program, command_cwd, &arg_refs)?;
@@ -308,18 +332,46 @@ fn run_post_install(
 }
 
 fn run_command(program: &Path, cwd: &Path, args: &[&str]) -> Result<(), FrameworkSkeletonError> {
-    let output = Command::new(program)
+    let mut child = Command::new(program)
         .args(args)
         .current_dir(cwd)
-        .output()
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(FrameworkSkeletonError::Io)?;
 
-    if output.status.success() {
+    let timeout = Duration::from_secs(FRAMEWORK_COMMAND_TIMEOUT_SECS);
+    let start = Instant::now();
+    let command_label = format!("{} {}", program.display(), args.join(" "));
+
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) => {
+                if start.elapsed() >= timeout {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(FrameworkSkeletonError::TimedOut(command_label));
+                }
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(err) => return Err(FrameworkSkeletonError::Io(err)),
+        }
+    };
+
+    let mut stderr = String::new();
+    if let Some(mut pipe) = child.stderr.take() {
+        let _ = std::io::Read::read_to_string(&mut pipe, &mut stderr);
+    }
+    let mut stdout = String::new();
+    if let Some(mut pipe) = child.stdout.take() {
+        let _ = std::io::Read::read_to_string(&mut pipe, &mut stdout);
+    }
+
+    if status.success() {
         return Ok(());
     }
 
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    let stdout = String::from_utf8_lossy(&output.stdout);
     Err(FrameworkSkeletonError::CommandFailed(format!(
         "Command failed ({}): {}{}",
         args.join(" "),

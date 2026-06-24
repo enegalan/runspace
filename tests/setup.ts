@@ -29,7 +29,7 @@ vi.mock("../src/core/api/runspaceInvoke", () => ({
     if (cmd === "get_default_environment_id") {
       return Promise.resolve("nodejs");
     }
-    return Promise.resolve(undefined);
+    return Promise.reject(new Error(`Unhandled runspaceInvoke command: ${cmd}`));
   }),
 }));
 

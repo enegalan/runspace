@@ -143,11 +143,11 @@ impl WorkspaceManager {
     ) -> Result<Workspace, WorkspaceError> {
         let id = Uuid::new_v4().to_string();
         let path = self.workspaces_dir().join(&id);
-        fs::create_dir_all(&path)?;
 
         get_manifest(runtime_id).ok_or_else(|| {
             WorkspaceError::InvalidPath(format!("Unsupported runtime: {runtime_id}"))
         })?;
+        fs::create_dir_all(&path)?;
         let now = Utc::now().to_rfc3339();
 
         let workspace = Workspace {
@@ -633,12 +633,12 @@ mod tests {
     }
 
     #[test]
-    fn ensure_workspace_info_migrates_legacy_workspace() {
+    fn ensure_workspace_info_creates_manifest_for_existing_dir() {
         let (manager, _temp) = temp_manager();
         let id = Uuid::new_v4().to_string();
         let path = manager.workspaces_dir().join(&id);
         fs::create_dir_all(&path).expect("workspace dir");
-        fs::write(path.join("main.js"), "console.log('legacy');").expect("legacy file");
+        fs::write(path.join("main.js"), "console.log('hello');").expect("file");
 
         let workspace = Workspace {
             id: id.clone(),
@@ -647,7 +647,7 @@ mod tests {
 
         let info = manager
             .ensure_workspace_info(&workspace, "nodejs")
-            .expect("migrate");
+            .expect("manifest created");
 
         assert_eq!(info.runtime_id, "nodejs");
         assert!(workspace.path.join(MANIFEST_FILENAME).is_file());
@@ -865,6 +865,7 @@ mod tests {
             )]),
             last_runtime_id: None,
             onboarding_complete: false,
+            ..SessionData::default()
         };
         manager.save_session(&session).expect("save");
         let loaded = manager.load_session().expect("load");

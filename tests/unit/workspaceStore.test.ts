@@ -115,7 +115,9 @@ describe("workspaceStore", () => {
     vi.mocked(useDialogStore.getState().askConfirm).mockResolvedValue(false);
     vi.mocked(runspaceInvoke)
       .mockResolvedValueOnce(mockWorkspace)
-      .mockResolvedValueOnce([{ name: "utils.js", path: "lib/utils.js", is_directory: false }]);
+      .mockResolvedValueOnce([{ name: "utils.js", path: "lib/utils.js", is_directory: false }])
+      .mockResolvedValueOnce(mockWorkspace)
+      .mockResolvedValueOnce([]);
 
     const imported = await useWorkspaceStore
       .getState()

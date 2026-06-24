@@ -5,6 +5,7 @@ mod tests {
     use std::process::Command;
 
     use crate::engine::profiles::{build_run_command, prepare, require_manifest, PrepareContext};
+    use crate::environment::manifest::EnvironmentManifest;
     use crate::environment::registry::registry;
 
     fn runtime_binary(names: &[&str]) -> Option<PathBuf> {
@@ -16,6 +17,36 @@ mod tests {
         None
     }
 
+    fn integration_extra_paths(manifest: &EnvironmentManifest) -> HashMap<String, String> {
+        let mut paths = HashMap::new();
+        for field in &manifest.config_fields {
+            if field.primary {
+                continue;
+            }
+            let Some(detect) = field.detect.as_ref() else {
+                continue;
+            };
+            if let Some(path) = detect
+                .commands
+                .iter()
+                .find_map(|command| which::which(command).ok())
+            {
+                paths.insert(field.key.clone(), path.to_string_lossy().to_string());
+            }
+        }
+        paths
+    }
+
+    fn framework_dependencies_available(manifest: &EnvironmentManifest) -> bool {
+        let resolved = integration_extra_paths(manifest);
+        manifest.config_fields.iter().all(|field| {
+            if field.primary || field.detect.is_none() {
+                return true;
+            }
+            resolved.contains_key(&field.key)
+        })
+    }
+
     fn sample_script_name(environment_id: &str) -> String {
         registry()
             .get(environment_id)
@@ -25,6 +56,14 @@ mod tests {
 
     fn run_hello(environment_id: &str, binary: PathBuf, template: &str) {
         let manifest = require_manifest(environment_id).expect("manifest");
+        if matches!(
+            manifest.profile,
+            crate::environment::manifest::EnvironmentProfile::Framework
+        ) && !framework_dependencies_available(&manifest)
+        {
+            return;
+        }
+
         let temp_dir = std::env::temp_dir().join(format!(
             "runspace-{environment_id}-{}",
             std::time::SystemTime::now()
@@ -41,13 +80,14 @@ mod tests {
             .primary_binary_field_key()
             .expect("primary binary field")
             .to_string();
-        let paths = HashMap::from([(primary_key, binary.to_string_lossy().to_string())]);
+        let mut paths = integration_extra_paths(&manifest);
+        paths.insert(primary_key, binary.to_string_lossy().to_string());
 
         let prepared = prepare(PrepareContext {
             environment_id,
             workspace_path: &temp_dir,
             snippet_path: &snippet_path,
-            extra_paths: &HashMap::new(),
+            extra_paths: &paths,
         })
         .expect("prepare");
 
