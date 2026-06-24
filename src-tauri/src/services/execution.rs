@@ -142,7 +142,15 @@ pub fn start_execution(
 
     std::thread::spawn(move || {
         if is_compiled {
-            let manifest = require_manifest(&manifest_id).expect("manifest");
+            let manifest = match require_manifest(&manifest_id) {
+                Ok(manifest) => manifest,
+                Err(error) => {
+                    eprintln!("Compiled execution failed: {error}");
+                    emitter.emit_output("stderr", &format!("[compile] {error}\n"));
+                    emitter.emit_finished(Some(1), false, true);
+                    return;
+                }
+            };
             if let Err(error) = run_compiled(
                 &engine,
                 &emitter,
