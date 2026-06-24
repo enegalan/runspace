@@ -81,7 +81,8 @@ impl EnvironmentRegistry {
             ));
         }
 
-        let default_id = default_id.unwrap_or_else(|| deterministic_fallback_default_id(&manifests));
+        let default_id =
+            default_id.unwrap_or_else(|| deterministic_fallback_default_id(&manifests));
 
         Ok(Self {
             manifests,
@@ -121,8 +122,7 @@ impl EnvironmentRegistry {
 }
 
 fn bundled_environments_dir() -> Option<PathBuf> {
-    let source_tree =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/environments");
+    let source_tree = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/environments");
     if source_tree.is_dir() {
         return Some(source_tree);
     }
@@ -150,9 +150,7 @@ fn resolve_packaged_resource_dir(relative: &str) -> Option<PathBuf> {
 fn deterministic_fallback_default_id(manifests: &HashMap<String, EnvironmentManifest>) -> String {
     let mut ids: Vec<String> = manifests.keys().cloned().collect();
     ids.sort();
-    ids.into_iter()
-        .next()
-        .expect("manifests not empty")
+    ids.into_iter().next().expect("manifests not empty")
 }
 
 fn validate_manifest(manifest: &EnvironmentManifest) -> Result<(), RegistryError> {
