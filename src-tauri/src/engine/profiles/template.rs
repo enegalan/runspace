@@ -80,7 +80,7 @@ fn resolve_framework_template_with_options(
 fn format_path_value(path: &Path, escape: bool) -> String {
     let value = path.to_string_lossy();
     if escape {
-        escape_for_embedded_literal(&value)
+        value.replace('\\', "\\\\").replace('\'', "\\'")
     } else {
         value.into_owned()
     }
@@ -98,10 +98,6 @@ pub fn resolve_framework_args(
         .iter()
         .map(|value| resolve_framework_template(value, context))
         .collect()
-}
-
-fn escape_for_embedded_literal(value: &str) -> String {
-    value.replace('\\', "\\\\").replace('\'', "\\'")
 }
 
 #[cfg(test)]
