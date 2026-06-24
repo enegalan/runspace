@@ -91,7 +91,7 @@ pub fn start_execution(
             environment_id: &environment_id,
             workspace_path: &workspace.path,
             snippet_path: &snippet_path,
-            extra_paths: &resolved.extra_paths,
+            extra_paths: &paths,
         }))?;
 
         let mut env_vars = resolved.env_vars;
