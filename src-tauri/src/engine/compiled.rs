@@ -1,7 +1,9 @@
-use std::fs;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use super::adapters::CompiledAdapter;
+use crate::engine::profiles::build_compile_command;
+use crate::environment::manifest::EnvironmentManifest;
+
 use super::emitter::ExecutionEmitter;
 use super::executor::{ExecutionEngine, ExecutionError, ExecutionRequest};
 
@@ -26,41 +28,34 @@ fn cleanup_artifacts(workspace: &Path, binary_name: &str) {
     }
 }
 
-fn command_from_compile(
-    adapter: &dyn CompiledAdapter,
-    compiler_binary: &Path,
-    source_path: &Path,
-    output_binary: &Path,
-) -> (PathBuf, Vec<String>) {
-    let built = adapter.compile_command(compiler_binary, source_path, output_binary);
-    let program = PathBuf::from(built.get_program());
-    let args: Vec<String> = built
-        .get_args()
-        .map(|arg| arg.to_string_lossy().to_string())
-        .collect();
-    (program, args)
-}
+use std::fs;
 
 pub fn run_compiled(
     engine: &ExecutionEngine,
     emitter: &ExecutionEmitter,
-    adapter: &dyn CompiledAdapter,
-    compiler_binary: &Path,
+    manifest: &EnvironmentManifest,
+    paths: &HashMap<String, String>,
     source_path: &Path,
     workspace: &Path,
     env_vars: Vec<(String, String)>,
     run_timeout_secs: u64,
     compile_timeout_secs: u64,
 ) -> Result<(), ExecutionError> {
-    let binary_name = adapter.output_binary_name();
+    let binary_name = manifest.output_binary_name();
     let output_binary = workspace.join(binary_name);
 
     cleanup_artifacts(workspace, binary_name);
 
     emitter.emit_phase("compile");
 
-    let (program, args) =
-        command_from_compile(adapter, compiler_binary, source_path, &output_binary);
+    let compile_command = build_compile_command(manifest, paths, source_path, workspace)
+        .map_err(|error| ExecutionError::SpawnFailed(error.to_string()))?;
+
+    let program = PathBuf::from(compile_command.get_program());
+    let args: Vec<String> = compile_command
+        .get_args()
+        .map(|arg| arg.to_string_lossy().to_string())
+        .collect();
 
     let compile_request = ExecutionRequest {
         program,
@@ -113,16 +108,17 @@ pub fn run_compiled(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::adapters::get_compiled_adapter;
     use crate::engine::{ExecutionEmitter, ExecutionEvent, ExecutionEventBus};
+    use crate::environment::registry::get_manifest;
 
     #[test]
     fn gcc_compile_command_uses_hardcoded_output() {
-        let adapter = get_compiled_adapter("gcc").expect("gcc adapter");
-        let compiler = PathBuf::from("/usr/bin/gcc");
+        let manifest = get_manifest("gcc").expect("gcc manifest");
+        let paths = HashMap::from([("gcc_path".to_string(), "/usr/bin/gcc".to_string())]);
         let source = PathBuf::from("/tmp/ws/main.c");
-        let output = PathBuf::from("/tmp/ws/runspace_out");
-        let cmd = adapter.compile_command(&compiler, &source, &output);
+        let workspace = PathBuf::from("/tmp/ws");
+        let cmd =
+            build_compile_command(manifest, &paths, &source, &workspace).expect("compile command");
         let args: Vec<_> = cmd
             .get_args()
             .map(|arg| arg.to_string_lossy().to_string())
@@ -137,11 +133,12 @@ mod tests {
     #[test]
     fn forbidden_flags_not_in_compile_command() {
         const FORBIDDEN_FLAGS: &[&str] = &["-save-temps", "-wrapper", "@"];
-        let adapter = get_compiled_adapter("gcc").expect("gcc adapter");
-        let compiler = PathBuf::from("/usr/bin/gcc");
+        let manifest = get_manifest("gcc").expect("gcc manifest");
+        let paths = HashMap::from([("gcc_path".to_string(), "/usr/bin/gcc".to_string())]);
         let source = PathBuf::from("/tmp/ws/main.c");
-        let output = PathBuf::from("/tmp/ws/runspace_out");
-        let cmd = adapter.compile_command(&compiler, &source, &output);
+        let workspace = PathBuf::from("/tmp/ws");
+        let cmd =
+            build_compile_command(manifest, &paths, &source, &workspace).expect("compile command");
         let args: Vec<_> = cmd
             .get_args()
             .map(|arg| arg.to_string_lossy().to_string())
@@ -160,6 +157,9 @@ mod tests {
         let Some(gcc) = which::which("gcc").ok() else {
             return;
         };
+
+        let manifest = get_manifest("gcc").expect("gcc manifest");
+        let paths = HashMap::from([("gcc_path".to_string(), gcc.to_string_lossy().to_string())]);
 
         let temp_dir = std::env::temp_dir().join(format!(
             "runspace-gcc-test-{}",
@@ -180,13 +180,12 @@ mod tests {
         let engine = ExecutionEngine::new();
         let bus = ExecutionEventBus::new();
         let emitter = ExecutionEmitter::bus_only(bus.clone());
-        let adapter = get_compiled_adapter("gcc").expect("gcc adapter");
 
         run_compiled(
             &engine,
             &emitter,
-            adapter.as_ref(),
-            &gcc,
+            manifest,
+            &paths,
             &source_path,
             &temp_dir,
             vec![],
@@ -228,6 +227,9 @@ mod tests {
             return;
         };
 
+        let manifest = get_manifest("gcc").expect("gcc manifest");
+        let paths = HashMap::from([("gcc_path".to_string(), gcc.to_string_lossy().to_string())]);
+
         let temp_dir = std::env::temp_dir().join(format!(
             "runspace-gcc-err-{}",
             std::time::SystemTime::now()
@@ -243,13 +245,12 @@ mod tests {
         let engine = ExecutionEngine::new();
         let bus = ExecutionEventBus::new();
         let emitter = ExecutionEmitter::bus_only(bus.clone());
-        let adapter = get_compiled_adapter("gcc").expect("gcc adapter");
 
         run_compiled(
             &engine,
             &emitter,
-            adapter.as_ref(),
-            &gcc,
+            manifest,
+            &paths,
             &source_path,
             &temp_dir,
             vec![],

@@ -39,6 +39,9 @@
     ],
     "macOS": {
       "entitlements": "entitlements.plist"
+    },
+    "resources": {
+      "resources/environments/": "environments/"
     }
   }
 }

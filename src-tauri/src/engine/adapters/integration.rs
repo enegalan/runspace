@@ -1,10 +1,12 @@
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
     use std::path::PathBuf;
     use std::process::Command;
 
-    use super::super::{get_adapter, PrepareContext};
-    use std::collections::HashMap;
+    use crate::engine::profiles::{build_run_command, prepare, require_manifest, PrepareContext};
+    use crate::environment::manifest::EnvironmentManifest;
+    use crate::environment::registry::registry;
 
     fn runtime_binary(names: &[&str]) -> Option<PathBuf> {
         for name in names {
@@ -15,18 +17,53 @@ mod tests {
         None
     }
 
-    fn sample_script_name(environment_id: &str) -> &'static str {
-        match environment_id {
-            "nodejs" => "main.js",
-            "php" | "laravel" | "symfony" => "main.php",
-            "python" => "main.py",
-            "ruby" => "main.rb",
-            _ => "main.txt",
+    fn integration_extra_paths(manifest: &EnvironmentManifest) -> HashMap<String, String> {
+        let mut paths = HashMap::new();
+        for field in &manifest.config_fields {
+            if field.primary {
+                continue;
+            }
+            let Some(detect) = field.detect.as_ref() else {
+                continue;
+            };
+            if let Some(path) = detect
+                .commands
+                .iter()
+                .find_map(|command| which::which(command).ok())
+            {
+                paths.insert(field.key.clone(), path.to_string_lossy().to_string());
+            }
         }
+        paths
+    }
+
+    fn framework_dependencies_available(manifest: &EnvironmentManifest) -> bool {
+        let resolved = integration_extra_paths(manifest);
+        manifest.config_fields.iter().all(|field| {
+            if field.primary || field.detect.is_none() {
+                return true;
+            }
+            resolved.contains_key(&field.key)
+        })
+    }
+
+    fn sample_script_name(environment_id: &str) -> String {
+        registry()
+            .get(environment_id)
+            .map(|manifest| format!("main.{}", manifest.file_extension))
+            .unwrap_or_else(|| "main.txt".to_string())
     }
 
     fn run_hello(environment_id: &str, binary: PathBuf, template: &str) {
-        let adapter = get_adapter(environment_id).expect("adapter");
+        let manifest = require_manifest(environment_id).expect("manifest");
+        if matches!(
+            manifest.profile,
+            crate::environment::manifest::EnvironmentProfile::Framework
+        ) && !framework_dependencies_available(&manifest)
+        {
+            return;
+        }
+
         let temp_dir = std::env::temp_dir().join(format!(
             "runspace-{environment_id}-{}",
             std::time::SystemTime::now()
@@ -39,16 +76,26 @@ mod tests {
         let snippet_path = temp_dir.join(sample_script_name(environment_id));
         std::fs::write(&snippet_path, template).expect("write snippet");
 
-        let prepared = adapter
-            .prepare(PrepareContext {
-                workspace_path: &temp_dir,
-                snippet_path: &snippet_path,
-                extra_paths: &HashMap::new(),
-            })
-            .expect("prepare");
+        let primary_key = manifest
+            .primary_binary_field_key()
+            .expect("primary binary field")
+            .to_string();
+        let mut paths = integration_extra_paths(&manifest);
+        paths.insert(primary_key, binary.to_string_lossy().to_string());
 
-        let output = Command::new(&binary)
-            .arg(&prepared.script_path)
+        let prepared = prepare(PrepareContext {
+            environment_id,
+            workspace_path: &temp_dir,
+            snippet_path: &snippet_path,
+            extra_paths: &paths,
+        })
+        .expect("prepare");
+
+        let built = build_run_command(manifest, &paths, &prepared.script_path, &temp_dir)
+            .expect("run command");
+
+        let output = Command::new(built.get_program())
+            .args(built.get_args())
             .current_dir(&temp_dir)
             .envs(prepared.extra_env)
             .output()

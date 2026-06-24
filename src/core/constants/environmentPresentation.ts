@@ -1,9 +1,7 @@
-import { ENVIRONMENT_CATALOG } from "./environmentCatalog";
 import type { EnvironmentCategory, EnvironmentDefinition } from "../types/environment";
 
 /**
  * The environment category labels.
- * @returns The environment category labels.
  */
 export const ENVIRONMENT_CATEGORY_LABELS: Record<EnvironmentCategory, string> = {
   language: "Languages",
@@ -12,7 +10,6 @@ export const ENVIRONMENT_CATEGORY_LABELS: Record<EnvironmentCategory, string> = 
 
 /**
  * The environment category row labels.
- * @returns The environment category row labels.
  */
 export const ENVIRONMENT_CATEGORY_ROW_LABELS: Record<EnvironmentCategory, string> = {
   language: "Language",
@@ -38,15 +35,17 @@ export function groupByCategory<T extends { definition: { category: EnvironmentC
 }
 
 /**
- * Groups the catalog by category.
+ * Groups the catalog definitions by category.
  * @returns The catalog grouped by category.
  */
-export function groupCatalogByCategory(): Record<EnvironmentCategory, EnvironmentDefinition[]> {
+export function groupCatalogByCategory(
+  catalog: EnvironmentDefinition[],
+): Record<EnvironmentCategory, EnvironmentDefinition[]> {
   const groups: Record<EnvironmentCategory, EnvironmentDefinition[]> = {
     language: [],
     framework: [],
   };
-  for (const definition of ENVIRONMENT_CATALOG) {
+  for (const definition of catalog) {
     groups[definition.category].push(definition);
   }
   return groups;

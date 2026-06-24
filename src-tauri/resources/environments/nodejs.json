@@ -1,0 +1,26 @@
+{
+  "id": "nodejs",
+  "name": "Node.js",
+  "category": "language",
+  "file_extension": "js",
+  "monaco_language": "javascript",
+  "install_guide_url": "https://nodejs.org/en/download",
+  "default": true,
+  "presentation": { "accent": "#3c873a" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "node_path",
+      "label": "Node.js binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["node"] }
+    }
+  ],
+  "run": {
+    "program": "{{node_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}

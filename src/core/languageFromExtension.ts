@@ -1,22 +1,21 @@
+import { mergeEnvironmentCatalog } from "./constants/environmentCatalog";
+import { useEnvironmentStore } from "../stores/environmentStore";
 import { basename } from "./path/basename";
 
-/** The default language when no extension mapping matches. */
+/**
+ * The default language when no extension mapping matches.
+ */
 const DEFAULT_LANGUAGE = "plaintext";
 
+// TODO: Use a library for this mapping.
 /**
- * This maps file extensions to languages.
+ * Extensions shared across workspaces, not tied to a single environment manifest.
  */
-const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
-  js: "javascript",
+const AUXILIARY_EXTENSION_LANGUAGE_MAP: Record<string, string> = {
   mjs: "javascript",
   cjs: "javascript",
   ts: "typescript",
   tsx: "typescript",
-  php: "php",
-  py: "python",
-  rb: "ruby",
-  c: "c",
-  cpp: "cpp",
   cc: "cpp",
   h: "c",
   hpp: "cpp",
@@ -27,9 +26,25 @@ const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
 };
 
 /**
- * This function is used to get the language for a given file extension.
- * @param path - The path of the file.
- * @returns The language for the given file extension.
+ * Maps runtime extensions to Monaco editor languages.
+ * @returns The map of runtime extensions to Monaco editor languages.
+ */
+function runtimeExtensionLanguageMap(): Map<string, string> {
+  const state = useEnvironmentStore.getState();
+  const catalog = mergeEnvironmentCatalog(
+    state.environments.map((env) => env.definition),
+    state.available,
+  );
+  const map = new Map<string, string>();
+  for (const definition of catalog) {
+    map.set(definition.file_extension.toLowerCase(), definition.monaco_language);
+  }
+  return map;
+}
+
+/**
+ * Resolves the Monaco editor language for a file path.
+ * Primary runtime extensions come from bundled environment manifests.
  */
 export function languageFromExtension(path: string): string {
   const base = basename(path);
@@ -38,5 +53,10 @@ export function languageFromExtension(path: string): string {
     return DEFAULT_LANGUAGE;
   }
   const ext = base.slice(dot + 1).toLowerCase();
-  return EXTENSION_LANGUAGE_MAP[ext] ?? DEFAULT_LANGUAGE;
+  const runtimeLanguage = runtimeExtensionLanguageMap().get(ext);
+  if (runtimeLanguage) {
+    return runtimeLanguage;
+  }
+
+  return AUXILIARY_EXTENSION_LANGUAGE_MAP[ext] ?? DEFAULT_LANGUAGE;
 }

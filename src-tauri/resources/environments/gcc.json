@@ -1,0 +1,26 @@
+{
+  "id": "gcc",
+  "name": "GCC (C)",
+  "category": "language",
+  "file_extension": "c",
+  "monaco_language": "c",
+  "install_guide_url": "https://developer.apple.com/xcode/resources/",
+  "presentation": { "accent": "#00599c" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "gcc_path",
+      "label": "GCC binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["gcc"] }
+    }
+  ],
+  "compile": {
+    "program": "{{gcc_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}", "-Wall", "-std=c11"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}

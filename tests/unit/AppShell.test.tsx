@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearOnboardingComplete } from "../../src/core/onboarding/onboardingState";
 import { AppShell } from "../../src/components/layout/AppShell";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
-import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
+import {
+  TEST_DEFAULT_ENVIRONMENT_ID,
+  TEST_ENVIRONMENT_CATALOG,
+} from "../fixtures/environmentCatalog";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
@@ -12,7 +15,7 @@ import { useExecutionStore } from "../../src/stores/executionStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = false) {
-  const definition = ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
+  const definition = TEST_ENVIRONMENT_CATALOG.find((d) => d.id === id)!;
   return {
     definition,
     user_config: { paths: {}, env_vars: {} },
@@ -53,6 +56,7 @@ describe("AppShell", () => {
       environments: [],
       available: [],
       selectedId: "nodejs",
+      defaultEnvironmentId: TEST_DEFAULT_ENVIRONMENT_ID,
       loaded: false,
     });
     useSettingsStore.setState({
@@ -72,6 +76,9 @@ describe("AppShell", () => {
       }
       if (cmd === "get_selected_environment") {
         return Promise.resolve(mockInstalledEnvironment("nodejs"));
+      }
+      if (cmd === "get_default_environment_id") {
+        return Promise.resolve(TEST_DEFAULT_ENVIRONMENT_ID);
       }
       if (cmd === "initialize_workspace") {
         return Promise.resolve(mockWorkspace);
@@ -140,11 +147,14 @@ describe("AppShell", () => {
       }
       if (cmd === "list_available_environments") {
         return Promise.resolve(
-          ENVIRONMENT_CATALOG.filter((definition) => definition.id !== "nodejs"),
+          TEST_ENVIRONMENT_CATALOG.filter((definition) => definition.id !== "nodejs"),
         );
       }
       if (cmd === "get_selected_environment") {
         return Promise.resolve(mockInstalledEnvironment("nodejs", true));
+      }
+      if (cmd === "get_default_environment_id") {
+        return Promise.resolve(TEST_DEFAULT_ENVIRONMENT_ID);
       }
       if (cmd === "list_workspaces") {
         return Promise.resolve([]);
@@ -182,6 +192,9 @@ describe("AppShell", () => {
       }
       if (cmd === "get_selected_environment") {
         return Promise.resolve(mockInstalledEnvironment("nodejs", true));
+      }
+      if (cmd === "get_default_environment_id") {
+        return Promise.resolve(TEST_DEFAULT_ENVIRONMENT_ID);
       }
       if (cmd === "list_workspaces") {
         return Promise.resolve([]);
@@ -221,6 +234,7 @@ describe("AppShell", () => {
       environments: [mockInstalledEnvironment("nodejs", true)],
       available: [],
       selectedId: "nodejs",
+      defaultEnvironmentId: TEST_DEFAULT_ENVIRONMENT_ID,
       loaded: true,
     });
 
@@ -236,6 +250,9 @@ describe("AppShell", () => {
       }
       if (cmd === "get_selected_environment") {
         return Promise.resolve(mockInstalledEnvironment("nodejs", true));
+      }
+      if (cmd === "get_default_environment_id") {
+        return Promise.resolve(TEST_DEFAULT_ENVIRONMENT_ID);
       }
       if (cmd === "list_workspaces") {
         return Promise.resolve([]);
@@ -315,6 +332,7 @@ describe("AppShell", () => {
       environments: [mockInstalledEnvironment("nodejs", true)],
       available: [],
       selectedId: "nodejs",
+      defaultEnvironmentId: TEST_DEFAULT_ENVIRONMENT_ID,
       loaded: true,
     });
     useSettingsStore.setState({

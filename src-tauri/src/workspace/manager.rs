@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use chrono::Utc;
 use uuid::Uuid;
 
-use crate::engine::adapters::get_adapter;
+use crate::environment::registry::{default_environment_id, get_manifest};
 use crate::security::{validate_path_in_workspace, SecurityError};
 
 use super::types::{FileEntry, SessionData, WorkspaceInfo, WorkspaceManifest, MANIFEST_FILENAME};
@@ -133,7 +133,7 @@ impl WorkspaceManager {
     }
 
     pub fn create_workspace(&self) -> Result<Workspace, WorkspaceError> {
-        self.create_named_workspace("Untitled", "nodejs")
+        self.create_named_workspace("Untitled", &default_environment_id())
     }
 
     pub fn create_named_workspace(
@@ -143,10 +143,11 @@ impl WorkspaceManager {
     ) -> Result<Workspace, WorkspaceError> {
         let id = Uuid::new_v4().to_string();
         let path = self.workspaces_dir().join(&id);
-        fs::create_dir_all(&path)?;
 
-        get_adapter(runtime_id)
-            .map_err(|e| WorkspaceError::InvalidPath(format!("Unsupported runtime: {e}")))?;
+        get_manifest(runtime_id).ok_or_else(|| {
+            WorkspaceError::InvalidPath(format!("Unsupported runtime: {runtime_id}"))
+        })?;
+        fs::create_dir_all(&path)?;
         let now = Utc::now().to_rfc3339();
 
         let workspace = Workspace {
@@ -511,9 +512,8 @@ impl WorkspaceManager {
             return Ok(SessionData::default());
         }
         let content = fs::read_to_string(&path)?;
-        let mut session: SessionData = serde_json::from_str(&content)
+        let session: SessionData = serde_json::from_str(&content)
             .map_err(|e| WorkspaceError::InvalidPath(format!("Invalid session: {e}")))?;
-        session.normalize_legacy("nodejs");
         Ok(session)
     }
 
@@ -633,12 +633,12 @@ mod tests {
     }
 
     #[test]
-    fn ensure_workspace_info_migrates_legacy_workspace() {
+    fn ensure_workspace_info_creates_manifest_for_existing_dir() {
         let (manager, _temp) = temp_manager();
         let id = Uuid::new_v4().to_string();
         let path = manager.workspaces_dir().join(&id);
         fs::create_dir_all(&path).expect("workspace dir");
-        fs::write(path.join("main.js"), "console.log('legacy');").expect("legacy file");
+        fs::write(path.join("main.js"), "console.log('hello');").expect("file");
 
         let workspace = Workspace {
             id: id.clone(),
@@ -647,7 +647,7 @@ mod tests {
 
         let info = manager
             .ensure_workspace_info(&workspace, "nodejs")
-            .expect("migrate");
+            .expect("manifest created");
 
         assert_eq!(info.runtime_id, "nodejs");
         assert!(workspace.path.join(MANIFEST_FILENAME).is_file());
@@ -685,7 +685,6 @@ mod tests {
                 ),
             ]),
             last_runtime_id: Some("nodejs".to_string()),
-            last_workspace_id: Some(node_ws.id.clone()),
             ..SessionData::default()
         };
         manager.save_session(&session).expect("save session");
@@ -701,7 +700,6 @@ mod tests {
         assert!(!session.environments.contains_key("nodejs"));
         assert!(session.environments.contains_key("php"));
         assert_eq!(session.last_runtime_id, None);
-        assert_eq!(session.last_workspace_id, None);
 
         let remaining = manager
             .list_workspaces_for_runtime(Some("nodejs"))
@@ -784,7 +782,7 @@ mod tests {
         use std::collections::HashMap;
         use std::process::Command;
 
-        use crate::engine::adapters::PrepareContext;
+        use crate::engine::profiles::{prepare, PrepareContext};
 
         let Some(binary) = which::which("node").ok() else {
             return;
@@ -815,15 +813,14 @@ mod tests {
             .expect("run file");
         assert_eq!(entry, "main.js");
 
-        let adapter = get_adapter("nodejs").expect("adapter");
         let snippet_path = workspace.path.join(&entry);
-        let prepared = adapter
-            .prepare(PrepareContext {
-                workspace_path: &workspace.path,
-                snippet_path: &snippet_path,
-                extra_paths: &HashMap::new(),
-            })
-            .expect("prepare");
+        let prepared = prepare(PrepareContext {
+            environment_id: "nodejs",
+            workspace_path: &workspace.path,
+            snippet_path: &snippet_path,
+            extra_paths: &HashMap::new(),
+        })
+        .expect("prepare");
 
         let output = Command::new(&binary)
             .arg(&prepared.script_path)
@@ -867,10 +864,8 @@ mod tests {
                 },
             )]),
             last_runtime_id: None,
-            last_workspace_id: None,
-            open_files: Vec::new(),
-            active_file: None,
             onboarding_complete: false,
+            ..SessionData::default()
         };
         manager.save_session(&session).expect("save");
         let loaded = manager.load_session().expect("load");

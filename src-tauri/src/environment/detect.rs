@@ -1,46 +1,17 @@
 use std::path::{Path, PathBuf};
 
-struct BinaryProbe {
-    command_names: &'static [&'static str],
-}
+use super::registry::get_definition;
+use super::types::ConfigField;
 
-const NODE_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["node"],
-};
-
-const PHP_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["php"],
-};
-
-const PYTHON_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["python3", "python"],
-};
-
-const RUBY_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["ruby"],
-};
-
-const COMPOSER_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["composer"],
-};
-
-const GCC_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["gcc"],
-};
-
-const GPP_PROBE: BinaryProbe = BinaryProbe {
-    command_names: &["g++", "c++"],
-};
-
-fn probe_binary(probe: &BinaryProbe) -> Option<PathBuf> {
-    for name in probe.command_names {
+fn probe_field(field: &ConfigField) -> Option<PathBuf> {
+    let detect = field.detect.as_ref()?;
+    for name in &detect.commands {
         if let Ok(path) = which::which(name) {
             if path.is_file() && is_executable(&path) {
                 return Some(path);
             }
         }
     }
-
     None
 }
 
@@ -57,27 +28,10 @@ fn is_executable(path: &Path) -> bool {
     path.is_file()
 }
 
-fn probe_for_field(field_key: &str) -> Option<PathBuf> {
-    let probe = match field_key {
-        "node_path" => &NODE_PROBE,
-        "php_path" => &PHP_PROBE,
-        "python_path" => &PYTHON_PROBE,
-        "ruby_path" => &RUBY_PROBE,
-        "composer_path" => &COMPOSER_PROBE,
-        "gcc_path" => &GCC_PROBE,
-        "gpp_path" => &GPP_PROBE,
-        _ => return None,
-    };
-
-    probe_binary(probe)
-}
-
 pub fn detect_missing_binary_paths(
     environment_id: &str,
     paths: &std::collections::HashMap<String, String>,
 ) -> std::collections::HashMap<String, String> {
-    use super::catalog::{binary_field_key, get_definition};
-
     let mut detected = std::collections::HashMap::new();
     let Some(definition) = get_definition(environment_id) else {
         return detected;
@@ -96,17 +50,8 @@ pub fn detect_missing_binary_paths(
             continue;
         }
 
-        if field.key == "composer_path" {
-            if let Some(path) = probe_for_field(&field.key) {
-                detected.insert(field.key.clone(), path.to_string_lossy().to_string());
-            }
-            continue;
-        }
-
-        if Some(field.key.as_str()) == binary_field_key(environment_id) {
-            if let Some(path) = probe_for_field(&field.key) {
-                detected.insert(field.key.clone(), path.to_string_lossy().to_string());
-            }
+        if let Some(path) = probe_field(field) {
+            detected.insert(field.key.clone(), path.to_string_lossy().to_string());
         }
     }
 

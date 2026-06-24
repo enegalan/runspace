@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use tauri::AppHandle;
 
-use crate::environment::catalog::get_definition;
+use crate::environment::registry::get_definition;
 use crate::error::lock_err;
 use crate::services::environment::resolve_for_execution;
 use crate::services::workspace::require_active_workspace;

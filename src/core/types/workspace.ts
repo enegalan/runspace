@@ -23,8 +23,5 @@ export interface EnvironmentSession {
 export interface SessionData {
   environments: Record<string, EnvironmentSession>;
   last_runtime_id?: string | null;
-  last_workspace_id?: string | null;
-  open_files?: string[];
-  active_file?: string | null;
   onboarding_complete?: boolean;
 }

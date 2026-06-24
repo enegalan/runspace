@@ -2,12 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runspaceInvoke } from "../../src/core/api/runspaceInvoke";
 import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useEditorTabsStore } from "../../src/stores/editorTabsStore";
+import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 import { useDialogStore } from "../../src/stores/dialogStore";
+import { TEST_ENVIRONMENT_CATALOG } from "../fixtures/environmentCatalog";
 
 describe("editorTabsStore", () => {
   beforeEach(() => {
     vi.mocked(runspaceInvoke).mockReset();
+    useEnvironmentStore.setState({
+      environments: [],
+      available: TEST_ENVIRONMENT_CATALOG,
+      selectedId: null,
+      defaultEnvironmentId: "nodejs",
+      loaded: true,
+    });
     useSettingsStore.setState({
       settings: DEFAULT_APP_SETTINGS,
       loaded: true,

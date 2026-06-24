@@ -1,12 +1,15 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WelcomeScreen } from "../../src/components/welcome/WelcomeScreen";
-import { ENVIRONMENT_CATALOG } from "../../src/core/constants/environmentCatalog";
+import {
+  TEST_DEFAULT_ENVIRONMENT_ID,
+  TEST_ENVIRONMENT_CATALOG,
+} from "../fixtures/environmentCatalog";
 import { useEnvironmentStore } from "../../src/stores/environmentStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 function mockInstalledEnvironment(id: string, configured = true) {
-  const definition = ENVIRONMENT_CATALOG.find((item) => item.id === id)!;
+  const definition = TEST_ENVIRONMENT_CATALOG.find((item) => item.id === id)!;
   return {
     definition,
     user_config: {
@@ -22,8 +25,9 @@ describe("WelcomeScreen", () => {
   beforeEach(() => {
     useEnvironmentStore.setState({
       environments: [mockInstalledEnvironment("nodejs")],
-      available: ENVIRONMENT_CATALOG.filter((definition) => definition.id !== "nodejs"),
+      available: TEST_ENVIRONMENT_CATALOG.filter((definition) => definition.id !== "nodejs"),
       selectedId: "nodejs",
+      defaultEnvironmentId: TEST_DEFAULT_ENVIRONMENT_ID,
       loaded: true,
     });
     useWorkspaceStore.setState({

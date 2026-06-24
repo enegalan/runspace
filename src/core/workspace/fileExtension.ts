@@ -1,4 +1,5 @@
-import { getCatalogDefinition, DEFAULT_FILE_EXTENSION } from "../constants/environmentCatalog";
+import { DEFAULT_FILE_EXTENSION, findEnvironmentDefinition } from "../constants/environmentCatalog";
+import { useEnvironmentStore } from "../../stores/environmentStore";
 import { basename } from "../path/basename";
 
 /**
@@ -7,7 +8,14 @@ import { basename } from "../path/basename";
  * @returns The file extension for the given environment ID.
  */
 export function getFileExtension(environmentId: string): string {
-  return getCatalogDefinition(environmentId)?.file_extension ?? DEFAULT_FILE_EXTENSION;
+  const state = useEnvironmentStore.getState();
+  return (
+    findEnvironmentDefinition(
+      environmentId,
+      state.environments.map((env) => env.definition),
+      state.available,
+    )?.file_extension ?? DEFAULT_FILE_EXTENSION
+  );
 }
 
 /**

@@ -5,6 +5,7 @@ commands.allow = [
   "list_environments",
   "list_available_environments",
   "get_selected_environment",
+  "get_default_environment_id",
   "install_environment",
   "uninstall_environment",
   "set_selected_environment",

@@ -25,7 +25,12 @@ vi.mock("../src/core/api/fetchBackend", () => ({
 }));
 
 vi.mock("../src/core/api/runspaceInvoke", () => ({
-  runspaceInvoke: vi.fn().mockResolvedValue(undefined),
+  runspaceInvoke: vi.fn((cmd: string) => {
+    if (cmd === "get_default_environment_id") {
+      return Promise.resolve("nodejs");
+    }
+    return Promise.reject(new Error(`Unhandled runspaceInvoke command: ${cmd}`));
+  }),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({

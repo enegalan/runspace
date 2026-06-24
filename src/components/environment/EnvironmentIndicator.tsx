@@ -13,12 +13,16 @@ interface EnvironmentIndicatorProps {
  */
 export function EnvironmentIndicator({ onOpenPicker }: EnvironmentIndicatorProps) {
   const selectedId = useEnvironmentStore((state) => state.selectedId);
+  const defaultEnvironmentId = useEnvironmentStore((state) => state.defaultEnvironmentId);
   const environments = useEnvironmentStore((state) => state.environments);
 
   const environment = selectedId
     ? environments.find((env) => env.definition.id === selectedId)
     : undefined;
-  const presentation = getRuntimePresentation(selectedId ?? "nodejs");
+  const presentation = getRuntimePresentation(
+    selectedId ?? defaultEnvironmentId ?? "",
+    environment?.definition,
+  );
   const name = environment?.definition.name ?? "No environment";
 
   return (

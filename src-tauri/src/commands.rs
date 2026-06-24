@@ -29,6 +29,11 @@ pub async fn get_selected_environment(
 }
 
 #[tauri::command]
+pub async fn get_default_environment_id(state: State<'_, SharedState>) -> Result<String, String> {
+    environment::get_default_environment_id(state.inner())
+}
+
+#[tauri::command]
 pub async fn install_environment(
     state: State<'_, SharedState>,
     environment_id: String,

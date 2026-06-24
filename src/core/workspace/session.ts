@@ -1,4 +1,4 @@
-import type { EnvironmentSession, SessionData, WorkspaceTabs } from "../types/workspace";
+import type { EnvironmentSession, SessionData } from "../types/workspace";
 
 /**
  * This function is used to get the environment session for a given runtime ID.
@@ -15,21 +15,5 @@ export function getEnvironmentSession(session: SessionData, runtimeId: string): 
     };
   }
 
-  if (session.environments && Object.keys(session.environments).length > 0) {
-    return { workspace_id: null, workspace_tabs: {} };
-  }
-
-  const workspaceId = session.last_workspace_id ?? null;
-  const workspaceTabs: Record<string, WorkspaceTabs> = {};
-  if (workspaceId && (session.open_files?.length || session.active_file)) {
-    workspaceTabs[workspaceId] = {
-      open_files: session.open_files ?? [],
-      active_file: session.active_file ?? null,
-    };
-  }
-
-  return {
-    workspace_id: workspaceId,
-    workspace_tabs: workspaceTabs,
-  };
+  return { workspace_id: null, workspace_tabs: {} };
 }
