@@ -1,8 +1,15 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { useEffect, useRef, useState } from "react";
 import { waitForBackendReady } from "../core/api/fetchBackend";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { syncOnboardingFromSession } from "../core/onboarding/onboardingState";
+import { pickImportedFileToOpen } from "../core/workspace/externalFileDrop";
+import {
+  clearNativeDropHover,
+  resolveDropTargetFromPoint,
+  updateNativeDropHover,
+} from "../core/workspace/fileTreeDropTarget";
 import { isTauri } from "../core/platform/isTauri";
 import type { SessionData } from "../core/types/workspace";
 import type { EnvironmentId } from "../core/types/environment";
@@ -116,6 +123,73 @@ export function useAppBootstrap() {
 
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isTauri()) {
+      return;
+    }
+
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+
+    void (async () => {
+      const [webview, appWindow] = await Promise.all([getCurrentWebview(), getCurrentWindow()]);
+      const scaleFactor = await appWindow.scaleFactor();
+      if (cancelled) {
+        return;
+      }
+
+      const unlistenDragDrop = await webview.onDragDropEvent((event) => {
+        const { type } = event.payload;
+
+        if (type === "leave") {
+          clearNativeDropHover();
+          return;
+        }
+
+        if (!useWorkspaceStore.getState().workspace) {
+          return;
+        }
+
+        if (type === "over") {
+          const { x, y } = event.payload.position.toLogical(scaleFactor);
+          updateNativeDropHover(x, y);
+          return;
+        }
+
+        if (type !== "drop" || event.payload.paths.length === 0) {
+          return;
+        }
+
+        const { x, y } = event.payload.position.toLogical(scaleFactor);
+        const targetDir = resolveDropTargetFromPoint(x, y) ?? "";
+        clearNativeDropHover();
+
+        void useWorkspaceStore
+          .getState()
+          .importExternalFiles(event.payload.paths, targetDir)
+          .then((imported) => {
+            const fileToOpen = pickImportedFileToOpen(imported);
+            if (fileToOpen) {
+              return useEditorTabsStore.getState().openFile(fileToOpen);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to import dropped files:", error);
+          });
+      });
+      if (cancelled) {
+        unlistenDragDrop();
+        return;
+      }
+      unlisten = unlistenDragDrop;
+    })();
+
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
   }, []);
 
   useEffect(() => {

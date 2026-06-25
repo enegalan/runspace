@@ -546,7 +546,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       }
     } else {
       for (const file of sources as File[]) {
-        const relativePath = targetDir ? `${targetDir}/${file.name}` : file.name;
+        const relative = file.webkitRelativePath || file.name;
+        const relativePath = targetDir ? `${targetDir}/${relative}` : relative;
         if (!(await replaceEntryIfConfirmed(workspace.id, relativePath, get().deleteFile))) {
           continue;
         }

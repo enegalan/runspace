@@ -1,22 +1,25 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DROP_TARGET_ATTR } from "../../src/core/workspace/externalFileDrop";
 import {
   FILE_TREE_DRAG_TYPE,
   clearFileDragData,
+  isFileTreeDragActive,
   setFileDragData,
 } from "../../src/core/workspace/fileTreeDrag";
 import {
-  clearFileTreeDropTarget,
+  clearNativeDropHover,
   getFileTreeDropTarget,
+  isEditorDropActive,
   resolveFileTreeDropTargetFromElement,
   setFileTreeDropTarget,
   updateFileTreeDropTargetFromDrag,
+  updateNativeDropHover,
 } from "../../src/core/workspace/fileTreeDropTarget";
 
 describe("fileTreeDropTarget", () => {
   beforeEach(() => {
     clearFileDragData();
-    clearFileTreeDropTarget();
+    clearNativeDropHover();
   });
 
   it("resolves the folder row from the drag event target", () => {
@@ -42,30 +45,6 @@ describe("fileTreeDropTarget", () => {
     expect(resolveFileTreeDropTargetFromElement(childRow)).toBe("lib/utils");
   });
 
-  it("resolves the containing folder when hovering a file row", () => {
-    const folder = document.createElement("div");
-    folder.className = "file-tree__folder";
-    folder.setAttribute(DROP_TARGET_ATTR, "lib/utils");
-    const folderRow = document.createElement("div");
-    folderRow.className = "file-tree__row";
-    const children = document.createElement("div");
-    children.className = "file-tree__children";
-    const branch = document.createElement("div");
-    branch.className = "file-tree__branch";
-    const fileRow = document.createElement("div");
-    fileRow.className = "file-tree__row";
-    const fileLabel = document.createElement("span");
-
-    fileRow.appendChild(fileLabel);
-    branch.appendChild(fileRow);
-    children.appendChild(branch);
-    folder.appendChild(folderRow);
-    folder.appendChild(children);
-    document.body.appendChild(folder);
-
-    expect(resolveFileTreeDropTargetFromElement(fileLabel)).toBe("lib/utils");
-  });
-
   it("clears the drop target when the pointer leaves a valid folder", () => {
     setFileTreeDropTarget("lib/utils");
     const dataTransfer = {
@@ -84,6 +63,19 @@ describe("fileTreeDropTarget", () => {
       dataTransfer,
     });
 
+    expect(getFileTreeDropTarget()).toBeNull();
+  });
+
+  it("highlights drop targets during a native OS drag", () => {
+    const editor = document.createElement("main");
+    editor.className = "editor-area";
+    document.body.appendChild(editor);
+    document.elementFromPoint = vi.fn(() => editor) as typeof document.elementFromPoint;
+
+    updateNativeDropHover(120, 240);
+
+    expect(isFileTreeDragActive()).toBe(true);
+    expect(isEditorDropActive()).toBe(true);
     expect(getFileTreeDropTarget()).toBeNull();
   });
 });

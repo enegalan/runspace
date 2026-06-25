@@ -1,9 +1,14 @@
-import { Suspense, lazy, useCallback, useState } from "react";
+import { Suspense, lazy, useCallback, useSyncExternalStore } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
   importDroppedExternalFiles,
 } from "../../core/workspace/externalFileDrop";
+import {
+  isEditorDropActive,
+  setEditorDropActive,
+  subscribeEditorDropActive,
+} from "../../core/workspace/fileTreeDropTarget";
 import {
   clearFileDragData,
   getActiveDragPayload,
@@ -38,7 +43,11 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   const openFile = useEditorTabsStore((state) => state.openFile);
   const updateContent = useEditorTabsStore((state) => state.updateContent);
   const { createAndOpenFile } = useNewFile();
-  const [dropTarget, setDropTarget] = useState(false);
+  const dropTarget = useSyncExternalStore(
+    subscribeEditorDropActive,
+    isEditorDropActive,
+    isEditorDropActive,
+  );
 
   const handleEditorChange = useCallback(
     (content: string) => {
@@ -58,7 +67,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
       event.preventDefault();
       event.stopPropagation();
       event.dataTransfer.dropEffect = "copy";
-      setDropTarget(true);
+      setEditorDropActive(true);
       return;
     }
 
@@ -72,19 +81,19 @@ export function EditorArea({ onSave }: EditorAreaProps) {
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = "copy";
-    setDropTarget(true);
+    setEditorDropActive(true);
   };
 
   const handleDragLeave = (event: React.DragEvent) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setDropTarget(false);
+      setEditorDropActive(false);
     }
   };
 
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    setDropTarget(false);
+    setEditorDropActive(false);
 
     if (hasExternalFileDrag(event.dataTransfer)) {
       void importDroppedExternalFiles(event.dataTransfer, "", { openFile: true });
