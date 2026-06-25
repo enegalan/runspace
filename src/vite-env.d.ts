@@ -1,6 +1,20 @@
 /// <reference types="vite/client" />
 
-declare module "lang-map";
+declare module "lang-map" {
+  interface LangMapCache {
+    extensions: Record<string, string[]>;
+    languages: Record<string, string[]>;
+  }
+
+  interface LangMap {
+    (): LangMapCache;
+    languages(ext: string): string[];
+    extensions(language: string): string[];
+  }
+
+  const langMap: LangMap;
+  export default langMap;
+}
 
 declare const __APP_NAME__: string;
 declare const __APP_VERSION__: string;

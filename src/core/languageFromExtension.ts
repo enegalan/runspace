@@ -26,10 +26,15 @@ export function languageFromExtension(path: string): string {
     return DEFAULT_LANGUAGE;
   }
   const ext = base.slice(dot + 1).toLowerCase();
-  if (!(ext in langMap().languages)) {
+  const languages = langMap.languages(ext);
+  const isMapped = Object.prototype.hasOwnProperty.call(langMap().languages, ext);
+  const isMonacoOverride = Object.prototype.hasOwnProperty.call(
+    MONACO_LANGUAGE_IDS,
+    ext,
+  );
+  if ((!isMapped && !isMonacoOverride) || languages.length === 0) {
     return DEFAULT_LANGUAGE;
   }
-  const languages = langMap.languages(ext);
   const languageId = languages.find((id: string) => id === ext) ?? languages[0];
   return MONACO_LANGUAGE_IDS[languageId] ?? languageId;
 }
