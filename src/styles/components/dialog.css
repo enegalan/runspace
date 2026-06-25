@@ -144,6 +144,7 @@
 
 .app-dialog__message {
   margin: 0;
+  overflow-wrap: anywhere;
   font-size: var(--rs-font-size-md);
   line-height: 1.6;
   color: var(--rs-text-secondary);

@@ -155,7 +155,9 @@ export function AppDialogs() {
               </IconButton>
             </header>
             <div className="app-dialog__body">
-              <p className="app-dialog__message">{confirm.message}</p>
+              <p className="app-dialog__message" title={confirm.message}>
+                {confirm.message}
+              </p>
             </div>
             <footer className="app-dialog__footer">
               <Button variant="ghost" onClick={() => answerConfirm(false)}>

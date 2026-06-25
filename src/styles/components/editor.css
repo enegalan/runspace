@@ -171,7 +171,6 @@
   font-family: inherit;
   cursor: pointer;
   height: var(--rs-editor-tabs-tab-height);
-  flex-shrink: 0;
 }
 
 .editor-tabs__tab--active .editor-tabs__tab-button {
