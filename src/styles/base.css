@@ -19,11 +19,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--rs-bg-overlay) transparent;
-}
-
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -34,18 +29,21 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--rs-bg-overlay);
+  background-color: var(--rs-border-strong);
   border: 2px solid transparent;
   border-radius: 5px;
   background-clip: padding-box;
 }
 
-*::-webkit-scrollbar-thumb:hover {
-  background-color: var(--rs-border-strong);
-}
-
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rs-bg-overlay) transparent;
+  }
 }
 
 @keyframes rs-pulse {
