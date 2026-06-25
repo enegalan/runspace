@@ -140,7 +140,7 @@ export function useAppBootstrap() {
         return;
       }
 
-      unlisten = await webview.onDragDropEvent((event) => {
+      const unlistenDragDrop = await webview.onDragDropEvent((event) => {
         const { type } = event.payload;
 
         if (type === "leave") {
@@ -179,6 +179,11 @@ export function useAppBootstrap() {
             console.error("Failed to import dropped files:", error);
           });
       });
+      if (cancelled) {
+        unlistenDragDrop();
+        return;
+      }
+      unlisten = unlistenDragDrop;
     })();
 
     return () => {
