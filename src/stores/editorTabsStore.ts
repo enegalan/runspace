@@ -275,7 +275,31 @@ export const useEditorTabsStore = create<EditorTabsStore>((set, get) => ({
   },
 
   removeOpenFile: (path) => {
-    void get().closeFile(path, true);
+    const matches = (filePath: string) => filePath === path || filePath.startsWith(`${path}/`);
+    const openFiles = get().openFiles.filter((file) => !matches(file.path));
+    if (openFiles.length === get().openFiles.length) {
+      return;
+    }
+
+    let focusHistory = get().focusHistory;
+    for (const file of get().openFiles) {
+      if (matches(file.path)) {
+        focusHistory = removeFromTabFocusHistory(focusHistory, file.path);
+      }
+    }
+
+    const closedIndex = get().openFiles.findIndex((file) => file.path === get().activePath);
+    let activePath = get().activePath;
+    if (activePath && matches(activePath)) {
+      activePath = pickNextActiveTab(
+        focusHistory,
+        openFiles.map((file) => file.path),
+        closedIndex,
+      );
+    }
+
+    set({ openFiles, activePath, focusHistory });
+    queueTabSessionPersist(get);
   },
 
   clearTabs: () => {

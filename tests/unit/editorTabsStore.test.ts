@@ -289,6 +289,25 @@ describe("editorTabsStore", () => {
     ]);
   });
 
+  it("closes open files under a deleted folder", () => {
+    useEditorTabsStore.setState({
+      openFiles: [
+        { path: "lib/utils.js", content: "utils", dirty: false, language: "javascript" },
+        { path: "lib/nested/app.js", content: "app", dirty: false, language: "javascript" },
+        { path: "library.js", content: "lib", dirty: false, language: "javascript" },
+        { path: "main.js", content: "main", dirty: false, language: "javascript" },
+      ],
+      activePath: "lib/utils.js",
+      focusHistory: [],
+    });
+
+    useEditorTabsStore.getState().removeOpenFile("lib");
+
+    const state = useEditorTabsStore.getState();
+    expect(state.openFiles.map((file) => file.path)).toEqual(["library.js", "main.js"]);
+    expect(state.activePath).toBe("library.js");
+  });
+
   it("closes dirty file without confirm when setting disabled", async () => {
     useSettingsStore.setState({
       settings: {

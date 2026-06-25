@@ -5,7 +5,11 @@ import { waitForBackendReady } from "../core/api/fetchBackend";
 import { runspaceInvoke } from "../core/api/runspaceInvoke";
 import { syncOnboardingFromSession } from "../core/onboarding/onboardingState";
 import { pickImportedFileToOpen } from "../core/workspace/externalFileDrop";
-import { resolveDropTargetFromPoint } from "../core/workspace/fileTreeDropTarget";
+import {
+  clearNativeDropHover,
+  resolveDropTargetFromPoint,
+  updateNativeDropHover,
+} from "../core/workspace/fileTreeDropTarget";
 import { isTauri } from "../core/platform/isTauri";
 import type { SessionData } from "../core/types/workspace";
 import type { EnvironmentId } from "../core/types/environment";
@@ -137,15 +141,30 @@ export function useAppBootstrap() {
       }
 
       unlisten = await webview.onDragDropEvent((event) => {
-        if (event.payload.type !== "drop" || event.payload.paths.length === 0) {
+        const { type } = event.payload;
+
+        if (type === "leave") {
+          clearNativeDropHover();
           return;
         }
+
         if (!useWorkspaceStore.getState().workspace) {
+          return;
+        }
+
+        if (type === "over") {
+          const { x, y } = event.payload.position.toLogical(scaleFactor);
+          updateNativeDropHover(x, y);
+          return;
+        }
+
+        if (type !== "drop" || event.payload.paths.length === 0) {
           return;
         }
 
         const { x, y } = event.payload.position.toLogical(scaleFactor);
         const targetDir = resolveDropTargetFromPoint(x, y) ?? "";
+        clearNativeDropHover();
 
         void useWorkspaceStore
           .getState()
