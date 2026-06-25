@@ -28,10 +28,7 @@ export function languageFromExtension(path: string): string {
   const ext = base.slice(dot + 1).toLowerCase();
   const languages = langMap.languages(ext);
   const isMapped = Object.prototype.hasOwnProperty.call(langMap().languages, ext);
-  const isMonacoOverride = Object.prototype.hasOwnProperty.call(
-    MONACO_LANGUAGE_IDS,
-    ext,
-  );
+  const isMonacoOverride = Object.prototype.hasOwnProperty.call(MONACO_LANGUAGE_IDS, ext);
   if ((!isMapped && !isMonacoOverride) || languages.length === 0) {
     return DEFAULT_LANGUAGE;
   }
