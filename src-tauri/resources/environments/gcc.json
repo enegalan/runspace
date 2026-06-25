@@ -3,7 +3,6 @@
   "name": "GCC (C)",
   "category": "language",
   "file_extension": "c",
-  "monaco_language": "c",
   "install_guide_url": "https://developer.apple.com/xcode/resources/",
   "presentation": { "accent": "#00599c" },
   "profile": "compiled",

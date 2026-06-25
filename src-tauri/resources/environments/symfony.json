@@ -3,7 +3,6 @@
   "name": "Symfony",
   "category": "framework",
   "file_extension": "php",
-  "monaco_language": "php",
   "install_guide_url": "https://symfony.com/download",
   "presentation": { "accent": "#000000" },
   "profile": "framework",

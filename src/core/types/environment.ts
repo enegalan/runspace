@@ -24,7 +24,6 @@ export interface EnvironmentDefinition {
   name: string;
   category: EnvironmentCategory;
   file_extension: string;
-  monaco_language: string;
   install_guide_url: string;
   config_fields: ConfigField[];
   presentation?: EnvironmentPresentation;

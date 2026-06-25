@@ -3,7 +3,6 @@
   "name": "Ruby",
   "category": "language",
   "file_extension": "rb",
-  "monaco_language": "ruby",
   "install_guide_url": "https://www.ruby-lang.org/en/downloads/",
   "presentation": { "accent": "#cc342d" },
   "profile": "script",
