@@ -1,0 +1,28 @@
+{
+  "id": "erlang",
+  "name": "Erlang",
+  "category": "language",
+  "file_extension": "erl",
+  "install_guide_url": "https://www.erlang.org/downloads",
+  "presentation": { "accent": "#A90533" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "erl_path",
+      "label": "Erlang binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["erl"] }
+    }
+  ],
+  "run": {
+    "program": "{{erl_path}}",
+    "args": [
+      "-noshell",
+      "-eval",
+      "{ok, M} = compile:file(\"{{entry_file}}\"), apply(M, main, []), init:stop()."
+    ]
+  },
+  "version_probe": { "arg": "+V" }
+}
