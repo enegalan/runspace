@@ -1,0 +1,24 @@
+{
+  "id": "perl",
+  "name": "Perl",
+  "category": "language",
+  "file_extension": "pl",
+  "install_guide_url": "https://www.perl.org/get.html",
+  "presentation": { "accent": "#0073a1" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "perl_path",
+      "label": "Perl binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["perl"] }
+    }
+  ],
+  "run": {
+    "program": "{{perl_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
