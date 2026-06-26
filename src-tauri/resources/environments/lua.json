@@ -1,0 +1,24 @@
+{
+  "id": "lua",
+  "name": "Lua",
+  "category": "language",
+  "file_extension": "lua",
+  "install_guide_url": "https://www.lua.org/download.html",
+  "presentation": { "accent": "#00007c" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "lua_path",
+      "label": "Lua binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["lua5.4", "lua5.3", "lua"] }
+    }
+  ],
+  "run": {
+    "program": "{{lua_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "-v" }
+}
