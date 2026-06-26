@@ -1,0 +1,24 @@
+{
+  "id": "crystal",
+  "name": "Crystal",
+  "category": "language",
+  "file_extension": "cr",
+  "install_guide_url": "https://crystal-lang.org/install/",
+  "presentation": { "accent": "#777777" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "crystal_path",
+      "label": "Crystal binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["crystal"] }
+    }
+  ],
+  "run": {
+    "program": "{{crystal_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
