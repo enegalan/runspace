@@ -1,0 +1,24 @@
+{
+  "id": "deno",
+  "name": "Deno",
+  "category": "language",
+  "file_extension": "ts",
+  "install_guide_url": "https://docs.deno.com/runtime/getting_started/installation/",
+  "presentation": { "accent": "#70ffaf" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "deno_path",
+      "label": "Deno binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["deno"] }
+    }
+  ],
+  "run": {
+    "program": "{{deno_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
