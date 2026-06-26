@@ -1,0 +1,24 @@
+{
+  "id": "raku",
+  "name": "Raku",
+  "category": "language",
+  "file_extension": "raku",
+  "install_guide_url": "https://raku.org/install/",
+  "presentation": { "accent": "#f7f703" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "raku_path",
+      "label": "Raku binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["raku", "perl6"] }
+    }
+  ],
+  "run": {
+    "program": "{{raku_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
