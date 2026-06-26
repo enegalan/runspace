@@ -77,6 +77,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .terminal-tabs__tab--active .terminal-tabs__tab-button {
@@ -165,6 +167,8 @@
   width: 100%;
   height: 100%;
   padding: var(--rs-space-2);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .xterm-view .xterm {

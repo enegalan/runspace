@@ -176,6 +176,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--rs-text-muted);
+  cursor: default;
 }
 
 .workspace-switcher__list {

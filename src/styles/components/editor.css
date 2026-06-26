@@ -7,7 +7,7 @@
   flex-shrink: 0;
   min-width: 0;
   height: var(--rs-editor-tabs-height);
-  background: var(--rs-editor-bg);
+  background: var(--rs-bg-base);
   isolation: isolate;
 }
 

@@ -13,7 +13,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--rs-space-2);
-  min-height: 52px;
   padding: 0 var(--rs-space-4);
   border-bottom: 1px solid var(--rs-border-subtle);
   user-select: none;
@@ -50,8 +49,9 @@
 
 .output-panel__body {
   min-height: 0;
-  padding: var(--rs-space-2) var(--rs-space-3) var(--rs-space-3);
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .output-panel__placeholder {
@@ -68,15 +68,19 @@
   margin: 0;
   height: 100%;
   padding: var(--rs-space-3);
-  background: var(--rs-bg-base);
-  border: 1px solid var(--rs-border-subtle);
-  border-radius: var(--rs-radius-sm);
   font-family: var(--rs-font-mono);
   font-size: var(--rs-font-size-sm);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
   overflow: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.output-stream > * {
+  user-select: auto;
+  -webkit-user-select: auto;
 }
 
 .output-stdout {
