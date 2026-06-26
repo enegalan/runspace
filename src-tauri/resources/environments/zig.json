@@ -1,0 +1,24 @@
+{
+  "id": "zig",
+  "name": "Zig",
+  "category": "language",
+  "file_extension": "zig",
+  "install_guide_url": "https://ziglang.org/download/",
+  "presentation": { "accent": "#F7A41D" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "zig_path",
+      "label": "Zig binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["zig"] }
+    }
+  ],
+  "run": {
+    "program": "{{zig_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "version" }
+}
