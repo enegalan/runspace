@@ -1,3 +1,4 @@
+import { isTauri } from "../../core/platform/isTauri";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useSettingsUiStore, type SettingsTab } from "../../stores/settingsUiStore";
 import { IconButton } from "../ui/IconButton";
@@ -40,6 +41,9 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
   return (
     <div className="settings-overlay" data-testid="settings-panel">
+      {isTauri() && (
+        <div className="settings-overlay__titlebar" data-tauri-drag-region aria-hidden="true" />
+      )}
       <div className="settings-overlay__backdrop" onClick={onClose} aria-hidden="true" />
       <div className="settings-panel" role="dialog" aria-label="Settings">
         <aside className="settings-panel__sidebar">
@@ -65,7 +69,10 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         </aside>
 
         <div className="settings-panel__main">
-          <header className="settings-panel__toolbar">
+          <header
+            className={`settings-panel__toolbar${isTauri() ? " settings-panel__toolbar--titlebar" : ""}`}
+            {...(isTauri() ? { "data-tauri-drag-region": true } : {})}
+          >
             <button
               type="button"
               className="settings-card__action"
