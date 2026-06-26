@@ -1,0 +1,24 @@
+{
+  "id": "elixir",
+  "name": "Elixir",
+  "category": "language",
+  "file_extension": "exs",
+  "install_guide_url": "https://elixir-lang.org/install.html",
+  "presentation": { "accent": "#6E4A7E" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "elixir_path",
+      "label": "Elixir binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["elixir"] }
+    }
+  ],
+  "run": {
+    "program": "{{elixir_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
