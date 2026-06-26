@@ -3,7 +3,6 @@
   "name": "G++ (C++)",
   "category": "language",
   "file_extension": "cpp",
-  "monaco_language": "cpp",
   "install_guide_url": "https://developer.apple.com/xcode/resources/",
   "presentation": { "accent": "#00599c" },
   "profile": "compiled",

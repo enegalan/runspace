@@ -1,5 +1,4 @@
-import { mergeEnvironmentCatalog } from "./constants/environmentCatalog";
-import { useEnvironmentStore } from "../stores/environmentStore";
+import langMap from "lang-map";
 import { basename } from "./path/basename";
 
 /**
@@ -7,44 +6,18 @@ import { basename } from "./path/basename";
  */
 const DEFAULT_LANGUAGE = "plaintext";
 
-// TODO: Use a library for this mapping.
 /**
- * Extensions shared across workspaces, not tied to a single environment manifest.
+ * Linguist language ids that differ from Monaco language ids.
  */
-const AUXILIARY_EXTENSION_LANGUAGE_MAP: Record<string, string> = {
-  mjs: "javascript",
+const MONACO_LANGUAGE_IDS: Record<string, string> = {
+  "c++": "cpp",
   cjs: "javascript",
-  ts: "typescript",
+  mjs: "javascript",
   tsx: "typescript",
-  cc: "cpp",
-  h: "c",
-  hpp: "cpp",
-  json: "json",
-  md: "markdown",
-  html: "html",
-  css: "css",
 };
 
 /**
- * Maps runtime extensions to Monaco editor languages.
- * @returns The map of runtime extensions to Monaco editor languages.
- */
-function runtimeExtensionLanguageMap(): Map<string, string> {
-  const state = useEnvironmentStore.getState();
-  const catalog = mergeEnvironmentCatalog(
-    state.environments.map((env) => env.definition),
-    state.available,
-  );
-  const map = new Map<string, string>();
-  for (const definition of catalog) {
-    map.set(definition.file_extension.toLowerCase(), definition.monaco_language);
-  }
-  return map;
-}
-
-/**
  * Resolves the Monaco editor language for a file path.
- * Primary runtime extensions come from bundled environment manifests.
  */
 export function languageFromExtension(path: string): string {
   const base = basename(path);
@@ -53,10 +26,12 @@ export function languageFromExtension(path: string): string {
     return DEFAULT_LANGUAGE;
   }
   const ext = base.slice(dot + 1).toLowerCase();
-  const runtimeLanguage = runtimeExtensionLanguageMap().get(ext);
-  if (runtimeLanguage) {
-    return runtimeLanguage;
+  const languages = langMap.languages(ext);
+  const isMapped = Object.prototype.hasOwnProperty.call(langMap().languages, ext);
+  const isMonacoOverride = Object.prototype.hasOwnProperty.call(MONACO_LANGUAGE_IDS, ext);
+  if ((!isMapped && !isMonacoOverride) || languages.length === 0) {
+    return DEFAULT_LANGUAGE;
   }
-
-  return AUXILIARY_EXTENSION_LANGUAGE_MAP[ext] ?? DEFAULT_LANGUAGE;
+  const languageId = languages.find((id: string) => id === ext) ?? languages[0];
+  return MONACO_LANGUAGE_IDS[languageId] ?? languageId;
 }

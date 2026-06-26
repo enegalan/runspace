@@ -3,7 +3,6 @@
   "name": "Node.js",
   "category": "language",
   "file_extension": "js",
-  "monaco_language": "javascript",
   "install_guide_url": "https://nodejs.org/en/download",
   "default": true,
   "presentation": { "accent": "#3c873a" },

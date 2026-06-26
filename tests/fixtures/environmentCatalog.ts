@@ -14,7 +14,6 @@ export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
     name: "Node.js",
     category: "language",
     file_extension: "js",
-    monaco_language: "javascript",
     install_guide_url: "https://nodejs.org/en/download",
     config_fields: [
       {
@@ -31,7 +30,6 @@ export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
     name: "Laravel",
     category: "framework",
     file_extension: "php",
-    monaco_language: "php",
     install_guide_url: "https://laravel.com/docs/installation",
     config_fields: [
       {
@@ -54,7 +52,6 @@ export const TEST_ENVIRONMENT_CATALOG: EnvironmentDefinition[] = [
     name: "GCC (C)",
     category: "language",
     file_extension: "c",
-    monaco_language: "c",
     install_guide_url: "https://developer.apple.com/xcode/resources/",
     config_fields: [
       {

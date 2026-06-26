@@ -1,28 +1,21 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { languageFromExtension } from "../../src/core/languageFromExtension";
-import { useEnvironmentStore } from "../../src/stores/environmentStore";
-import { TEST_ENVIRONMENT_CATALOG } from "../fixtures/environmentCatalog";
 
 describe("languageFromExtension", () => {
-  beforeEach(() => {
-    useEnvironmentStore.setState({
-      environments: [],
-      available: TEST_ENVIRONMENT_CATALOG,
-      selectedId: null,
-      defaultEnvironmentId: null,
-      loaded: true,
-    });
-  });
-
-  it("maps runtime file extensions from environment definitions", () => {
+  it("maps common file extensions", () => {
     expect(languageFromExtension("main.js")).toBe("javascript");
     expect(languageFromExtension("index.php")).toBe("php");
     expect(languageFromExtension("main.c")).toBe("c");
-  });
-
-  it("falls back to auxiliary extension mappings", () => {
     expect(languageFromExtension("data.json")).toBe("json");
     expect(languageFromExtension("notes.md")).toBe("markdown");
+    expect(languageFromExtension("app.ts")).toBe("typescript");
+    expect(languageFromExtension("component.tsx")).toBe("typescript");
+    expect(languageFromExtension("module.mjs")).toBe("javascript");
+    expect(languageFromExtension("legacy.cjs")).toBe("javascript");
+    expect(languageFromExtension("main.cc")).toBe("cpp");
+    expect(languageFromExtension("header.h")).toBe("c");
+    expect(languageFromExtension("page.html")).toBe("html");
+    expect(languageFromExtension("style.css")).toBe("css");
   });
 
   it("returns plaintext when no mapping matches", () => {

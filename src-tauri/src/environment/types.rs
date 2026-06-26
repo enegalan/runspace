@@ -45,7 +45,6 @@ pub struct EnvironmentDefinition {
     pub name: String,
     pub category: EnvironmentCategory,
     pub file_extension: String,
-    pub monaco_language: String,
     pub install_guide_url: String,
     pub config_fields: Vec<ConfigField>,
     #[serde(default)]

@@ -3,7 +3,6 @@
   "name": "Laravel",
   "category": "framework",
   "file_extension": "php",
-  "monaco_language": "php",
   "install_guide_url": "https://laravel.com/docs/installation",
   "presentation": { "accent": "#ff2d20" },
   "profile": "framework",

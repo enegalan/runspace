@@ -2,6 +2,7 @@
 pub mod dialog;
 pub mod environment;
 pub mod execution;
+#[cfg(debug_assertions)]
 pub mod invoke;
 pub mod settings;
 pub mod terminal;

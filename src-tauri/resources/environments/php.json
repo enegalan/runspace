@@ -3,7 +3,6 @@
   "name": "PHP",
   "category": "language",
   "file_extension": "php",
-  "monaco_language": "php",
   "install_guide_url": "https://www.php.net/downloads",
   "presentation": { "accent": "#8892bf" },
   "profile": "script",

@@ -3,7 +3,6 @@
   "name": "Python",
   "category": "language",
   "file_extension": "py",
-  "monaco_language": "python",
   "install_guide_url": "https://www.python.org/downloads/",
   "presentation": { "accent": "#3776ab" },
   "profile": "script",
