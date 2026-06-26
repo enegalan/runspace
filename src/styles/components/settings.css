@@ -15,6 +15,16 @@
   animation: settings-fade-in var(--rs-duration-normal) var(--rs-ease);
 }
 
+.app-shell--desktop .settings-overlay__titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: min(680px, 100vw);
+  height: var(--rs-editor-tabs-height);
+  z-index: 1;
+  -webkit-app-region: drag;
+}
+
 @keyframes settings-fade-in {
   from {
     opacity: 0;
@@ -133,6 +143,19 @@
   padding: var(--rs-space-2) var(--rs-space-3);
   border-bottom: 1px solid var(--rs-border-subtle);
   min-height: 44px;
+}
+
+.app-shell--desktop .settings-panel__toolbar--titlebar {
+  -webkit-app-region: drag;
+}
+
+.app-shell--desktop .settings-panel__toolbar--titlebar .settings-card__action,
+.app-shell--desktop .settings-panel__toolbar--titlebar .icon-btn {
+  -webkit-app-region: no-drag;
+}
+
+.app-shell--windows .settings-panel__toolbar--titlebar {
+  padding-right: calc(var(--rs-space-3) + var(--rs-titlebar-drag-inset-right));
 }
 
 .settings-panel__toolbar-spacer {
