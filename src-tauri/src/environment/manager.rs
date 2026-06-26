@@ -518,9 +518,10 @@ mod tests {
         fs::create_dir_all(&temp_dir).unwrap();
         let config_path = temp_dir.join("environments.json");
 
+        let bundled_count = get_catalog().len();
         let mut manager = EnvironmentManager::new(config_path).unwrap();
         assert_eq!(manager.list_installed().len(), 1);
-        assert_eq!(manager.list_available().len(), 7);
+        assert_eq!(manager.list_available().len(), bundled_count - 1);
 
         let err = manager.install("unknown").unwrap_err();
         assert!(err.to_string().contains("not found"));
@@ -528,7 +529,7 @@ mod tests {
         manager.uninstall("nodejs").unwrap();
         assert!(manager.list_installed().is_empty());
         assert!(manager.get_selected().is_none());
-        assert_eq!(manager.list_available().len(), 8);
+        assert_eq!(manager.list_available().len(), bundled_count);
 
         let _ = fs::remove_dir_all(&temp_dir);
     }
