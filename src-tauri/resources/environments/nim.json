@@ -1,0 +1,24 @@
+{
+  "id": "nim",
+  "name": "Nim",
+  "category": "language",
+  "file_extension": "nim",
+  "install_guide_url": "https://nim-lang.org/install.html",
+  "presentation": { "accent": "#376695" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "nim_path",
+      "label": "Nim binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["nim"] }
+    }
+  ],
+  "run": {
+    "program": "{{nim_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
