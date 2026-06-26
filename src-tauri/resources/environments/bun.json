@@ -1,0 +1,24 @@
+{
+  "id": "bun",
+  "name": "Bun",
+  "category": "language",
+  "file_extension": "js",
+  "install_guide_url": "https://bun.sh",
+  "presentation": { "accent": "#f9c86b" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "bun_path",
+      "label": "Bun binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["bun"] }
+    }
+  ],
+  "run": {
+    "program": "{{bun_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
