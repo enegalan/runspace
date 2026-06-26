@@ -157,6 +157,15 @@ mod tests {
                 .to_string();
             let paths = HashMap::from([(primary_key, binary.to_string_lossy().to_string())]);
 
+            let output_binary = workspace.join(manifest.output_binary_name());
+            let context = template::TemplateContext {
+                paths: &paths,
+                entry_file: &script,
+                output_binary: &output_binary,
+            };
+            let run = manifest.run.as_ref().expect("run spec");
+            let expected_args = template::resolve_args(&run.args, &context);
+
             let command = build_run_command(manifest, &paths, &script, &workspace).expect("run");
             let args: Vec<_> = command
                 .get_args()
@@ -169,12 +178,7 @@ mod tests {
                 "{} program",
                 manifest.id
             );
-            assert_eq!(
-                args,
-                vec![script.to_string_lossy().to_string()],
-                "{} args",
-                manifest.id
-            );
+            assert_eq!(args, expected_args, "{} args", manifest.id);
         }
     }
 }
