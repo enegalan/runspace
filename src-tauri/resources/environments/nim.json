@@ -4,7 +4,7 @@
   "category": "language",
   "file_extension": "nim",
   "install_guide_url": "https://nim-lang.org/install.html",
-  "presentation": { "accent": "#376695" },
+  "presentation": { "accent": "#ffe953" },
   "profile": "script",
   "config_fields": [
     {
