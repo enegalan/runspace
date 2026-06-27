@@ -9,6 +9,10 @@
       "createProject": "symfony/skeleton",
       "versionConstraint": "7.4.*",
       "extraPackages": ["webapp"]
+    },
+    "express": {
+      "npmPackage": "express",
+      "versionConstraint": "^5.0.0"
     }
   }
 }
