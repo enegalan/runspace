@@ -1,0 +1,24 @@
+{
+  "id": "d",
+  "name": "D",
+  "category": "language",
+  "file_extension": "d",
+  "install_guide_url": "https://dlang.org/download.html",
+  "presentation": { "accent": "#B03931" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "dmd_path",
+      "label": "DMD binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["dmd"] }
+    }
+  ],
+  "run": {
+    "program": "{{dmd_path}}",
+    "args": ["-run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
