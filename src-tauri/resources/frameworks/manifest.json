@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "rails": {
+      "railsVersion": "8.0.*",
+      "database": "sqlite3"
     }
   }
 }

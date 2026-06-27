@@ -9,16 +9,22 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+RAILS_SRC="$GEN/rails"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
+    --exclude .bundle/
     --exclude node_modules/
     --exclude .git/
     --exclude database/database.sqlite
+    --exclude db/*.sqlite3
     --exclude bootstrap/cache/*.php
+    --exclude log/
+    --exclude tmp/
     --exclude storage/logs/
     --exclude storage/framework/cache/data/
     --exclude storage/framework/sessions/
@@ -105,6 +111,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$RAILS_SRC/.bundle/config" ]]; then
+    mkdir -p "$RAILS_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" --exclude storage/ "$RAILS_SRC/" "$RAILS_DEST/"
+    echo "$SKELETON_VERSION" > "$RAILS_DEST/skeleton.version"
+    synced+=("Rails")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then

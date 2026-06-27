@@ -1,0 +1,58 @@
+{
+  "id": "rails",
+  "name": "Rails",
+  "category": "framework",
+  "file_extension": "rb",
+  "install_guide_url": "https://guides.rubyonrails.org/getting_started.html",
+  "presentation": { "accent": "#d30001" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "ruby_path",
+      "label": "Ruby binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ruby"] }
+    },
+    {
+      "key": "bundle_path",
+      "label": "Bundler binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["bundle"] }
+    }
+  ],
+  "run": {
+    "program": "{{ruby_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "rails",
+    "sync_exclude_dirs": ["vendor", ".bundle", "log", "tmp", "storage"],
+    "sync_exclude_files": ["db/development.sqlite3", "db/test.sqlite3"],
+    "dependency_install": {
+      "program": "{{bundle_path}}",
+      "args": ["install", "--path", "vendor/bundle", "--without", "development", "test"],
+      "vendor_marker": ".bundle/config",
+      "manifest_files": ["Gemfile", "Gemfile.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.rb",
+    "template": "bundle_bootstrap.tpl"
+  },
+  "post_install": [
+    {
+      "type": "run",
+      "program": "{{bundle_path}}",
+      "cwd": "skeleton",
+      "args": ["exec", "rails", "db:prepare"]
+    }
+  ],
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
