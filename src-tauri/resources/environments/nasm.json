@@ -1,0 +1,35 @@
+{
+  "id": "nasm",
+  "name": "Assembly (NASM)",
+  "category": "language",
+  "file_extension": "asm",
+  "install_guide_url": "https://www.nasm.us/",
+  "presentation": { "accent": "#1a5276" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "nasm_path",
+      "label": "NASM binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["nasm"] }
+    },
+    {
+      "key": "linker_path",
+      "label": "Linker (clang or ld)",
+      "field_type": "file_path",
+      "required": true,
+      "detect": { "commands": ["clang", "ld"] }
+    }
+  ],
+  "compile": {
+    "program": "/bin/sh",
+    "args": [
+      "-c",
+      "set -e; OBJ='{{output_binary}}.o'; case \"$(uname -s)\" in Darwin) '{{nasm_path}}' -f macho64 -o \"$OBJ\" '{{entry_file}}' && '{{linker_path}}' -o '{{output_binary}}' \"$OBJ\" -arch x86_64;; Linux) '{{nasm_path}}' -f elf64 -o \"$OBJ\" '{{entry_file}}' && '{{linker_path}}' -o '{{output_binary}}' \"$OBJ\";; *) echo \"Unsupported OS: $(uname -s)\" >&2; exit 1;; esac"
+    ]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "-v" }
+}
