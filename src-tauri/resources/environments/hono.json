@@ -1,0 +1,50 @@
+{
+  "id": "hono",
+  "name": "Hono",
+  "category": "framework",
+  "file_extension": "js",
+  "install_guide_url": "https://hono.dev/",
+  "presentation": { "accent": "#FF612B" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "node_path",
+      "label": "Node.js binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["node"] }
+    },
+    {
+      "key": "npm_path",
+      "label": "npm binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["npm"] }
+    }
+  ],
+  "run": {
+    "program": "{{node_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "hono",
+    "sync_exclude_dirs": ["node_modules"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{npm_path}}",
+      "args": ["ci", "--no-audit", "--no-fund"],
+      "vendor_marker": "node_modules/hono/package.json",
+      "manifest_files": ["package.json", "package-lock.json"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.js",
+    "template": "node_modules_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
