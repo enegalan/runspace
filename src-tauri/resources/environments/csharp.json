@@ -1,0 +1,24 @@
+{
+  "id": "csharp",
+  "name": "C#",
+  "category": "language",
+  "file_extension": "cs",
+  "install_guide_url": "https://dotnet.microsoft.com/download",
+  "presentation": { "accent": "#512BD4" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "dotnet_path",
+      "label": ".NET SDK binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["dotnet"] }
+    }
+  ],
+  "run": {
+    "program": "{{dotnet_path}}",
+    "args": ["run", "--file", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
