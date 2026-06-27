@@ -1,0 +1,25 @@
+{
+  "id": "haskell",
+  "name": "Haskell",
+  "category": "language",
+  "file_extension": "hs",
+  "install_guide_url": "https://www.haskell.org/downloads/",
+  "presentation": { "accent": "#5e5086" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "ghc_path",
+      "label": "GHC binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ghc"] }
+    }
+  ],
+  "compile": {
+    "program": "{{ghc_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}
