@@ -1,0 +1,24 @@
+{
+  "id": "kotlin",
+  "name": "Kotlin",
+  "category": "language",
+  "file_extension": "kt",
+  "install_guide_url": "https://kotlinlang.org/docs/command-line.html",
+  "presentation": { "accent": "#7F52FF" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "kotlin_path",
+      "label": "Kotlin binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["kotlin"] }
+    }
+  ],
+  "run": {
+    "program": "{{kotlin_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "-version" }
+}
