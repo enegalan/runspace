@@ -1,0 +1,28 @@
+{
+  "id": "pony",
+  "name": "Pony",
+  "category": "language",
+  "file_extension": "pony",
+  "install_guide_url": "https://www.ponylang.io/learn/installing-pony/",
+  "presentation": { "accent": "#2b1100" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "ponyc_path",
+      "label": "Pony compiler",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ponyc"] }
+    }
+  ],
+  "compile": {
+    "program": "/bin/sh",
+    "args": [
+      "-c",
+      "set -e; PKG=$(dirname '{{entry_file}}'); OUT=$(dirname '{{output_binary}}'); BIN=$(basename '{{output_binary}}'); '{{ponyc_path}}' -o \"$OUT\" -b \"$BIN\" \"$PKG\""
+    ]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}
