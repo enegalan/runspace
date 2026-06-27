@@ -1,0 +1,57 @@
+{
+  "id": "fastapi",
+  "name": "FastAPI",
+  "category": "framework",
+  "file_extension": "py",
+  "install_guide_url": "https://fastapi.tiangolo.com/",
+  "presentation": { "accent": "#009688" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "python_path",
+      "label": "Python binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["python3", "python"] }
+    },
+    {
+      "key": "pip_path",
+      "label": "pip binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["pip3", "pip"] }
+    }
+  ],
+  "run": {
+    "program": "{{python_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "fastapi",
+    "sync_exclude_dirs": ["site-packages"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{pip_path}}",
+      "args": [
+        "install",
+        "-r",
+        "requirements.txt",
+        "--target",
+        "site-packages",
+        "--no-warn-script-location"
+      ],
+      "vendor_marker": "site-packages/fastapi/__init__.py",
+      "manifest_files": ["requirements.txt"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.py",
+    "template": "python_site_packages_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

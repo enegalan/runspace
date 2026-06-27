@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FASTAPI_SRC="$GEN/fastapi"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -26,6 +28,7 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude __pycache__/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$FASTAPI_SRC/requirements.txt" ]]; then
+    mkdir -p "$FASTAPI_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$FASTAPI_SRC/" "$FASTAPI_DEST/"
+    echo "$SKELETON_VERSION" > "$FASTAPI_DEST/skeleton.version"
+    synced+=("FastAPI")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
