@@ -1,0 +1,24 @@
+{
+  "id": "go",
+  "name": "Go",
+  "category": "language",
+  "file_extension": "go",
+  "install_guide_url": "https://go.dev/dl/",
+  "presentation": { "accent": "#00add8" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "go_path",
+      "label": "Go binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["go"] }
+    }
+  ],
+  "run": {
+    "program": "{{go_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "version_probe": { "arg": "version" }
+}
