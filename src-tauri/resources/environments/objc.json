@@ -1,0 +1,25 @@
+{
+  "id": "objc",
+  "name": "Objective-C",
+  "category": "language",
+  "file_extension": "m",
+  "install_guide_url": "https://releases.llvm.org/download.html",
+  "presentation": { "accent": "#438EFF" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "clang_path",
+      "label": "Clang binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["clang"] }
+    }
+  ],
+  "compile": {
+    "program": "{{clang_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}", "-framework", "Foundation", "-Wall"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}
