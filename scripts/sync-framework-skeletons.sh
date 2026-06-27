@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Syncs composer-generated skeletons into src-tauri/resources/frameworks/.
+# Syncs generated framework skeletons into src-tauri/resources/frameworks/.
 # Prefer: npm run prepare:frameworks (generates + syncs automatically).
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
+EXPRESS_SRC="$GEN/express"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
-
-if [[ ! -d "$LARAVEL_SRC/vendor" || ! -d "$SYMFONY_SRC/vendor" ]]; then
-    echo "Generate skeletons first:" >&2
-    echo "  composer create-project laravel/laravel $LARAVEL_SRC \"12.*\"" >&2
-    echo "  composer create-project symfony/skeleton $SYMFONY_SRC \"7.4.*\"" >&2
-    echo "  (cd $SYMFONY_SRC && composer require webapp)" >&2
-    exit 1
-fi
+EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -34,9 +28,13 @@ RSYNC_EXCLUDES=(
     --exclude var/data*.db
 )
 
-mkdir -p "$LARAVEL_DEST" "$SYMFONY_DEST"
+SKELETON_VERSION="${SKELETON_VERSION:-7}"
+synced=()
 
-python3 - <<'PY' "$LARAVEL_SRC/composer.json"
+if [[ -d "$LARAVEL_SRC/vendor" ]]; then
+    mkdir -p "$LARAVEL_DEST"
+
+    python3 - <<'PY' "$LARAVEL_SRC/composer.json"
 import json, sys
 path = sys.argv[1]
 with open(path) as f:
@@ -48,7 +46,18 @@ with open(path, "w") as f:
     f.write("\n")
 PY
 
-python3 - <<'PY' "$SYMFONY_SRC/composer.json"
+    echo "Refreshing Laravel composer.lock after manifest edits..."
+    (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
+    echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
+    synced+=("Laravel")
+fi
+
+if [[ -d "$SYMFONY_SRC/vendor" ]]; then
+    mkdir -p "$SYMFONY_DEST"
+
+    python3 - <<'PY' "$SYMFONY_SRC/composer.json"
 import json, sys
 path = sys.argv[1]
 with open(path) as f:
@@ -60,11 +69,11 @@ with open(path, "w") as f:
     f.write("\n")
 PY
 
-echo "Refreshing composer.lock files after manifest edits..."
-(cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
-(cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+    echo "Refreshing Symfony composer.lock after manifest edits..."
+    (cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
 
-python3 - <<'PY' "$SYMFONY_SRC/.env"
+    if [[ -f "$SYMFONY_SRC/.env" ]]; then
+        python3 - <<'PY' "$SYMFONY_SRC/.env"
 import re, sys
 path = sys.argv[1]
 with open(path) as f:
@@ -84,12 +93,23 @@ content = re.sub(
 with open(path, "w") as f:
     f.write(content)
 PY
+    fi
 
-rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
-rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+    synced+=("Symfony")
+fi
 
-SKELETON_VERSION="${SKELETON_VERSION:-6}"
-echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
-echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
+    mkdir -p "$EXPRESS_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
+    echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
+    synced+=("Express")
+fi
 
-echo "Synced Laravel and Symfony skeletons (version $SKELETON_VERSION)."
+if [[ ${#synced[@]} -eq 0 ]]; then
+    echo "No framework skeletons found to sync in $GEN." >&2
+    exit 1
+fi
+
+echo "Synced ${synced[*]} skeletons (version $SKELETON_VERSION)."
