@@ -1,0 +1,25 @@
+{
+  "id": "pascal",
+  "name": "Pascal",
+  "category": "language",
+  "file_extension": "pas",
+  "install_guide_url": "https://www.freepascal.org/download.html",
+  "presentation": { "accent": "#0094D4" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "fpc_path",
+      "label": "Free Pascal binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["fpc"] }
+    }
+  ],
+  "compile": {
+    "program": "{{fpc_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "-iV" }
+}
