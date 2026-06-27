@@ -1,0 +1,24 @@
+{
+  "id": "swift",
+  "name": "Swift",
+  "category": "language",
+  "file_extension": "swift",
+  "install_guide_url": "https://www.swift.org/install/",
+  "presentation": { "accent": "#F05138" },
+  "profile": "script",
+  "config_fields": [
+    {
+      "key": "swift_path",
+      "label": "Swift binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["swift"] }
+    }
+  ],
+  "run": {
+    "program": "{{swift_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "version_probe": { "arg": "--version" }
+}
