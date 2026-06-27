@@ -1,0 +1,25 @@
+{
+  "id": "fortran",
+  "name": "Fortran",
+  "category": "language",
+  "file_extension": "f90",
+  "install_guide_url": "https://fortran-lang.org/learn/os_setup/install_gfortran/",
+  "presentation": { "accent": "#734f96" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "gfortran_path",
+      "label": "GFortran binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["gfortran"] }
+    }
+  ],
+  "compile": {
+    "program": "{{gfortran_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}", "-Wall", "-std=f2008"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}
