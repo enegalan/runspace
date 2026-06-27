@@ -1,0 +1,25 @@
+{
+  "id": "ocaml",
+  "name": "OCaml",
+  "category": "language",
+  "file_extension": "ml",
+  "install_guide_url": "https://ocaml.org/docs/install.html",
+  "presentation": { "accent": "#F29100" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "ocamlopt_path",
+      "label": "OCaml native compiler",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ocamlopt", "ocamlc"] }
+    }
+  ],
+  "compile": {
+    "program": "{{ocamlopt_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "-version" }
+}
