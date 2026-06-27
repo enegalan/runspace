@@ -4,7 +4,7 @@
   "category": "language",
   "file_extension": "java",
   "install_guide_url": "https://www.oracle.com/java/technologies/downloads/",
-  "presentation": { "accent": "#f89820" },
+  "presentation": { "accent": "#e61f24" },
   "profile": "script",
   "config_fields": [
     {
