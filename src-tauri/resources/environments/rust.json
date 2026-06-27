@@ -1,0 +1,25 @@
+{
+  "id": "rust",
+  "name": "Rust",
+  "category": "language",
+  "file_extension": "rs",
+  "install_guide_url": "https://www.rust-lang.org/tools/install",
+  "presentation": { "accent": "#e03618" },
+  "profile": "compiled",
+  "config_fields": [
+    {
+      "key": "rustc_path",
+      "label": "Rustc binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["rustc"] }
+    }
+  ],
+  "compile": {
+    "program": "{{rustc_path}}",
+    "args": ["-o", "{{output_binary}}", "{{entry_file}}"]
+  },
+  "output_binary": "runspace_out",
+  "version_probe": { "arg": "--version" }
+}
