@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+DJANGO_SRC="$GEN/django"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+DJANGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/django"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+DJANGO_VERSION="${RUNSPACE_DJANGO_VERSION:-~=4.2.0}"
+DJANGO_PROJECT="${RUNSPACE_DJANGO_PROJECT:-runspace_project}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+django_ready() {
+    [[ -f "$DJANGO_DEST/manage.py" ]] &&
+        [[ -f "$DJANGO_DEST/requirements.txt" ]] &&
+        [[ -f "$DJANGO_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_django=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +62,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! django_ready; then
+    needs_django=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +80,16 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_django && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Django skeleton." >&2
+    exit 1
+fi
+
+if $needs_django && ! python3 -m pip --version >/dev/null 2>&1; then
+    echo "pip is required to prepare the Django skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +119,26 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_django && [[ ! -f "$DJANGO_SRC/manage.py" ]]; then
+    echo "Generating Django skeleton..."
+    rm -rf "$DJANGO_SRC"
+    mkdir -p "$DJANGO_SRC"
+    (
+        cd "$DJANGO_SRC"
+        python3 -m pip install "django${DJANGO_VERSION}" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        PYTHONPATH="$(pwd)/site-packages" python3 -m django startproject "$DJANGO_PROJECT" .
+        python3 - <<'PY' > requirements.txt
+import sys
+sys.path.insert(0, "site-packages")
+import django
+print(f"django=={django.get_version()}")
+PY
     )
 fi
 

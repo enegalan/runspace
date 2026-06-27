@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+DJANGO_SRC="$GEN/django"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+DJANGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/django"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude site-packages/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -26,6 +29,8 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude db.sqlite3
+    --exclude __pycache__/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -105,6 +110,32 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$DJANGO_SRC/manage.py" ]]; then
+    mkdir -p "$DJANGO_DEST"
+
+    python3 - <<'PY' "$DJANGO_SRC/manage.py"
+import sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+prefix = """import sys
+from pathlib import Path
+
+_site_packages = Path(__file__).resolve().parent / "site-packages"
+if _site_packages.is_dir():
+    sys.path.insert(0, str(_site_packages))
+
+"""
+if not content.startswith(prefix):
+    with open(path, "w") as f:
+        f.write(prefix + content)
+PY
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$DJANGO_SRC/" "$DJANGO_DEST/"
+    echo "$SKELETON_VERSION" > "$DJANGO_DEST/skeleton.version"
+    synced+=("Django")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
