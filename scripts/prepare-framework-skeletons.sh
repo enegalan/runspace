@@ -63,6 +63,13 @@ if force_sync || ! express_ready; then
 fi
 if force_sync || ! koa_ready; then
     needs_koa=true
+elif [[ -f "$KOA_SRC/.koa_version" ]]; then
+    cached_version=$(cat "$KOA_SRC/.koa_version")
+    if [[ "$cached_version" != "$KOA_VERSION" ]]; then
+        needs_koa=true
+    fi
+else
+    needs_koa=true
 fi
 
 if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_koa; then
@@ -128,6 +135,7 @@ if $needs_koa && [[ ! -d "$KOA_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "koa@${KOA_VERSION}" --save
     )
+    echo "$KOA_VERSION" > "$KOA_SRC/.koa_version"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
