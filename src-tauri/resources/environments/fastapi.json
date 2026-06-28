@@ -32,8 +32,10 @@
     "sync_exclude_dirs": ["site-packages"],
     "sync_exclude_files": [],
     "dependency_install": {
-      "program": "{{pip_path}}",
+      "program": "{{python_path}}",
       "args": [
+        "-m",
+        "pip",
         "install",
         "-r",
         "requirements.txt",

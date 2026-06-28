@@ -135,7 +135,7 @@ sys.path.insert(0, "site-packages")
 import fastapi
 import uvicorn
 print(f"fastapi=={fastapi.__version__}")
-print(f"uvicorn=={uvicorn.__version__}")
+print(f"uvicorn[standard]=={uvicorn.__version__}")
 PY
     )
 fi
