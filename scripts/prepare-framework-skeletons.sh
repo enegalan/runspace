@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PADRINO_SRC="$GEN/padrino"
 COWBOY_SRC="$GEN/cowboy"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
 CHI_SRC="$GEN/chi"
@@ -44,6 +45,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
 COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
 CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
@@ -85,6 +87,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
+PADRINO_GEM_VERSION="${RUNSPACE_PADRINO_GEM_VERSION:->= 0.15.0}"
 COWBOY_VERSION="${RUNSPACE_COWBOY_VERSION:-2.13.0}"
 ASPNET_CORE_PROJECT="${RUNSPACE_ASPNET_CORE_PROJECT:-RunspaceAspNetSandbox}"
 ASPNET_CORE_SCRIPTING_PACKAGE="${RUNSPACE_ASPNET_CORE_SCRIPTING_PACKAGE:-Microsoft.CodeAnalysis.CSharp.Scripting}"
@@ -146,6 +150,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+padrino_ready() {
+    [[ -f "$PADRINO_DEST/Gemfile.lock" ]] &&
+        [[ -f "$PADRINO_DEST/config/apps.rb" ]] &&
+        [[ -f "$PADRINO_DEST/skeleton.version" ]]
 }
 cowboy_ready() {
     [[ -f "$COWBOY_DEST/rebar.config" ]] &&
@@ -310,6 +319,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_padrino=false
 needs_cowboy=false
 needs_aspnet-core=false
 needs_chi=false
@@ -354,6 +364,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! padrino_ready; then
+    needs_padrino=true
 fi
 if force_sync || ! cowboy_ready; then
     needs_cowboy=true
@@ -453,7 +466,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -486,6 +499,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_padrino && ! command -v ruby >/dev/null 2>&1; then
+    echo "Ruby is required to prepare the Padrino skeleton." >&2
+    exit 1
+fi
+
 if $needs_cowboy && ! command -v rebar3 >/dev/null 2>&1; then
     echo "rebar3 is required to prepare the Cowboy skeleton." >&2
     exit 1
@@ -619,6 +637,16 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_padrino && [[ ! -f "$PADRINO_SRC/Gemfile.lock" ]]; then
+    echo "Generating Padrino skeleton..."
+    rm -rf "$PADRINO_SRC" "$GEN/$PADRINO_PROJECT"
+    (
+        cd "$GEN"
+        padrino g project "$PADRINO_PROJECT" -b -i -a sqlite -d activerecord
+    )
+    mv "$GEN/$PADRINO_PROJECT" "$PADRINO_SRC"
+fi
+
 if $needs_cowboy && [[ ! -f "$COWBOY_SRC/_build/default/lib/cowboy/ebin/cowboy.app" ]]; then
     echo "Generating Cowboy skeleton..."
     rm -rf "$COWBOY_SRC"
