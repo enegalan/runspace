@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SVELTEKIT_SRC="$GEN/sveltekit"
 FASTAPI_SRC="$GEN/fastapi"
 PHALCON_SRC="$GEN/phalcon"
 POEM_SRC="$GEN/poem"
@@ -32,6 +33,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
 FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
 PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
 POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
@@ -109,6 +111,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+sveltekit_ready() {
+    [[ -f "$SVELTEKIT_DEST/package.json" ]] &&
+        [[ -f "$SVELTEKIT_DEST/package-lock.json" ]] &&
+        [[ -f "$SVELTEKIT_DEST/skeleton.version" ]]
 }
 fastapi_ready() {
     [[ -f "$FASTAPI_DEST/requirements.txt" ]] &&
@@ -224,6 +231,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_sveltekit=false
 needs_fastapi=false
 needs_phalcon=false
 needs_poem=false
@@ -256,6 +264,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! sveltekit_ready; then
+    needs_sveltekit=true
 fi
 if force_sync || ! fastapi_ready; then
     needs_fastapi=true
@@ -325,7 +336,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -358,6 +369,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_sveltekit && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the SvelteKit skeleton." >&2
+    exit 1
+fi
+
 if $needs_fastapi && ! command -v python3 >/dev/null 2>&1; then
     echo "python3 is required to prepare the FastAPI skeleton." >&2
     exit 1
@@ -453,6 +469,26 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_sveltekit && [[ ! -d "$SVELTEKIT_SRC/node_modules" ]]; then
+    echo "Generating SvelteKit skeleton..."
+    rm -rf "$SVELTEKIT_SRC"
+    mkdir -p "$(dirname "$SVELTEKIT_SRC")"
+    npx sv create "$SVELTEKIT_SRC" \
+        --template "$SVELTEKIT_TEMPLATE" \
+        --types "$SVELTEKIT_TYPES" \
+        --no-add-ons \
+        --no-install \
+        --no-dir-check \
+        --no-download-check
+    (
+        cd "$SVELTEKIT_SRC"
+        npm pkg set name="@runspace/sveltekit-sandbox"
+        npm pkg set description="Internal SvelteKit sandbox for Runspace"
+        npm pkg set private=true
+        npm install --no-audit --no-fund
+    )
+fi
+
 if $needs_fastapi && [[ ! -f "$FASTAPI_SRC/requirements.txt" ]]; then
     echo "Generating FastAPI skeleton..."
     rm -rf "$FASTAPI_SRC"

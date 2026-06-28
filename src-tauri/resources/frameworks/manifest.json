@@ -14,6 +14,11 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "sveltekit": {
+      "createTool": "sv",
+      "template": "minimal",
+      "types": "ts"
+    },
     "fastapi": {
       "pipPackage": "fastapi",
       "extraPackages": ["uvicorn[standard]"]
