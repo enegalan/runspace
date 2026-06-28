@@ -1,0 +1,50 @@
+{
+  "id": "lumen",
+  "name": "Lumen",
+  "category": "framework",
+  "file_extension": "php",
+  "install_guide_url": "https://lumen.laravel.com/docs",
+  "presentation": { "accent": "#e74430" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "php_path",
+      "label": "PHP binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["php"] }
+    },
+    {
+      "key": "composer_path",
+      "label": "Composer binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["composer"] }
+    }
+  ],
+  "run": {
+    "program": "{{php_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "lumen",
+    "sync_exclude_dirs": ["vendor"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{composer_path}}",
+      "args": ["install", "--no-interaction", "--prefer-dist", "--no-scripts"],
+      "vendor_marker": "vendor/autoload.php",
+      "manifest_files": ["composer.json", "composer.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.php",
+    "template": "php_vendor_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

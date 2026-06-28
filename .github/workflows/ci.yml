@@ -23,6 +23,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
+      - uses: ruby/setup-ruby@v1
+          ruby-version: "3.3"
+          bundler-cache: false
+      - run: gem install padrino --no-document
       - uses: erlef/setup-beam@v1
           otp-version: "27"
           rebar3-version: "3.24"
