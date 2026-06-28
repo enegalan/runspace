@@ -18,6 +18,10 @@
       "dotnetTemplate": "web",
       "projectName": "RunspaceAspNetSandbox",
       "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting"
+    },
+    "padrino": {
+      "gemPackage": "padrino",
+      "versionConstraint": ">= 0.15.0"
     }
   }
 }

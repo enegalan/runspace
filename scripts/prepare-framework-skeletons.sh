@@ -7,10 +7,12 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+PADRINO_SRC="$GEN/padrino"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
@@ -19,6 +21,8 @@ SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
 ASPNET_CORE_PROJECT="${RUNSPACE_ASPNET_CORE_PROJECT:-RunspaceAspNetSandbox}"
 ASPNET_CORE_SCRIPTING_PACKAGE="${RUNSPACE_ASPNET_CORE_SCRIPTING_PACKAGE:-Microsoft.CodeAnalysis.CSharp.Scripting}"
+PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
+PADRINO_GEM_VERSION="${RUNSPACE_PADRINO_GEM_VERSION:->= 0.15.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -44,6 +48,12 @@ aspnet_core_ready() {
         [[ -f "$ASPNET_CORE_DEST/skeleton.version" ]]
 }
 
+padrino_ready() {
+    [[ -f "$PADRINO_DEST/Gemfile.lock" ]] &&
+        [[ -f "$PADRINO_DEST/config/apps.rb" ]] &&
+        [[ -f "$PADRINO_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -52,6 +62,7 @@ needs_laravel=false
 needs_symfony=false
 needs_express=false
 needs_aspnet_core=false
+needs_padrino=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -65,8 +76,11 @@ fi
 if force_sync || ! aspnet_core_ready; then
     needs_aspnet_core=true
 fi
+if force_sync || ! padrino_ready; then
+    needs_padrino=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_aspnet_core; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_aspnet_core && ! $needs_padrino; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -86,6 +100,21 @@ fi
 if $needs_aspnet_core && ! command -v dotnet >/dev/null 2>&1; then
     echo "The .NET SDK is required to prepare the ASP.NET Core skeleton." >&2
     exit 1
+fi
+
+if $needs_padrino && ! command -v ruby >/dev/null 2>&1; then
+    echo "Ruby is required to prepare the Padrino skeleton." >&2
+    exit 1
+fi
+
+if $needs_padrino && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Padrino skeleton." >&2
+    exit 1
+fi
+
+if $needs_padrino && ! command -v padrino >/dev/null 2>&1; then
+    echo "Installing the padrino gem for skeleton generation..."
+    gem install padrino -v "$PADRINO_GEM_VERSION" --no-document
 fi
 
 mkdir -p "$GEN"
@@ -126,6 +155,16 @@ if $needs_aspnet_core && [[ ! -f "$ASPNET_CORE_SRC/RunspaceAspNetSandbox.csproj"
         dotnet add package "$ASPNET_CORE_SCRIPTING_PACKAGE" --no-restore
         dotnet restore
     )
+fi
+
+if $needs_padrino && [[ ! -f "$PADRINO_SRC/Gemfile.lock" ]]; then
+    echo "Generating Padrino skeleton..."
+    rm -rf "$PADRINO_SRC" "$GEN/$PADRINO_PROJECT"
+    (
+        cd "$GEN"
+        padrino g project "$PADRINO_PROJECT" -b -i -a sqlite -d activerecord
+    )
+    mv "$GEN/$PADRINO_PROJECT" "$PADRINO_SRC"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"

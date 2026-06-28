@@ -10,13 +10,16 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+PADRINO_SRC="$GEN/padrino"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
+    --exclude vendor/bundle/
     --exclude node_modules/
     --exclude .git/
     --exclude database/database.sqlite
@@ -164,6 +167,24 @@ CS
         "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
     echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
     synced+=("ASP.NET Core")
+fi
+
+if [[ -f "$PADRINO_SRC/Gemfile.lock" ]]; then
+    mkdir -p "$PADRINO_DEST"
+
+    ruby - <<'RUBY' "$PADRINO_SRC/Gemfile"
+gemfile_path = ARGV[0]
+content = File.read(gemfile_path)
+content = content.sub(/^source .*/, "source 'https://rubygems.org'")
+unless content.include?('runspace_padrino_sandbox')
+  content = "# Internal Padrino sandbox for Runspace\n" + content
+end
+File.write(gemfile_path, content)
+RUBY
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" --exclude .bundle/ "$PADRINO_SRC/" "$PADRINO_DEST/"
+    echo "$SKELETON_VERSION" > "$PADRINO_DEST/skeleton.version"
+    synced+=("Padrino")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
