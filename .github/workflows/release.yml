@@ -22,10 +22,15 @@ jobs:
           php-version: "8.3"
           tools: composer
 
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          rebar3-version: "3.24"
+
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen
-          key: runspace-skeleton-gen-v3-${{ runner.os }}
+          key: runspace-skeleton-gen-v4-${{ runner.os }}
 
       - run: npm ci
 

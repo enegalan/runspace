@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+COWBOY_SRC="$GEN/cowboy"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+COWBOY_VERSION="${RUNSPACE_COWBOY_VERSION:-2.13.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+cowboy_ready() {
+    [[ -f "$COWBOY_DEST/rebar.config" ]] &&
+        [[ -f "$COWBOY_DEST/rebar.lock" ]] &&
+        [[ -f "$COWBOY_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_cowboy=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! cowboy_ready; then
+    needs_cowboy=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_cowboy; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_cowboy && ! command -v rebar3 >/dev/null 2>&1; then
+    echo "rebar3 is required to prepare the Cowboy skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +114,19 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_cowboy && [[ ! -f "$COWBOY_SRC/_build/default/lib/cowboy/ebin/cowboy.app" ]]; then
+    echo "Generating Cowboy skeleton..."
+    rm -rf "$COWBOY_SRC"
+    mkdir -p "$COWBOY_SRC"
+    cat > "$COWBOY_SRC/rebar.config" <<EOF
+{erl_opts, [debug_info]}.
+{deps, [
+    {cowboy, "$COWBOY_VERSION"}
+]}.
+EOF
+    (cd "$COWBOY_SRC" && rebar3 compile)
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
