@@ -7,10 +7,12 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+HANAMI_SRC="$GEN/hanami"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+HANAMI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hanami"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
@@ -19,6 +21,7 @@ SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
 ASPNET_CORE_PROJECT="${RUNSPACE_ASPNET_CORE_PROJECT:-RunspaceAspNetSandbox}"
 ASPNET_CORE_SCRIPTING_PACKAGE="${RUNSPACE_ASPNET_CORE_SCRIPTING_PACKAGE:-Microsoft.CodeAnalysis.CSharp.Scripting}"
+HANAMI_VERSION="${RUNSPACE_HANAMI_VERSION:-2.2.*}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -44,6 +47,13 @@ aspnet_core_ready() {
         [[ -f "$ASPNET_CORE_DEST/skeleton.version" ]]
 }
 
+hanami_ready() {
+    [[ -f "$HANAMI_DEST/Gemfile" ]] &&
+        [[ -f "$HANAMI_DEST/Gemfile.lock" ]] &&
+        [[ -f "$HANAMI_DEST/bin/hanami" ]] &&
+        [[ -f "$HANAMI_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -52,6 +62,7 @@ needs_laravel=false
 needs_symfony=false
 needs_express=false
 needs_aspnet_core=false
+needs_hanami=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -65,8 +76,11 @@ fi
 if force_sync || ! aspnet_core_ready; then
     needs_aspnet_core=true
 fi
+if force_sync || ! hanami_ready; then
+    needs_hanami=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_aspnet_core; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_aspnet_core && ! $needs_hanami; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -85,6 +99,19 @@ fi
 
 if $needs_aspnet_core && ! command -v dotnet >/dev/null 2>&1; then
     echo "The .NET SDK is required to prepare the ASP.NET Core skeleton." >&2
+    exit 1
+fi
+
+if $needs_hanami && ! command -v hanami >/dev/null 2>&1; then
+    echo "Hanami is required to prepare the Hanami skeleton." >&2
+    echo "Install Ruby 3.1+, Bundler, and Hanami, then run:" >&2
+    echo "  gem install hanami bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_hanami && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Hanami skeleton." >&2
     exit 1
 fi
 
@@ -125,6 +152,19 @@ if $needs_aspnet_core && [[ ! -f "$ASPNET_CORE_SRC/RunspaceAspNetSandbox.csproj"
         cd "$ASPNET_CORE_SRC"
         dotnet add package "$ASPNET_CORE_SCRIPTING_PACKAGE" --no-restore
         dotnet restore
+    )
+fi
+
+if $needs_hanami && [[ ! -f "$HANAMI_SRC/.bundle/config" ]]; then
+    echo "Generating Hanami skeleton..."
+    rm -rf "$HANAMI_SRC"
+    hanami new "$HANAMI_SRC" \
+        --database=sqlite \
+        --test=minitest
+    (
+        cd "$HANAMI_SRC"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
     )
 fi
 

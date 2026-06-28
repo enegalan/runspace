@@ -20,10 +20,15 @@ jobs:
         with:
           php-version: "8.3"
           tools: composer
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler: default
+      - run: gem install hanami
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen
-          key: runspace-skeleton-gen-v3-${{ runner.os }}
+          key: runspace-skeleton-gen-v4-${{ runner.os }}
       - run: npm ci
       - run: npm run prepare:frameworks
       - run: npm run format:check

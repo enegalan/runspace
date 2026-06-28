@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, and ASP.NET Core sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, ASP.NET Core, and Hanami sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -12,7 +12,8 @@ Output directories:
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
 - `aspnet-core/` — copied to `~/.runspace/frameworks/aspnet-core/` on first use
+- `hanami/` — copied to `~/.runspace/frameworks/hanami/` on first use
 
-Laravel and Symfony require Composer; Express requires npm; ASP.NET Core requires the .NET SDK. End users of the installed app do not run this; only developers and release builds do.
+Laravel and Symfony require Composer; Express requires npm; ASP.NET Core requires the .NET SDK; Hanami requires Ruby 3.1+, Bundler, and the `hanami` gem. End users of the installed app do not run this; only developers and release builds do.
 
 See `manifest.json` for pinned project versions.

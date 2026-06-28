@@ -1,0 +1,58 @@
+{
+  "id": "hanami",
+  "name": "Hanami",
+  "category": "framework",
+  "file_extension": "rb",
+  "install_guide_url": "https://guides.hanamirb.org/v2.3/introduction/getting-started/",
+  "presentation": { "accent": "#ed1657" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "ruby_path",
+      "label": "Ruby binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ruby"] }
+    },
+    {
+      "key": "bundle_path",
+      "label": "Bundler binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["bundle"] }
+    }
+  ],
+  "run": {
+    "program": "{{ruby_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "hanami",
+    "sync_exclude_dirs": ["vendor", ".bundle", "log", "tmp", "node_modules"],
+    "sync_exclude_files": ["storage/*.sqlite3", "storage/*.sqlite"],
+    "dependency_install": {
+      "program": "{{bundle_path}}",
+      "args": ["install", "--path", "vendor/bundle", "--without", "development", "test"],
+      "vendor_marker": ".bundle/config",
+      "manifest_files": ["Gemfile", "Gemfile.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.rb",
+    "template": "bundle_bootstrap.tpl"
+  },
+  "post_install": [
+    {
+      "type": "run",
+      "program": "{{bundle_path}}",
+      "cwd": "skeleton",
+      "args": ["exec", "hanami", "db", "prepare"]
+    }
+  ],
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

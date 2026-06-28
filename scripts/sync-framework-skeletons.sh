@@ -10,17 +10,25 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+HANAMI_SRC="$GEN/hanami"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+HANAMI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hanami"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
+    --exclude .bundle/
     --exclude node_modules/
     --exclude .git/
     --exclude database/database.sqlite
+    --exclude db/*.sqlite3
+    --exclude storage/*.sqlite3
+    --exclude storage/*.sqlite
     --exclude bootstrap/cache/*.php
+    --exclude log/
+    --exclude tmp/
     --exclude storage/logs/
     --exclude storage/framework/cache/data/
     --exclude storage/framework/sessions/
@@ -164,6 +172,13 @@ CS
         "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
     echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
     synced+=("ASP.NET Core")
+fi
+
+if [[ -f "$HANAMI_SRC/.bundle/config" ]]; then
+    mkdir -p "$HANAMI_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$HANAMI_SRC/" "$HANAMI_DEST/"
+    echo "$SKELETON_VERSION" > "$HANAMI_DEST/skeleton.version"
+    synced+=("Hanami")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
