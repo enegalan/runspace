@@ -19,6 +19,11 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "iris": {
+      "goModule": "runspace/iris-sandbox",
+      "goPackage": "github.com/kataras/iris/v12",
+      "versionConstraint": "v12.2.11"
+    },
     "plug": {
       "plugVersion": "~> 1.16",
       "serverVersion": "~> 1.6"
