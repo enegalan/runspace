@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "blazor": {
+      "dotnetTemplate": "blazor",
+      "projectName": "RunspaceBlazorSandbox"
+    },
     "quart": {
       "pipPackage": "quart",
       "versionConstraint": "0.20.*"
