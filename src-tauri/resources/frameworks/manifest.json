@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "phoenix": {
+      "phoenixVersion": "1.8.*",
+      "database": "sqlite3"
+    },
     "nextjs": {
       "npmPackages": ["next", "react", "react-dom"],
       "versionConstraint": "^15.0.0"

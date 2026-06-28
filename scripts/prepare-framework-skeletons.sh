@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PHOENIX_SRC="$GEN/phoenix"
 NEXTJS_SRC="$GEN/nextjs"
 NUXT_SRC="$GEN/nuxt"
 RAILS_SRC="$GEN/rails"
@@ -49,6 +50,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
 NEXTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nextjs"
 NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
 RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
@@ -95,6 +97,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PHOENIX_VERSION="${RUNSPACE_PHOENIX_VERSION:-1.8.*}"
 NEXTJS_VERSION="${RUNSPACE_NEXTJS_VERSION:-^15.0.0}"
 NUXT_VERSION="${RUNSPACE_NUXT_VERSION:-^3.0.0}"
 RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
@@ -162,6 +165,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+phoenix_ready() {
+    [[ -f "$PHOENIX_DEST/mix.exs" ]] &&
+        [[ -f "$PHOENIX_DEST/mix.lock" ]] &&
+        [[ -f "$PHOENIX_DEST/skeleton.version" ]]
 }
 nextjs_ready() {
     [[ -f "$NEXTJS_DEST/package.json" ]] &&
@@ -352,6 +360,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_phoenix=false
 needs_nextjs=false
 needs_nuxt=false
 needs_rails=false
@@ -401,6 +410,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! phoenix_ready; then
+    needs_phoenix=true
 fi
 if force_sync || ! nextjs_ready; then
     needs_nextjs=true
@@ -515,7 +527,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -548,6 +560,14 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_phoenix && ! command -v mix >/dev/null 2>&1; then
+    echo "Mix is required to prepare the Phoenix skeleton." >&2
+    echo "Install Elixir and Phoenix, then run:" >&2
+    echo "  mix archive.install hex phx_new" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
 if $needs_nextjs && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Next.js skeleton." >&2
     exit 1
@@ -712,6 +732,23 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_phoenix && [[ ! -f "$PHOENIX_SRC/mix.lock" ]]; then
+    echo "Generating Phoenix skeleton..."
+    rm -rf "$PHOENIX_SRC"
+    mix local.hex --force
+    mix archive.install hex phx_new --force
+    mix phx.new "$PHOENIX_SRC" \
+        --no-install \
+        --app runspace_phoenix \
+        --database sqlite3 \
+        --no-mailer
+    (
+        cd "$PHOENIX_SRC"
+        mix deps.get
+        mix compile
+    )
+fi
+
 if $needs_nextjs && [[ ! -d "$NEXTJS_SRC/node_modules" ]]; then
     echo "Generating Next.js skeleton..."
     rm -rf "$NEXTJS_SRC"
