@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Pyramid, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Pyramid, Qwik, Sanic, Dash, Laminas, Tornado, Ionic, Starlette, Codeigniter, Bottle, Phoenix, Nextjs, Nuxt, Rails, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -12,6 +12,30 @@ Output directories:
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
 - `pyramid/` — copied to `~/.runspace/frameworks/pyramid/` on first use
+- `qwik/` — copied to `~/.runspace/frameworks/qwik/` on first use
+- `sanic/` — copied to `~/.runspace/frameworks/sanic/` on first use
+- `dash/` — copied to `~/.runspace/frameworks/dash/` on first use
+- `laminas/` — copied to `~/.runspace/frameworks/laminas/` on first use
+- `tornado/` — copied to `~/.runspace/frameworks/tornado/` on first use
+- `ionic/` — copied to `~/.runspace/frameworks/ionic/` on first use
+- `starlette/` — copied to `~/.runspace/frameworks/starlette/` on first use
+- `codeigniter/` — copied to `~/.runspace/frameworks/codeigniter/` on first use
+- `bottle/` — copied to `~/.runspace/frameworks/bottle/` on first use
+- `spring-boot/` — copied to `~/.runspace/frameworks/spring-boot/` on first use
+- `phoenix/` — copied to `~/.runspace/frameworks/phoenix/` on first use
+- `nextjs/` — copied to `~/.runspace/frameworks/nextjs/` on first use
+- `nuxt/` — copied to `~/.runspace/frameworks/nuxt/` on first use
+- `rails/` — copied to `~/.runspace/frameworks/rails/` on first use
+- `sinatra/` — copied to `~/.runspace/frameworks/sinatra/` on first use
+- `padrino/` — copied to `~/.runspace/frameworks/padrino/` on first use
+- `cowboy/` — copied to `~/.runspace/frameworks/cowboy/` on first use
+- `aspnet-core/` — copied to `~/.runspace/frameworks/aspnet-core/` on first use
+- `chi/` — copied to `~/.runspace/frameworks/chi/` on first use
+- `yii/` — copied to `~/.runspace/frameworks/yii/` on first use
+- `react-native/` — copied to `~/.runspace/frameworks/react-native/` on first use
+- `meteor/` — copied to `~/.runspace/frameworks/meteor/` on first use
+- `quarkus/` — copied to `~/.runspace/frameworks/quarkus/` on first use
+- `astro/` — copied to `~/.runspace/frameworks/astro/` on first use
 - `axum/` — copied to `~/.runspace/frameworks/axum/` on first use
 - `roda/` — copied to `~/.runspace/frameworks/roda/` on first use
 - `remix/` — copied to `~/.runspace/frameworks/remix/` on first use
