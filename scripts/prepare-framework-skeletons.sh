@@ -69,10 +69,9 @@ if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_fastapi;
 fi
 
 if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; then
-    echo "Composer is required to prepare Laravel/Symfony skeletons." >&2
-    echo "Install Composer or set its path in Settings, then run:" >&2
-    echo "  npm run prepare:frameworks" >&2
-    exit 1
+    echo "Warning: Composer not available; skipping Laravel/Symfony skeletons." >&2
+    needs_laravel=false
+    needs_symfony=false
 fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
@@ -88,6 +87,11 @@ fi
 if $needs_fastapi && ! python3 -m pip --version >/dev/null 2>&1; then
     echo "pip is required to prepare the FastAPI skeleton." >&2
     exit 1
+fi
+
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_fastapi; then
+    echo "No frameworks can be generated with available tools."
+    exit 0
 fi
 
 mkdir -p "$GEN"
@@ -135,7 +139,7 @@ sys.path.insert(0, "site-packages")
 import fastapi
 import uvicorn
 print(f"fastapi=={fastapi.__version__}")
-print(f"uvicorn=={uvicorn.__version__}")
+print(f"uvicorn[standard]=={uvicorn.__version__}")
 PY
     )
 fi
