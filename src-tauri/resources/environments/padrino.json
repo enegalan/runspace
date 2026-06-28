@@ -1,0 +1,50 @@
+{
+  "id": "padrino",
+  "name": "Padrino",
+  "category": "framework",
+  "file_extension": "rb",
+  "install_guide_url": "https://padrinorb.com/guides/getting-started/installation/",
+  "presentation": { "accent": "#cc342d" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "ruby_path",
+      "label": "Ruby binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["ruby"] }
+    },
+    {
+      "key": "bundler_path",
+      "label": "Bundler binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["bundle"] }
+    }
+  ],
+  "run": {
+    "program": "{{ruby_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "padrino",
+    "sync_exclude_dirs": ["vendor"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{bundler_path}}",
+      "args": ["install", "--path", "vendor/bundle", "--without", "development", "test"],
+      "vendor_marker": ".bundle/config",
+      "manifest_files": ["Gemfile", "Gemfile.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.rb",
+    "template": "bundler_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

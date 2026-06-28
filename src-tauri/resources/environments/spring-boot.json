@@ -1,0 +1,57 @@
+{
+  "id": "spring-boot",
+  "name": "Spring Boot",
+  "category": "framework",
+  "file_extension": "java",
+  "install_guide_url": "https://spring.io/guides/gs/spring-boot/",
+  "presentation": { "accent": "#6db33f" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "java_path",
+      "label": "Java binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["java"] }
+    },
+    {
+      "key": "maven_path",
+      "label": "Maven binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["mvn"] }
+    }
+  ],
+  "run": {
+    "program": "{{java_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "spring-boot",
+    "sync_exclude_dirs": ["target"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{maven_path}}",
+      "args": [
+        "-B",
+        "-q",
+        "dependency:go-offline",
+        "dependency:build-classpath",
+        "-Dmdep.includeScope=runtime",
+        "-Dmdep.outputFile=target/runspace-classpath.txt"
+      ],
+      "vendor_marker": "target/runspace-classpath.txt",
+      "manifest_files": ["pom.xml"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.java",
+    "template": "java_spring_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "-version" }
+}
