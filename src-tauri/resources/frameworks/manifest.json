@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "phalcon": {
+      "createProject": "phalcon-kit/app",
+      "versionConstraint": "1.*"
+    },
     "poem": {
       "crate": "poem",
       "version": "3.1.12"

@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PHALCON_SRC="$GEN/phalcon"
 POEM_SRC="$GEN/poem"
 KTOR_SRC="$GEN/ktor"
 ECHO_SRC="$GEN/echo"
@@ -30,6 +31,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
 POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
 KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
 ECHO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/echo"
@@ -57,6 +59,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PHALCON_VERSION="${RUNSPACE_PHALCON_VERSION:-1.*}"
+PHALCON_PROJECT="${RUNSPACE_PHALCON_PROJECT:-phalcon-kit/app}"
 POEM_VERSION="${RUNSPACE_POEM_VERSION:-3.1.12}"
 KTOR_GRADLE_VERSION="${RUNSPACE_KTOR_GRADLE_VERSION:-8.12}"
 ECHO_VERSION="${RUNSPACE_ECHO_VERSION:-v4.13.3}"
@@ -103,6 +107,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+phalcon_ready() {
+    [[ -f "$PHALCON_DEST/composer.lock" ]] &&
+        [[ -f "$PHALCON_DEST/public/index.php" ]] &&
+        [[ -f "$PHALCON_DEST/skeleton.version" ]]
 }
 poem_ready() {
     [[ -f "$POEM_DEST/Cargo.toml" ]] &&
@@ -209,6 +218,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_phalcon=false
 needs_poem=false
 needs_ktor=false
 needs_echo=false
@@ -239,6 +249,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! phalcon_ready; then
+    needs_phalcon=true
 fi
 if force_sync || ! poem_ready; then
     needs_poem=true
@@ -302,7 +315,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -425,6 +438,13 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_phalcon && [[ ! -d "$PHALCON_SRC/vendor" ]]; then
+    echo "Generating Phalcon skeleton..."
+    rm -rf "$PHALCON_SRC"
+    composer create-project "$PHALCON_PROJECT" "$PHALCON_SRC" "$PHALCON_VERSION" \
+        --no-interaction --ignore-platform-reqs
+fi
+
 if $needs_poem && [[ ! -f "$POEM_SRC/Cargo.lock" ]]; then
     echo "Generating Poem skeleton..."
     rm -rf "$POEM_SRC"

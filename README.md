@@ -22,6 +22,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | G++ (C++) | G++ ([Xcode Command Line Tools](https://developer.apple.com/xcode/resources/) on macOS) |
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
+| Phalcon | PHP (with [Phalcon extension](https://docs.phalcon.io/5.9/installation/)) + [Composer](https://getcomposer.org/) |
 | Express | [Node.js](https://nodejs.org/en/download) + npm |
 | Ktor | [Kotlin](https://kotlinlang.org/docs/command-line.html) + [Gradle](https://gradle.org/install/) |
 | Express | [Node.js](https://nodejs.org/en/download) |
@@ -42,6 +43,7 @@ To build or contribute to Runspace from source:
 - Node.js 20+
 - Rust stable
 - Xcode Command Line Tools (macOS)
+- [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Phalcon skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
 - Gradle — generates bundled Ktor skeleton during build (`npm run prepare:frameworks`)
 - npm — generates bundled Express/JHipster skeletons during build (`npm run prepare:frameworks`)
