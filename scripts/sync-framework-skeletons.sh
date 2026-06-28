@@ -10,14 +10,17 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+POEM_SRC="$GEN/poem"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude target/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -164,6 +167,13 @@ CS
         "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
     echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
     synced+=("ASP.NET Core")
+fi
+
+if [[ -f "$POEM_SRC/Cargo.lock" ]]; then
+    mkdir -p "$POEM_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" --exclude .git/ "$POEM_SRC/" "$POEM_DEST/"
+    echo "$SKELETON_VERSION" > "$POEM_DEST/skeleton.version"
+    synced+=("Poem")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
