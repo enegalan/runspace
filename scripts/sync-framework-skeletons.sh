@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+VERTX_SRC="$GEN/vertx"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$VERTX_SRC/pom.xml" ]]; then
+    mkdir -p "$VERTX_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$VERTX_SRC/" "$VERTX_DEST/"
+    echo "$SKELETON_VERSION" > "$VERTX_DEST/skeleton.version"
+    synced+=("Vert.x")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
