@@ -1,6 +1,9 @@
+//go:build ignore
+
 package main
 
 import (
+
 	"io"
 	"os"
 	"os/exec"
@@ -9,13 +12,60 @@ import (
 
 func main() {
 	skeletonRoot := "{{skeleton_root}}"
+	entryFile := "{{entry_file}}"
+
+	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryFile)
+
+	cmd := exec.Command("{{go_path}}", "run", "-mod=vendor", entryFile)
+	cmd.Env = append(os.Environ(), "GOMOD="+skeletonRoot+"/go.mod")
 	entryPath := "{{entry_file}}"
 	workspacePath := "{{workspace_path}}"
 	goPath := "{{go_path}}"
 
-	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
 	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
+	skeletonRoot := `{{skeleton_root}}`
+	entryFile := `{{entry_file}}`
+	workspacePath := `{{workspace_path}}`
+
 	os.Setenv("RUNSPACE_WORKSPACE", workspacePath)
+
+	modfile := filepath.Join(skeletonRoot, "go.mod")
+	cmd := exec.Command(`{{go_path}}`, "run", "-modfile", modfile, entryFile)
+	cmd.Dir = workspacePath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	skeletonRoot := "{{skeleton_root}}"
+	entryFile := "{{entry_file}}"
+	goBin := "{{go_path}}"
+	modfile := filepath.Join(skeletonRoot, "go.mod")
+
+	cmd := exec.Command(goBin, "run", "-mod=vendor", "-modfile", modfile, entryFile)
+	cmd.Dir = skeletonRoot
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	entryPath := "{{entry_file}}"
+	workspacePath := "{{workspace_path}}"
+	goBinary := "{{go_path}}"
+
+	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryFile)
+	os.Setenv("RUNSPACE_WORKSPACE", workspacePath)
+	os.Setenv("GOMOD", filepath.Join(skeletonRoot, "go.mod"))
+	os.Setenv("GOFLAGS", "-mod=vendor")
+
+	cmd := exec.Command(goBinary, "run", entryFile)
+	cmd.Dir = workspacePath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	entryPath := "{{entry_file}}"
+	goPath := "{{go_path}}"
+
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
 
 	if err := syncModuleFiles(skeletonRoot, workspacePath); err != nil {
 		os.Exit(1)
@@ -50,23 +100,20 @@ func main() {
 		"{{entry_file}}",
 	)
 	cmd.Dir = "{{workspace_path}}"
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
 	skeletonRoot := `{{skeleton_root}}`
 	entryPath := `{{entry_file}}`
 	goPath := `{{go_path}}`
 
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
 
 	cmd := exec.Command(goPath, "run", "-mod=vendor", entryPath)
-	cmd.Dir = skeletonRoot
-	cmd.Env = os.Environ()
 
 	if err := cmd.Run(); err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			os.Exit(exitErr.ExitCode())
 		}
 		os.Exit(1)
+		panic(err)
 	}
 }
 
