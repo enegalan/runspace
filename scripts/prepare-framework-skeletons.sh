@@ -128,7 +128,15 @@ fi
 if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
     echo "Generating Rails skeleton..."
     rm -rf "$RAILS_SRC"
-    rails new "$RAILS_SRC" \
+
+    # Install specific Rails version if not already available
+    if ! gem list -i "^rails$" -v "$RAILS_VERSION" >/dev/null 2>&1; then
+        echo "Installing Rails ${RAILS_VERSION}..."
+        gem install rails -v "$RAILS_VERSION" --no-document
+    fi
+
+    # Use the specific Rails version to generate the skeleton
+    gem exec -v "$RAILS_VERSION" rails new "$RAILS_SRC" \
         --skip-git \
         --database=sqlite3 \
         --skip-test \

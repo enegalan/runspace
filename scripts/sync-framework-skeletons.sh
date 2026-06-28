@@ -23,6 +23,7 @@ RSYNC_EXCLUDES=(
     --exclude database/database.sqlite
     --exclude db/*.sqlite3
     --exclude bootstrap/cache/*.php
+    --exclude config/master.key
     --exclude log/
     --exclude tmp/
     --exclude storage/logs/

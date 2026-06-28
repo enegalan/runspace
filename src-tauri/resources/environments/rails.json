@@ -19,7 +19,7 @@
       "key": "bundle_path",
       "label": "Bundler binary (skeleton install)",
       "field_type": "file_path",
-      "required": false,
+      "required": true,
       "detect": { "commands": ["bundle"] }
     }
   ],
