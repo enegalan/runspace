@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "actix-web": {
+      "cargoPackage": "actix-web",
+      "versionConstraint": "4"
+    },
     "buffalo": {
       "module": "github.com/runspace/buffalo-sandbox",
       "versionConstraint": "v1.1.4"

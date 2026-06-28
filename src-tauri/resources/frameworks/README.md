@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `actix-web/` — copied to `~/.runspace/frameworks/actix-web/` on first use
 - `buffalo/` — copied to `~/.runspace/frameworks/buffalo/` on first use
 - `django/` — copied to `~/.runspace/frameworks/django/` on first use
 - `play/` — copied to `~/.runspace/frameworks/play/` on first use
