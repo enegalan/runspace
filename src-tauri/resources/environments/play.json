@@ -1,0 +1,50 @@
+{
+  "id": "play",
+  "name": "Play Framework",
+  "category": "framework",
+  "file_extension": "scala",
+  "install_guide_url": "https://www.playframework.com/get-started",
+  "presentation": { "accent": "#92C83E" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "scala_path",
+      "label": "Scala binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["scala"] }
+    },
+    {
+      "key": "sbt_path",
+      "label": "sbt binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["sbt"] }
+    }
+  ],
+  "run": {
+    "program": "{{scala_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "play",
+    "sync_exclude_dirs": ["target", "project/target"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{sbt_path}}",
+      "args": ["-batch", "update", "compile", "exportRunspaceClasspath"],
+      "vendor_marker": "target/runspace-classpath",
+      "manifest_files": ["build.sbt", "project/build.properties", "project/plugins.sbt"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.scala",
+    "template": "sbt_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
