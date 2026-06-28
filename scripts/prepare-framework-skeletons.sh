@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+NUXT_SRC="$GEN/nuxt"
 RAILS_SRC="$GEN/rails"
 SINATRA_SRC="$GEN/sinatra"
 PADRINO_SRC="$GEN/padrino"
@@ -47,6 +48,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
 RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
 SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
 PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
@@ -91,6 +93,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+NUXT_VERSION="${RUNSPACE_NUXT_VERSION:-^3.0.0}"
 RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
 SINATRA_VERSION="${RUNSPACE_SINATRA_VERSION:-~> 4.0}"
 PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
@@ -156,6 +159,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+nuxt_ready() {
+    [[ -f "$NUXT_DEST/package.json" ]] &&
+        [[ -f "$NUXT_DEST/package-lock.json" ]] &&
+        [[ -f "$NUXT_DEST/skeleton.version" ]]
 }
 rails_ready() {
     [[ -f "$RAILS_DEST/Gemfile" ]] &&
@@ -336,6 +344,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_nuxt=false
 needs_rails=false
 needs_sinatra=false
 needs_padrino=false
@@ -383,6 +392,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! nuxt_ready; then
+    needs_nuxt=true
 fi
 if force_sync || ! rails_ready; then
     needs_rails=true
@@ -491,7 +503,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -524,6 +536,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_nuxt && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Nuxt skeleton." >&2
+    exit 1
+fi
+
 if $needs_rails && ! command -v rails >/dev/null 2>&1; then
     echo "Rails is required to prepare the Rails skeleton." >&2
     echo "Install Ruby, Bundler, and Rails, then run:" >&2
@@ -678,6 +695,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_nuxt && [[ ! -d "$NUXT_SRC/node_modules" ]]; then
+    echo "Generating Nuxt skeleton..."
+    rm -rf "$NUXT_SRC"
+    mkdir -p "$NUXT_SRC"
+    (
+        cd "$NUXT_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/nuxt-sandbox"
+        npm pkg set description="Internal Nuxt sandbox for Runspace"
+        npm pkg set private=true
+        npm install "nuxt@${NUXT_VERSION}" --save
+    )
+fi
+
 if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
     echo "Generating Rails skeleton..."
     rm -rf "$RAILS_SRC"
