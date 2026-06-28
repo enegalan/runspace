@@ -14,6 +14,12 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "nancy": {
+      "dotnetTemplate": "web",
+      "nancyVersion": "2.0.0",
+      "owinVersion": "3.1.2",
+      "roslynVersion": "4.14.0"
+    },
     "flutter": {
       "projectName": "runspace_flutter_sandbox",
       "template": "app"

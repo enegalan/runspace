@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+NANCY_SRC="$GEN/nancy"
 FLUTTER_SRC="$GEN/flutter"
 EXPO_SRC="$GEN/expo"
 GORILLA_MUX_SRC="$GEN/gorilla-mux"
@@ -25,6 +26,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
 FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
 EXPO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/expo"
 GORILLA_MUX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gorilla-mux"
@@ -47,6 +49,9 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+NANCY_ROSLYN_VERSION="${RUNSPACE_NANCY_ROSLYN_VERSION:-4.14.0}"
+NANCY_OWIN_VERSION="${RUNSPACE_NANCY_OWIN_VERSION:-3.1.2}"
+NANCY_VERSION="${RUNSPACE_NANCY_VERSION:-2.0.0}"
 FLUTTER_PROJECT="${RUNSPACE_FLUTTER_PROJECT:-runspace_flutter_sandbox}"
 EXPO_VERSION="${RUNSPACE_EXPO_VERSION:-^52.0.0}"
 GORILLA_MUX_VERSION="${RUNSPACE_GORILLA_MUX_VERSION:-v1.8.1}"
@@ -85,6 +90,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+nancy_ready() {
+    [[ -f "$NANCY_DEST/RunspaceNancySandbox.csproj" ]] &&
+        [[ -f "$NANCY_DEST/Program.cs" ]] &&
+        [[ -f "$NANCY_DEST/skeleton.version" ]]
 }
 flutter_ready() {
     [[ -f "$FLUTTER_DEST/pubspec.yaml" ]] &&
@@ -171,6 +181,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_nancy=false
 needs_flutter=false
 needs_expo=false
 needs_gorilla-mux=false
@@ -196,6 +207,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! nancy_ready; then
+    needs_nancy=true
 fi
 if force_sync || ! flutter_ready; then
     needs_flutter=true
@@ -247,7 +261,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -280,6 +294,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_nancy && ! command -v dotnet >/dev/null 2>&1; then
+    echo "The .NET SDK is required to prepare the Nancy skeleton." >&2
+    exit 1
+fi
+
 if $needs_flutter && ! command -v flutter >/dev/null 2>&1; then
     echo "Flutter is required to prepare the Flutter skeleton." >&2
     exit 1
@@ -350,6 +369,69 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_nancy && [[ ! -f "$NANCY_SRC/obj/project.assets.json" ]]; then
+    echo "Generating Nancy skeleton..."
+    rm -rf "$NANCY_SRC"
+    mkdir -p "$NANCY_SRC"
+    (
+        cd "$NANCY_SRC"
+        dotnet new web -n RunspaceNancySandbox -o . --force
+        dotnet add package Nancy --version "${NANCY_VERSION}"
+        dotnet add package Microsoft.AspNetCore.Owin --version "${NANCY_OWIN_VERSION}"
+        dotnet add package Microsoft.CodeAnalysis.CSharp --version "${NANCY_ROSLYN_VERSION}"
+        cat > Program.cs <<'EOF'
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Nancy.Owin;
+
+var entryPath = Environment.GetEnvironmentVariable("RUNSPACE_ENTRY_PATH");
+if (!string.IsNullOrWhiteSpace(entryPath) && File.Exists(entryPath))
+{
+    var refs = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
+        ?.Split(Path.PathSeparator)
+        .Select(path => MetadataReference.CreateFromFile(path))
+        .Cast<MetadataReference>()
+        .ToArray() ?? Array.Empty<MetadataReference>();
+
+    var compilation = CSharpCompilation.Create(
+        $"RunspaceEntry_{Guid.NewGuid():N}",
+        new[] { CSharpSyntaxTree.ParseText(File.ReadAllText(entryPath), path: entryPath) },
+        refs,
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    using var ms = new MemoryStream();
+    var emit = compilation.Emit(ms);
+    if (!emit.Success)
+    {
+        foreach (var diagnostic in emit.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))
+        {
+            Console.Error.WriteLine(diagnostic);
+        }
+
+        Environment.Exit(1);
+    }
+
+    ms.Position = 0;
+    AssemblyLoadContext.Default.LoadFromStream(ms);
+}
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.AllowSynchronousIO = true;
+});
+var app = builder.Build();
+app.UseOwin(pipeline => pipeline.UseNancy());
+app.Run();
+EOF
+        dotnet restore
+    )
+fi
+
 if $needs_flutter && [[ ! -f "$FLUTTER_SRC/lib/main.dart" ]]; then
     echo "Generating Flutter skeleton..."
     rm -rf "$FLUTTER_SRC"
