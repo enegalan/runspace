@@ -18,6 +18,65 @@
       "hanamiVersion": "2.2.*",
       "database": "sqlite"
     },
+    "padrino": {
+      "gemPackage": "padrino",
+      "versionConstraint": ">= 0.15.0"
+    },
+    "cowboy": {
+      "rebarPackage": "cowboy",
+      "versionConstraint": "2.13.0"
+    },
+    "aspnet-core": {
+      "dotnetTemplate": "web",
+      "projectName": "RunspaceAspNetSandbox",
+      "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting"
+    },
+    "chi": {
+      "goModule": "github.com/go-chi/chi/v5",
+      "versionConstraint": "v5.2.1"
+    },
+    "yii": {
+      "createProject": "yiisoft/yii2-app-basic",
+      "versionConstraint": "2.0.*"
+    },
+    "react-native": {
+      "npmPackage": "react-native",
+      "versionConstraint": "^0.79.0"
+    },
+    "meteor": {
+      "npmPackage": "meteor",
+      "versionConstraint": "^3.4.0"
+    },
+    "quarkus": {
+      "groupId": "com.runspace",
+      "artifactId": "sandbox",
+      "extensions": "io.quarkus:quarkus-rest"
+    },
+    "astro": {
+      "npmPackage": "astro",
+      "versionConstraint": "^5.0.0"
+    },
+    "axum": {
+      "cargoPackage": "axum",
+      "versionConstraint": "0.8"
+    },
+    "roda": {
+      "gem": "roda",
+      "versionConstraint": "~> 3.87"
+    },
+    "remix": {
+      "npmPackage": "@remix-run/node",
+      "versionConstraint": "^2.17.0"
+    },
+    "sveltekit": {
+      "createTool": "sv",
+      "template": "minimal",
+      "types": "ts"
+    },
+    "fastapi": {
+      "pipPackage": "fastapi",
+      "extraPackages": ["uvicorn[standard]"]
+    },
     "phalcon": {
       "createProject": "phalcon-kit/app",
       "versionConstraint": "1.*"
