@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+REMIX_SRC="$GEN/remix"
 SVELTEKIT_SRC="$GEN/sveltekit"
 FASTAPI_SRC="$GEN/fastapi"
 PHALCON_SRC="$GEN/phalcon"
@@ -33,6 +34,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
 SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
 FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
 PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
@@ -63,6 +65,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+REMIX_VERSION="${RUNSPACE_REMIX_VERSION:-^2.17.0}"
 PHALCON_VERSION="${RUNSPACE_PHALCON_VERSION:-1.*}"
 PHALCON_PROJECT="${RUNSPACE_PHALCON_PROJECT:-phalcon-kit/app}"
 POEM_VERSION="${RUNSPACE_POEM_VERSION:-3.1.12}"
@@ -111,6 +114,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+remix_ready() {
+    [[ -f "$REMIX_DEST/package.json" ]] &&
+        [[ -f "$REMIX_DEST/package-lock.json" ]] &&
+        [[ -f "$REMIX_DEST/skeleton.version" ]]
 }
 sveltekit_ready() {
     [[ -f "$SVELTEKIT_DEST/package.json" ]] &&
@@ -231,6 +239,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_remix=false
 needs_sveltekit=false
 needs_fastapi=false
 needs_phalcon=false
@@ -264,6 +273,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! remix_ready; then
+    needs_remix=true
 fi
 if force_sync || ! sveltekit_ready; then
     needs_sveltekit=true
@@ -336,7 +348,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -469,6 +481,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_remix && [[ ! -d "$REMIX_SRC/node_modules" ]]; then
+    echo "Generating Remix skeleton..."
+    rm -rf "$REMIX_SRC"
+    mkdir -p "$REMIX_SRC"
+    (
+        cd "$REMIX_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/remix-sandbox"
+        npm pkg set description="Internal Remix sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@remix-run/node@${REMIX_VERSION}" "@remix-run/react@${REMIX_VERSION}" react react-dom --save
+    )
+fi
+
 if $needs_sveltekit && [[ ! -d "$SVELTEKIT_SRC/node_modules" ]]; then
     echo "Generating SvelteKit skeleton..."
     rm -rf "$SVELTEKIT_SRC"
