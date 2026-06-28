@@ -22,6 +22,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | G++ (C++) | G++ ([Xcode Command Line Tools](https://developer.apple.com/xcode/resources/) on macOS) |
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
+| Slim | PHP + [Composer](https://getcomposer.org/) |
 
 You only install the runtimes for the environments you use. Node.js is not required to run PHP, and so on.
 
@@ -32,7 +33,7 @@ To build or contribute to Runspace from source:
 - Node.js 20+
 - Rust stable
 - Xcode Command Line Tools (macOS)
-- [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
+- [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Slim skeletons during build (`npm run prepare:frameworks`)
 
 ## Development
 
@@ -60,7 +61,7 @@ Run tests:
 npm test
 ```
 
-Generate Laravel/Symfony skeletons manually (first clone or after bumping `manifest.json`):
+Generate Laravel/Symfony/Slim skeletons manually (first clone or after bumping `manifest.json`):
 
 ```bash
 npm run prepare:frameworks

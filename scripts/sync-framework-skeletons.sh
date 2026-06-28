@@ -8,9 +8,11 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
+SLIM_SRC="$GEN/slim"
 EXPRESS_SRC="$GEN/express"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
+SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 
 RSYNC_EXCLUDES=(
@@ -26,6 +28,7 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude logs/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -98,6 +101,29 @@ PY
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
     echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
     synced+=("Symfony")
+fi
+
+if [[ -d "$SLIM_SRC/vendor" ]]; then
+    mkdir -p "$SLIM_DEST"
+
+    python3 - <<'PY' "$SLIM_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/slim-sandbox"
+data["description"] = "Internal Slim sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Slim composer.lock after manifest edits..."
+    (cd "$SLIM_SRC" && composer update --lock --no-install --no-interaction)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SLIM_SRC/" "$SLIM_DEST/"
+    echo "$SKELETON_VERSION" > "$SLIM_DEST/skeleton.version"
+    synced+=("Slim")
 fi
 
 if [[ -d "$EXPRESS_SRC/node_modules" ]]; then

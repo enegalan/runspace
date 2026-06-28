@@ -10,6 +10,10 @@
       "versionConstraint": "7.4.*",
       "extraPackages": ["webapp"]
     },
+    "slim": {
+      "createProject": "slim/slim-skeleton",
+      "versionConstraint": "4.*"
+    },
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
