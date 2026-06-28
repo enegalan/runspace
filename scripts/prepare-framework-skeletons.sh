@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SALVO_SRC="$GEN/salvo"
 BEEGO_SRC="$GEN/beego"
 FIBER_SRC="$GEN/fiber"
 DROPWIZARD_SRC="$GEN/dropwizard"
@@ -72,6 +73,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SALVO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/salvo"
 BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
 FIBER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fiber"
 DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
@@ -141,6 +143,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+SALVO_VERSION="${RUNSPACE_SALVO_VERSION:-0.93}"
 BEEGO_VERSION="${RUNSPACE_BEEGO_VERSION:-v2.3.8}"
 BEEGO_MODULE="${RUNSPACE_BEEGO_MODULE:-github.com/beego/beego/v2}"
 FIBER_MODULE="${RUNSPACE_FIBER_MODULE:-github.com/gofiber/fiber/v2}"
@@ -239,6 +242,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+salvo_ready() {
+    [[ -f "$SALVO_DEST/Cargo.toml" ]] &&
+        [[ -f "$SALVO_DEST/Cargo.lock" ]] &&
+        [[ -f "$SALVO_DEST/skeleton.version" ]]
 }
 beego_ready() {
     [[ -f "$BEEGO_DEST/go.mod" ]] &&
@@ -534,6 +542,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_salvo=false
 needs_beego=false
 needs_fiber=false
 needs_dropwizard=false
@@ -606,6 +615,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! salvo_ready; then
+    needs_salvo=true
 fi
 if force_sync || ! beego_ready; then
     needs_beego=true
@@ -786,7 +798,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -819,6 +831,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_salvo && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Salvo skeleton." >&2
+    exit 1
+fi
+
 if $needs_beego && ! command -v go >/dev/null 2>&1; then
     echo "Go is required to prepare the Beego skeleton." >&2
     exit 1
@@ -1063,6 +1080,51 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_salvo && [[ ! -f "$SALVO_SRC/Cargo.lock" ]]; then
+    echo "Generating Salvo skeleton..."
+    rm -rf "$SALVO_SRC"
+    mkdir -p "$SALVO_SRC/src/bin"
+    cat > "$SALVO_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-salvo-sandbox"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Internal Salvo sandbox for Runspace"
+
+[dependencies]
+salvo = "${SALVO_VERSION}"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+
+[[bin]]
+name = "runspace-entry"
+path = "src/bin/runspace_entry.rs"
+EOF
+    cat > "$SALVO_SRC/build.rs" <<'EOF'
+fn main() {
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+        format!("{manifest_dir}/src/stub_entry.rs")
+    });
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    println!("cargo:rustc-env=RUNSPACE_ENTRY_PATH={entry}");
+}
+EOF
+    cat > "$SALVO_SRC/src/stub_entry.rs" <<'EOF'
+fn main() {
+    println!("Runspace Salvo sandbox");
+}
+EOF
+    cat > "$SALVO_SRC/src/bin/runspace_entry.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY_PATH"));
+EOF
+    (
+        cd "$SALVO_SRC"
+        cargo fetch --locked 2>/dev/null || cargo fetch
+        RUNSPACE_ENTRY_PATH="$SALVO_SRC/src/stub_entry.rs" cargo build --quiet --bin runspace-entry
+    )
+fi
+
 if $needs_beego && [[ ! -d "$BEEGO_SRC/vendor" ]]; then
     echo "Generating Beego skeleton..."
     rm -rf "$BEEGO_SRC"
