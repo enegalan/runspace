@@ -1,5 +1,5 @@
 {
-  "skeletonVersion": "4",
+  "skeletonVersion": "5",
   "frameworks": {
     "laravel": {
       "createProject": "laravel/laravel",
@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "qwik": {
+      "npmPackage": "@builder.io/qwik",
+      "versionConstraint": "^1.20.0"
     }
   }
 }
