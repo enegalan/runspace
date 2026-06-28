@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "dash": {
+      "pipPackage": "dash",
+      "versionConstraint": "4.3.*"
+    },
     "tornado": {
       "pipPackage": "tornado",
       "versionConstraint": "==6.4.2"
