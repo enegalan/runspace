@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "hanami": {
+      "hanamiVersion": "2.2.*",
+      "database": "sqlite"
+    },
     "blazor": {
       "dotnetTemplate": "blazor",
       "projectName": "RunspaceBlazorSandbox"

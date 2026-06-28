@@ -25,6 +25,8 @@ jobs:
           dotnet-version: "10.0.x"
       - uses: ruby/setup-ruby@v1
           ruby-version: "3.3"
+          bundler: default
+      - run: gem install hanami
           bundler-cache: false
       - run: gem install padrino --no-document
       - uses: erlef/setup-beam@v1
