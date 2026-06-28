@@ -7,6 +7,21 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 NUXT_SRC="$GEN/nuxt"
+RAILS_SRC="$GEN/rails"
+SINATRA_SRC="$GEN/sinatra"
+PADRINO_SRC="$GEN/padrino"
+COWBOY_SRC="$GEN/cowboy"
+ASPNET_CORE_SRC="$GEN/aspnet-core"
+CHI_SRC="$GEN/chi"
+YII_SRC="$GEN/yii"
+REACT_NATIVE_SRC="$GEN/react-native"
+METEOR_SRC="$GEN/meteor"
+QUARKUS_SRC="$GEN/quarkus"
+ASTRO_SRC="$GEN/astro"
+AXUM_SRC="$GEN/axum"
+RODA_SRC="$GEN/roda"
+REMIX_SRC="$GEN/remix"
+SVELTEKIT_SRC="$GEN/sveltekit"
 FASTAPI_SRC="$GEN/fastapi"
 PHALCON_SRC="$GEN/phalcon"
 POEM_SRC="$GEN/poem"
@@ -34,6 +49,21 @@ LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
+RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
+SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
+PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
+COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
+ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
+YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
+REACT_NATIVE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/react-native"
+METEOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/meteor"
+QUARKUS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quarkus"
+ASTRO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/astro"
+AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
+RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
+REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
+SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
 FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
 PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
 POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
@@ -64,6 +94,23 @@ SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
 NUXT_VERSION="${RUNSPACE_NUXT_VERSION:-^3.0.0}"
+RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
+SINATRA_VERSION="${RUNSPACE_SINATRA_VERSION:-~> 4.0}"
+PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
+PADRINO_GEM_VERSION="${RUNSPACE_PADRINO_GEM_VERSION:->= 0.15.0}"
+COWBOY_VERSION="${RUNSPACE_COWBOY_VERSION:-2.13.0}"
+ASPNET_CORE_PROJECT="${RUNSPACE_ASPNET_CORE_PROJECT:-RunspaceAspNetSandbox}"
+ASPNET_CORE_SCRIPTING_PACKAGE="${RUNSPACE_ASPNET_CORE_SCRIPTING_PACKAGE:-Microsoft.CodeAnalysis.CSharp.Scripting}"
+CHI_MODULE="${RUNSPACE_CHI_MODULE:-github.com/go-chi/chi/v5}"
+CHI_VERSION="${RUNSPACE_CHI_VERSION:-v5.2.1}"
+YII_PROJECT="${RUNSPACE_YII_PROJECT:-yiisoft/yii2-app-basic}"
+YII_VERSION="${RUNSPACE_YII_VERSION:-2.0.*}"
+REACT_NATIVE_VERSION="${RUNSPACE_REACT_NATIVE_VERSION:-^0.79.0}"
+METEOR_VERSION="${RUNSPACE_METEOR_VERSION:-^3.4.0}"
+ASTRO_VERSION="${RUNSPACE_ASTRO_VERSION:-^5.0.0}"
+AXUM_VERSION="${RUNSPACE_AXUM_VERSION:-0.8}"
+RODA_VERSION="${RUNSPACE_RODA_VERSION:-~> 3.87}"
+REMIX_VERSION="${RUNSPACE_REMIX_VERSION:-^2.17.0}"
 PHALCON_VERSION="${RUNSPACE_PHALCON_VERSION:-1.*}"
 PHALCON_PROJECT="${RUNSPACE_PHALCON_PROJECT:-phalcon-kit/app}"
 POEM_VERSION="${RUNSPACE_POEM_VERSION:-3.1.12}"
@@ -117,6 +164,71 @@ nuxt_ready() {
     [[ -f "$NUXT_DEST/package.json" ]] &&
         [[ -f "$NUXT_DEST/package-lock.json" ]] &&
         [[ -f "$NUXT_DEST/skeleton.version" ]]
+}
+rails_ready() {
+    [[ -f "$RAILS_DEST/Gemfile" ]] &&
+        [[ -f "$RAILS_DEST/Gemfile.lock" ]] &&
+        [[ -f "$RAILS_DEST/bin/rails" ]] &&
+        [[ -f "$RAILS_DEST/skeleton.version" ]]
+}
+sinatra_ready() {
+    [[ -f "$SINATRA_DEST/Gemfile" ]] &&
+        [[ -f "$SINATRA_DEST/Gemfile.lock" ]] &&
+        [[ -f "$SINATRA_DEST/skeleton.version" ]]
+}
+padrino_ready() {
+    [[ -f "$PADRINO_DEST/Gemfile.lock" ]] &&
+        [[ -f "$PADRINO_DEST/config/apps.rb" ]] &&
+        [[ -f "$PADRINO_DEST/skeleton.version" ]]
+}
+cowboy_ready() {
+    [[ -f "$COWBOY_DEST/rebar.config" ]] &&
+        [[ -f "$COWBOY_DEST/rebar.lock" ]] &&
+        [[ -f "$COWBOY_DEST/skeleton.version" ]]
+}
+chi_ready() {
+    [[ -f "$CHI_DEST/go.mod" ]] &&
+        [[ -f "$CHI_DEST/go.sum" ]] &&
+        [[ -f "$CHI_DEST/skeleton.version" ]]
+}
+yii_ready() {
+    [[ -f "$YII_DEST/yii" ]] &&
+        [[ -f "$YII_DEST/composer.lock" ]] &&
+        [[ -f "$YII_DEST/skeleton.version" ]]
+}
+meteor_ready() {
+    [[ -f "$METEOR_DEST/package.json" ]] &&
+        [[ -f "$METEOR_DEST/package-lock.json" ]] &&
+        [[ -f "$METEOR_DEST/skeleton.version" ]]
+}
+quarkus_ready() {
+    [[ -f "$QUARKUS_DEST/pom.xml" ]] &&
+        [[ -f "$QUARKUS_DEST/skeleton.version" ]]
+}
+astro_ready() {
+    [[ -f "$ASTRO_DEST/package.json" ]] &&
+        [[ -f "$ASTRO_DEST/package-lock.json" ]] &&
+        [[ -f "$ASTRO_DEST/skeleton.version" ]]
+}
+axum_ready() {
+    [[ -f "$AXUM_DEST/Cargo.toml" ]] &&
+        [[ -f "$AXUM_DEST/Cargo.lock" ]] &&
+        [[ -f "$AXUM_DEST/skeleton.version" ]]
+}
+roda_ready() {
+    [[ -f "$RODA_DEST/Gemfile" ]] &&
+        [[ -f "$RODA_DEST/Gemfile.lock" ]] &&
+        [[ -f "$RODA_DEST/skeleton.version" ]]
+}
+remix_ready() {
+    [[ -f "$REMIX_DEST/package.json" ]] &&
+        [[ -f "$REMIX_DEST/package-lock.json" ]] &&
+        [[ -f "$REMIX_DEST/skeleton.version" ]]
+}
+sveltekit_ready() {
+    [[ -f "$SVELTEKIT_DEST/package.json" ]] &&
+        [[ -f "$SVELTEKIT_DEST/package-lock.json" ]] &&
+        [[ -f "$SVELTEKIT_DEST/skeleton.version" ]]
 }
 fastapi_ready() {
     [[ -f "$FASTAPI_DEST/requirements.txt" ]] &&
@@ -233,6 +345,21 @@ needs_laravel=false
 needs_symfony=false
 needs_express=false
 needs_nuxt=false
+needs_rails=false
+needs_sinatra=false
+needs_padrino=false
+needs_cowboy=false
+needs_aspnet-core=false
+needs_chi=false
+needs_yii=false
+needs_react-native=false
+needs_meteor=false
+needs_quarkus=false
+needs_astro=false
+needs_axum=false
+needs_roda=false
+needs_remix=false
+needs_sveltekit=false
 needs_fastapi=false
 needs_phalcon=false
 needs_poem=false
@@ -268,6 +395,45 @@ if force_sync || ! express_ready; then
 fi
 if force_sync || ! nuxt_ready; then
     needs_nuxt=true
+fi
+if force_sync || ! rails_ready; then
+    needs_rails=true
+fi
+if force_sync || ! sinatra_ready; then
+    needs_sinatra=true
+fi
+if force_sync || ! padrino_ready; then
+    needs_padrino=true
+fi
+if force_sync || ! cowboy_ready; then
+    needs_cowboy=true
+fi
+if force_sync || ! chi_ready; then
+    needs_chi=true
+fi
+if force_sync || ! yii_ready; then
+    needs_yii=true
+fi
+if force_sync || ! meteor_ready; then
+    needs_meteor=true
+fi
+if force_sync || ! quarkus_ready; then
+    needs_quarkus=true
+fi
+if force_sync || ! astro_ready; then
+    needs_astro=true
+fi
+if force_sync || ! axum_ready; then
+    needs_axum=true
+fi
+if force_sync || ! roda_ready; then
+    needs_roda=true
+fi
+if force_sync || ! remix_ready; then
+    needs_remix=true
+fi
+if force_sync || ! sveltekit_ready; then
+    needs_sveltekit=true
 fi
 if force_sync || ! fastapi_ready; then
     needs_fastapi=true
@@ -337,7 +503,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_nuxt; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -372,6 +538,65 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
 fi
 if $needs_nuxt && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Nuxt skeleton." >&2
+    exit 1
+fi
+
+if $needs_rails && ! command -v rails >/dev/null 2>&1; then
+    echo "Rails is required to prepare the Rails skeleton." >&2
+    echo "Install Ruby, Bundler, and Rails, then run:" >&2
+    echo "  gem install rails bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_sinatra && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Sinatra skeleton." >&2
+    echo "Install Ruby and Bundler, then run:" >&2
+    echo "  gem install bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_padrino && ! command -v ruby >/dev/null 2>&1; then
+    echo "Ruby is required to prepare the Padrino skeleton." >&2
+    exit 1
+fi
+
+if $needs_cowboy && ! command -v rebar3 >/dev/null 2>&1; then
+    echo "rebar3 is required to prepare the Cowboy skeleton." >&2
+    exit 1
+fi
+
+if $needs_chi && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Chi skeleton." >&2
+    exit 1
+fi
+
+if $needs_quarkus && ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to prepare the Quarkus skeleton." >&2
+    exit 1
+fi
+
+if $needs_astro && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Astro skeleton." >&2
+    exit 1
+fi
+
+if $needs_axum && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Axum skeleton." >&2
+    exit 1
+fi
+
+if $needs_roda && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Roda skeleton." >&2
+    echo "Install Ruby and Bundler, then run:" >&2
+    echo "  gem install bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_sveltekit && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the SvelteKit skeleton." >&2
     exit 1
 fi
 
@@ -481,6 +706,209 @@ if $needs_nuxt && [[ ! -d "$NUXT_SRC/node_modules" ]]; then
         npm pkg set description="Internal Nuxt sandbox for Runspace"
         npm pkg set private=true
         npm install "nuxt@${NUXT_VERSION}" --save
+    )
+fi
+
+if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
+    echo "Generating Rails skeleton..."
+    rm -rf "$RAILS_SRC"
+
+    # Install specific Rails version if not already available
+    if ! gem list -i "^rails$" -v "$RAILS_VERSION" >/dev/null 2>&1; then
+        echo "Installing Rails ${RAILS_VERSION}..."
+        gem install rails -v "$RAILS_VERSION" --no-document
+    fi
+
+if $needs_sinatra && [[ ! -f "$SINATRA_SRC/.bundle/config" ]]; then
+    echo "Generating Sinatra skeleton..."
+    rm -rf "$SINATRA_SRC"
+    mkdir -p "$SINATRA_SRC"
+    (
+        cd "$SINATRA_SRC"
+        bundle init
+        bundle add "sinatra" --version "$SINATRA_VERSION"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
+    )
+fi
+
+if $needs_padrino && [[ ! -f "$PADRINO_SRC/Gemfile.lock" ]]; then
+    echo "Generating Padrino skeleton..."
+    rm -rf "$PADRINO_SRC" "$GEN/$PADRINO_PROJECT"
+    (
+        cd "$GEN"
+        padrino g project "$PADRINO_PROJECT" -b -i -a sqlite -d activerecord
+    )
+    mv "$GEN/$PADRINO_PROJECT" "$PADRINO_SRC"
+fi
+
+if $needs_cowboy && [[ ! -f "$COWBOY_SRC/_build/default/lib/cowboy/ebin/cowboy.app" ]]; then
+    echo "Generating Cowboy skeleton..."
+    rm -rf "$COWBOY_SRC"
+    mkdir -p "$COWBOY_SRC"
+    cat > "$COWBOY_SRC/rebar.config" <<EOF
+{erl_opts, [debug_info]}.
+{deps, [
+    {cowboy, "$COWBOY_VERSION"}
+]}.
+EOF
+    (cd "$COWBOY_SRC" && rebar3 compile)
+fi
+
+if $needs_chi && [[ ! -f "$CHI_SRC/go.sum" ]]; then
+    echo "Generating Chi skeleton..."
+    rm -rf "$CHI_SRC"
+    mkdir -p "$CHI_SRC"
+    (
+        cd "$CHI_SRC"
+        go mod init github.com/runspace/chi-sandbox
+        go get "${CHI_MODULE}@${CHI_VERSION}"
+        go mod tidy
+        go mod vendor
+    )
+fi
+
+if $needs_yii && [[ ! -d "$YII_SRC/vendor" ]]; then
+    echo "Generating Yii skeleton..."
+    rm -rf "$YII_SRC"
+    composer create-project "$YII_PROJECT" "$YII_SRC" "$YII_VERSION" --no-interaction
+fi
+
+if $needs_meteor && [[ ! -d "$METEOR_SRC/node_modules" ]]; then
+    echo "Generating Meteor skeleton..."
+    rm -rf "$METEOR_SRC"
+    mkdir -p "$METEOR_SRC"
+    (
+        cd "$METEOR_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/meteor-sandbox"
+        npm pkg set description="Internal Meteor sandbox for Runspace"
+        npm pkg set private=true
+        npm install "meteor@${METEOR_VERSION}" --save
+    )
+fi
+
+if $needs_quarkus && [[ ! -f "$QUARKUS_SRC/pom.xml" ]]; then
+    echo "Generating Quarkus skeleton..."
+    rm -rf "$QUARKUS_SRC"
+    mkdir -p "$QUARKUS_SRC"
+    curl -sSfLo "$GEN/quarkus.zip" \
+        "https://code.quarkus.io/api/download" \
+        -G \
+        --data-urlencode "g=${QUARKUS_GROUP_ID}" \
+        --data-urlencode "a=${QUARKUS_ARTIFACT_ID}" \
+        --data-urlencode "e=${QUARKUS_EXTENSIONS}"
+    unzip -q "$GEN/quarkus.zip" -d "$QUARKUS_SRC"
+    rm -f "$GEN/quarkus.zip"
+fi
+
+if $needs_astro && [[ ! -d "$ASTRO_SRC/node_modules" ]]; then
+    echo "Generating Astro skeleton..."
+    rm -rf "$ASTRO_SRC"
+    mkdir -p "$ASTRO_SRC"
+    (
+        cd "$ASTRO_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/astro-sandbox"
+        npm pkg set description="Internal Astro sandbox for Runspace"
+        npm pkg set private=true
+        npm pkg set type=module
+        npm install "astro@${ASTRO_VERSION}" --save
+    )
+fi
+
+if $needs_axum && [[ ! -f "$AXUM_SRC/Cargo.lock" ]]; then
+    echo "Generating Axum skeleton..."
+    rm -rf "$AXUM_SRC"
+    mkdir -p "$AXUM_SRC/src/bin"
+    cat > "$AXUM_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-axum-sandbox"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Internal Axum sandbox for Runspace"
+
+[dependencies]
+axum = "${AXUM_VERSION}"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+
+[[bin]]
+name = "runspace-entry"
+path = "src/bin/runspace_entry.rs"
+EOF
+    cat > "$AXUM_SRC/build.rs" <<'EOF'
+fn main() {
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+        format!("{manifest_dir}/src/stub_entry.rs")
+    });
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    println!("cargo:rustc-env=RUNSPACE_ENTRY_PATH={entry}");
+}
+EOF
+    cat > "$AXUM_SRC/src/stub_entry.rs" <<'EOF'
+fn main() {
+    println!("Runspace Axum sandbox");
+}
+EOF
+    cat > "$AXUM_SRC/src/bin/runspace_entry.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY_PATH"));
+EOF
+    (
+        cd "$AXUM_SRC"
+        cargo fetch --locked 2>/dev/null || cargo fetch
+        RUNSPACE_ENTRY_PATH="$AXUM_SRC/src/stub_entry.rs" cargo build --quiet --bin runspace-entry
+    )
+fi
+
+if $needs_roda && [[ ! -f "$RODA_SRC/.bundle/config" ]]; then
+    echo "Generating Roda skeleton..."
+    rm -rf "$RODA_SRC"
+    mkdir -p "$RODA_SRC"
+    cat > "$RODA_SRC/Gemfile" <<EOF
+source "https://rubygems.org"
+
+gem "roda", "$RODA_VERSION"
+EOF
+    (
+        cd "$RODA_SRC"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
+    )
+fi
+
+if $needs_remix && [[ ! -d "$REMIX_SRC/node_modules" ]]; then
+    echo "Generating Remix skeleton..."
+    rm -rf "$REMIX_SRC"
+    mkdir -p "$REMIX_SRC"
+    (
+        cd "$REMIX_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/remix-sandbox"
+        npm pkg set description="Internal Remix sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@remix-run/node@${REMIX_VERSION}" "@remix-run/react@${REMIX_VERSION}" react react-dom --save
+    )
+fi
+
+if $needs_sveltekit && [[ ! -d "$SVELTEKIT_SRC/node_modules" ]]; then
+    echo "Generating SvelteKit skeleton..."
+    rm -rf "$SVELTEKIT_SRC"
+    mkdir -p "$(dirname "$SVELTEKIT_SRC")"
+    npx sv create "$SVELTEKIT_SRC" \
+        --template "$SVELTEKIT_TEMPLATE" \
+        --types "$SVELTEKIT_TYPES" \
+        --no-add-ons \
+        --no-install \
+        --no-dir-check \
+        --no-download-check
+    (
+        cd "$SVELTEKIT_SRC"
+        npm pkg set name="@runspace/sveltekit-sandbox"
+        npm pkg set description="Internal SvelteKit sandbox for Runspace"
+        npm pkg set private=true
+        npm install --no-audit --no-fund
     )
 fi
 
