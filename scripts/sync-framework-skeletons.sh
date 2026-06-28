@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+IRIS_SRC="$GEN/iris"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+IRIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/iris"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$IRIS_SRC/go.mod" ]]; then
+    mkdir -p "$IRIS_DEST"
+    rsync -a --delete --exclude vendor/ --exclude .git/ "$IRIS_SRC/" "$IRIS_DEST/"
+    echo "$SKELETON_VERSION" > "$IRIS_DEST/skeleton.version"
+    synced+=("Iris")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
