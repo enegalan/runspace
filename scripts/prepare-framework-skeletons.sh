@@ -7,6 +7,39 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 PLUG_SRC="$GEN/plug"
+MICRONAUT_SRC="$GEN/micronaut"
+GRAPE_SRC="$GEN/grape"
+WARP_SRC="$GEN/warp"
+SALVO_SRC="$GEN/salvo"
+BEEGO_SRC="$GEN/beego"
+FIBER_SRC="$GEN/fiber"
+DROPWIZARD_SRC="$GEN/dropwizard"
+GIN_SRC="$GEN/gin"
+ADONISJS_SRC="$GEN/adonisjs"
+VERTX_SRC="$GEN/vertx"
+CAKEPHP_SRC="$GEN/cakephp"
+STREAMLIT_SRC="$GEN/streamlit"
+LUMEN_SRC="$GEN/lumen"
+SLIM_SRC="$GEN/slim"
+PYRAMID_SRC="$GEN/pyramid"
+QWIK_SRC="$GEN/qwik"
+SANIC_SRC="$GEN/sanic"
+DASH_SRC="$GEN/dash"
+LAMINAS_SRC="$GEN/laminas"
+TORNADO_SRC="$GEN/tornado"
+IONIC_SRC="$GEN/ionic"
+STARLETTE_SRC="$GEN/starlette"
+CODEIGNITER_SRC="$GEN/codeigniter"
+BOTTLE_SRC="$GEN/bottle"
+LITESTAR_SRC="$GEN/litestar"
+SPRING_BOOT_SRC="$GEN/spring-boot"
+PHOENIX_SRC="$GEN/phoenix"
+NEXTJS_SRC="$GEN/nextjs"
+NUXT_SRC="$GEN/nuxt"
+RAILS_SRC="$GEN/rails"
+SINATRA_SRC="$GEN/sinatra"
+PADRINO_SRC="$GEN/padrino"
+COWBOY_SRC="$GEN/cowboy"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
 CHI_SRC="$GEN/chi"
 YII_SRC="$GEN/yii"
@@ -45,6 +78,39 @@ LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 PLUG_DEST="$REPO_ROOT/src-tauri/resources/frameworks/plug"
+MICRONAUT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/micronaut"
+GRAPE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/grape"
+WARP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/warp"
+SALVO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/salvo"
+BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
+FIBER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fiber"
+DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
+GIN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gin"
+ADONISJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/adonisjs"
+VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
+CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
+STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
+LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
+SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
+PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
+QWIK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/qwik"
+SANIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sanic"
+DASH_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dash"
+LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
+TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
+IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
+STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
+CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
+BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
+LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
+SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
+PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
+NEXTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nextjs"
+NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
+RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
+SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
+PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
+COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
 CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
 YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
@@ -85,8 +151,51 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
-PLUG_VERSION="${RUNSPACE_PLUG_VERSION:-~> 1.16}"
 PLUG_SERVER_VERSION="${RUNSPACE_PLUG_SERVER_VERSION:-~> 1.6}"
+PLUG_VERSION="${RUNSPACE_PLUG_VERSION:-~> 1.16}"
+MICRONAUT_JAVA_VERSION="${RUNSPACE_MICRONAUT_JAVA_VERSION:-JDK_21}"
+MICRONAUT_VERSION="${RUNSPACE_MICRONAUT_VERSION:-4.7.6}"
+GRAPE_VERSION="${RUNSPACE_GRAPE_VERSION:-~> 2.2}"
+WARP_VERSION="${RUNSPACE_WARP_VERSION:-0.3}"
+SALVO_VERSION="${RUNSPACE_SALVO_VERSION:-0.93}"
+BEEGO_VERSION="${RUNSPACE_BEEGO_VERSION:-v2.3.8}"
+BEEGO_MODULE="${RUNSPACE_BEEGO_MODULE:-github.com/beego/beego/v2}"
+FIBER_MODULE="${RUNSPACE_FIBER_MODULE:-github.com/gofiber/fiber/v2}"
+FIBER_VERSION="${RUNSPACE_FIBER_VERSION:-v2.52.9}"
+DROPWIZARD_VERSION="${RUNSPACE_DROPWIZARD_VERSION:-4.0.16}"
+GIN_VERSION="${RUNSPACE_GIN_VERSION:-v1.10.0}"
+ADONISJS_VERSION="${RUNSPACE_ADONISJS_VERSION:-^6.0.0}"
+VERTX_VERSION="${RUNSPACE_VERTX_VERSION:-5.0.1}"
+VERTX_JAVA_VERSION="${RUNSPACE_VERTX_JAVA_VERSION:-21}"
+CAKEPHP_PROJECT="${RUNSPACE_CAKEPHP_PROJECT:-cakephp/app}"
+CAKEPHP_VERSION="${RUNSPACE_CAKEPHP_VERSION:-5.3.*}"
+STREAMLIT_VERSION="${RUNSPACE_STREAMLIT_VERSION:->=1.42.0,<2}"
+LUMEN_PROJECT="${RUNSPACE_LUMEN_PROJECT:-laravel/lumen}"
+LUMEN_VERSION="${RUNSPACE_LUMEN_VERSION:-10.*}"
+SLIM_PROJECT="${RUNSPACE_SLIM_PROJECT:-slim/slim-skeleton}"
+SLIM_VERSION="${RUNSPACE_SLIM_VERSION:-4.*}"
+PYRAMID_VERSION="${RUNSPACE_PYRAMID_VERSION:-2.0}"
+QWIK_VERSION="${RUNSPACE_QWIK_VERSION:-^1.20.0}"
+SANIC_VERSION="${RUNSPACE_SANIC_VERSION:-24.12.*}"
+DASH_VERSION="${RUNSPACE_DASH_VERSION:-4.3.*}"
+LAMINAS_PROJECT="${RUNSPACE_LAMINAS_PROJECT:-laminas/laminas-mvc-skeleton}"
+LAMINAS_VERSION="${RUNSPACE_LAMINAS_VERSION:-2.4.*}"
+TORNADO_VERSION="${RUNSPACE_TORNADO_VERSION:-6.4.2}"
+IONIC_VERSION="${RUNSPACE_IONIC_VERSION:-^8.0.0}"
+STARLETTE_VERSION="${RUNSPACE_STARLETTE_VERSION:-0.49.*}"
+CODEIGNITER_PROJECT="${RUNSPACE_CODEIGNITER_PROJECT:-codeigniter4/appstarter}"
+CODEIGNITER_VERSION="${RUNSPACE_CODEIGNITER_VERSION:-4.*}"
+BOTTLE_VERSION="${RUNSPACE_BOTTLE_VERSION:-==0.13.2}"
+SPRING_BOOT_VERSION="${RUNSPACE_SPRING_BOOT_VERSION:-3.5.0}"
+SPRING_BOOT_JAVA_VERSION="${RUNSPACE_SPRING_BOOT_JAVA_VERSION:-21}"
+PHOENIX_VERSION="${RUNSPACE_PHOENIX_VERSION:-1.8.*}"
+NEXTJS_VERSION="${RUNSPACE_NEXTJS_VERSION:-^15.0.0}"
+NUXT_VERSION="${RUNSPACE_NUXT_VERSION:-^3.0.0}"
+RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
+SINATRA_VERSION="${RUNSPACE_SINATRA_VERSION:-~> 4.0}"
+PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
+PADRINO_GEM_VERSION="${RUNSPACE_PADRINO_GEM_VERSION:->= 0.15.0}"
+COWBOY_VERSION="${RUNSPACE_COWBOY_VERSION:-2.13.0}"
 ASPNET_CORE_PROJECT="${RUNSPACE_ASPNET_CORE_PROJECT:-RunspaceAspNetSandbox}"
 ASPNET_CORE_SCRIPTING_PACKAGE="${RUNSPACE_ASPNET_CORE_SCRIPTING_PACKAGE:-Microsoft.CodeAnalysis.CSharp.Scripting}"
 CHI_MODULE="${RUNSPACE_CHI_MODULE:-github.com/go-chi/chi/v5}"
@@ -152,6 +261,161 @@ plug_ready() {
     [[ -f "$PLUG_DEST/mix.exs" ]] &&
         [[ -f "$PLUG_DEST/mix.lock" ]] &&
         [[ -f "$PLUG_DEST/skeleton.version" ]]
+}
+micronaut_ready() {
+    [[ -f "$MICRONAUT_DEST/pom.xml" ]] &&
+        [[ -f "$MICRONAUT_DEST/skeleton.version" ]]
+}
+grape_ready() {
+    [[ -f "$GRAPE_DEST/Gemfile" ]] &&
+        [[ -f "$GRAPE_DEST/Gemfile.lock" ]] &&
+        [[ -f "$GRAPE_DEST/skeleton.version" ]]
+}
+warp_ready() {
+    [[ -f "$WARP_DEST/Cargo.toml" ]] &&
+        [[ -f "$WARP_DEST/Cargo.lock" ]] &&
+        [[ -f "$WARP_DEST/skeleton.version" ]]
+}
+salvo_ready() {
+    [[ -f "$SALVO_DEST/Cargo.toml" ]] &&
+        [[ -f "$SALVO_DEST/Cargo.lock" ]] &&
+        [[ -f "$SALVO_DEST/skeleton.version" ]]
+}
+beego_ready() {
+    [[ -f "$BEEGO_DEST/go.mod" ]] &&
+        [[ -f "$BEEGO_DEST/go.sum" ]] &&
+        [[ -f "$BEEGO_DEST/skeleton.version" ]]
+}
+fiber_ready() {
+    [[ -f "$FIBER_DEST/go.mod" ]] &&
+        [[ -f "$FIBER_DEST/go.sum" ]] &&
+        [[ -f "$FIBER_DEST/skeleton.version" ]]
+}
+dropwizard_ready() {
+    [[ -f "$DROPWIZARD_DEST/pom.xml" ]] &&
+        [[ -f "$DROPWIZARD_DEST/skeleton.version" ]]
+}
+gin_ready() {
+    [[ -f "$GIN_DEST/go.mod" ]] &&
+        [[ -f "$GIN_DEST/go.sum" ]] &&
+        [[ -f "$GIN_DEST/skeleton.version" ]]
+}
+adonisjs_ready() {
+    [[ -f "$ADONISJS_DEST/package.json" ]] &&
+        [[ -f "$ADONISJS_DEST/package-lock.json" ]] &&
+        [[ -f "$ADONISJS_DEST/skeleton.version" ]]
+}
+vertx_ready() {
+    [[ -f "$VERTX_DEST/pom.xml" ]] &&
+        [[ -f "$VERTX_DEST/skeleton.version" ]]
+}
+cakephp_ready() {
+    [[ -f "$CAKEPHP_DEST/bin/cake" ]] &&
+        [[ -f "$CAKEPHP_DEST/composer.lock" ]] &&
+        [[ -f "$CAKEPHP_DEST/skeleton.version" ]]
+}
+streamlit_ready() {
+    [[ -f "$STREAMLIT_DEST/requirements.txt" ]] &&
+        [[ -f "$STREAMLIT_DEST/requirements.lock" ]] &&
+        [[ -f "$STREAMLIT_DEST/skeleton.version" ]]
+}
+lumen_ready() {
+    [[ -f "$LUMEN_DEST/artisan" ]] &&
+        [[ -f "$LUMEN_DEST/composer.lock" ]] &&
+        [[ -f "$LUMEN_DEST/skeleton.version" ]]
+}
+slim_ready() {
+    [[ -f "$SLIM_DEST/public/index.php" ]] &&
+        [[ -f "$SLIM_DEST/composer.lock" ]] &&
+        [[ -f "$SLIM_DEST/skeleton.version" ]]
+}
+pyramid_ready() {
+    [[ -f "$PYRAMID_DEST/requirements.txt" ]] &&
+        [[ -f "$PYRAMID_DEST/app.py" ]] &&
+        [[ -f "$PYRAMID_DEST/skeleton.version" ]]
+}
+qwik_ready() {
+    [[ -f "$QWIK_DEST/package.json" ]] &&
+        [[ -f "$QWIK_DEST/package-lock.json" ]] &&
+        [[ -f "$QWIK_DEST/skeleton.version" ]]
+}
+sanic_ready() {
+    [[ -f "$SANIC_DEST/requirements.txt" ]] &&
+        [[ -f "$SANIC_DEST/app.py" ]] &&
+        [[ -f "$SANIC_DEST/skeleton.version" ]]
+}
+dash_ready() {
+    [[ -f "$DASH_DEST/requirements.txt" ]] &&
+        [[ -f "$DASH_DEST/app.py" ]] &&
+        [[ -f "$DASH_DEST/skeleton.version" ]]
+}
+laminas_ready() {
+    [[ -f "$LAMINAS_DEST/public/index.php" ]] &&
+        [[ -f "$LAMINAS_DEST/composer.lock" ]] &&
+        [[ -f "$LAMINAS_DEST/skeleton.version" ]]
+}
+tornado_ready() {
+    [[ -f "$TORNADO_DEST/requirements.txt" ]] &&
+        [[ -f "$TORNADO_DEST/skeleton.version" ]]
+}
+ionic_ready() {
+    [[ -f "$IONIC_DEST/package.json" ]] &&
+        [[ -f "$IONIC_DEST/package-lock.json" ]] &&
+        [[ -f "$IONIC_DEST/skeleton.version" ]]
+}
+starlette_ready() {
+    [[ -f "$STARLETTE_DEST/requirements.txt" ]] &&
+        [[ -f "$STARLETTE_DEST/app.py" ]] &&
+        [[ -f "$STARLETTE_DEST/skeleton.version" ]]
+}
+codeigniter_ready() {
+    [[ -f "$CODEIGNITER_DEST/spark" ]] &&
+        [[ -f "$CODEIGNITER_DEST/composer.lock" ]] &&
+        [[ -f "$CODEIGNITER_DEST/skeleton.version" ]]
+}
+bottle_ready() {
+    [[ -f "$BOTTLE_DEST/requirements.txt" ]] &&
+        [[ -f "$BOTTLE_DEST/skeleton.version" ]]
+}
+litestar_ready() {
+    [[ -f "$LITESTAR_DEST/requirements.txt" ]] &&
+        [[ -f "$LITESTAR_DEST/skeleton.version" ]]
+}
+phoenix_ready() {
+    [[ -f "$PHOENIX_DEST/mix.exs" ]] &&
+        [[ -f "$PHOENIX_DEST/mix.lock" ]] &&
+        [[ -f "$PHOENIX_DEST/skeleton.version" ]]
+}
+nextjs_ready() {
+    [[ -f "$NEXTJS_DEST/package.json" ]] &&
+        [[ -f "$NEXTJS_DEST/package-lock.json" ]] &&
+        [[ -f "$NEXTJS_DEST/skeleton.version" ]]
+}
+nuxt_ready() {
+    [[ -f "$NUXT_DEST/package.json" ]] &&
+        [[ -f "$NUXT_DEST/package-lock.json" ]] &&
+        [[ -f "$NUXT_DEST/skeleton.version" ]]
+}
+rails_ready() {
+    [[ -f "$RAILS_DEST/Gemfile" ]] &&
+        [[ -f "$RAILS_DEST/Gemfile.lock" ]] &&
+        [[ -f "$RAILS_DEST/bin/rails" ]] &&
+        [[ -f "$RAILS_DEST/skeleton.version" ]]
+}
+sinatra_ready() {
+    [[ -f "$SINATRA_DEST/Gemfile" ]] &&
+        [[ -f "$SINATRA_DEST/Gemfile.lock" ]] &&
+        [[ -f "$SINATRA_DEST/skeleton.version" ]]
+}
+padrino_ready() {
+    [[ -f "$PADRINO_DEST/Gemfile.lock" ]] &&
+        [[ -f "$PADRINO_DEST/config/apps.rb" ]] &&
+        [[ -f "$PADRINO_DEST/skeleton.version" ]]
+}
+cowboy_ready() {
+    [[ -f "$COWBOY_DEST/rebar.config" ]] &&
+        [[ -f "$COWBOY_DEST/rebar.lock" ]] &&
+        [[ -f "$COWBOY_DEST/skeleton.version" ]]
 }
 chi_ready() {
     [[ -f "$CHI_DEST/go.mod" ]] &&
@@ -312,6 +576,39 @@ needs_laravel=false
 needs_symfony=false
 needs_express=false
 needs_plug=false
+needs_micronaut=false
+needs_grape=false
+needs_warp=false
+needs_salvo=false
+needs_beego=false
+needs_fiber=false
+needs_dropwizard=false
+needs_gin=false
+needs_adonisjs=false
+needs_vertx=false
+needs_cakephp=false
+needs_streamlit=false
+needs_lumen=false
+needs_slim=false
+needs_pyramid=false
+needs_qwik=false
+needs_sanic=false
+needs_dash=false
+needs_laminas=false
+needs_tornado=false
+needs_ionic=false
+needs_starlette=false
+needs_codeigniter=false
+needs_bottle=false
+needs_litestar=false
+needs_spring-boot=false
+needs_phoenix=false
+needs_nextjs=false
+needs_nuxt=false
+needs_rails=false
+needs_sinatra=false
+needs_padrino=false
+needs_cowboy=false
 needs_aspnet-core=false
 needs_chi=false
 needs_yii=false
@@ -358,6 +655,102 @@ if force_sync || ! express_ready; then
 fi
 if force_sync || ! plug_ready; then
     needs_plug=true
+fi
+if force_sync || ! micronaut_ready; then
+    needs_micronaut=true
+fi
+if force_sync || ! grape_ready; then
+    needs_grape=true
+fi
+if force_sync || ! warp_ready; then
+    needs_warp=true
+fi
+if force_sync || ! salvo_ready; then
+    needs_salvo=true
+fi
+if force_sync || ! beego_ready; then
+    needs_beego=true
+fi
+if force_sync || ! fiber_ready; then
+    needs_fiber=true
+fi
+if force_sync || ! dropwizard_ready; then
+    needs_dropwizard=true
+fi
+if force_sync || ! gin_ready; then
+    needs_gin=true
+fi
+if force_sync || ! adonisjs_ready; then
+    needs_adonisjs=true
+fi
+if force_sync || ! vertx_ready; then
+    needs_vertx=true
+fi
+if force_sync || ! cakephp_ready; then
+    needs_cakephp=true
+fi
+if force_sync || ! streamlit_ready; then
+    needs_streamlit=true
+fi
+if force_sync || ! lumen_ready; then
+    needs_lumen=true
+fi
+if force_sync || ! slim_ready; then
+    needs_slim=true
+fi
+if force_sync || ! pyramid_ready; then
+    needs_pyramid=true
+fi
+if force_sync || ! qwik_ready; then
+    needs_qwik=true
+fi
+if force_sync || ! sanic_ready; then
+    needs_sanic=true
+fi
+if force_sync || ! dash_ready; then
+    needs_dash=true
+fi
+if force_sync || ! laminas_ready; then
+    needs_laminas=true
+fi
+if force_sync || ! tornado_ready; then
+    needs_tornado=true
+fi
+if force_sync || ! ionic_ready; then
+    needs_ionic=true
+fi
+if force_sync || ! starlette_ready; then
+    needs_starlette=true
+fi
+if force_sync || ! codeigniter_ready; then
+    needs_codeigniter=true
+fi
+if force_sync || ! bottle_ready; then
+    needs_bottle=true
+fi
+if force_sync || ! litestar_ready; then
+    needs_litestar=true
+fi
+if force_sync || ! phoenix_ready; then
+    needs_phoenix=true
+fi
+if force_sync || ! nextjs_ready; then
+    needs_nextjs=true
+fi
+if force_sync || ! nuxt_ready; then
+    needs_nuxt=true
+fi
+if force_sync || ! rails_ready; then
+    needs_rails=true
+fi
+if force_sync || ! sinatra_ready; then
+    needs_sinatra=true
+fi
+if force_sync || ! padrino_ready; then
+    needs_padrino=true
+fi
+if force_sync || ! cowboy_ready; then
+    needs_cowboy=true
 fi
 if force_sync || ! chi_ready; then
     needs_chi=true
@@ -454,7 +847,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_plug; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -491,6 +884,145 @@ if $needs_plug && ! command -v mix >/dev/null 2>&1; then
     echo "Mix is required to prepare the Plug skeleton." >&2
     echo "Install Elixir, then run:" >&2
     echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_micronaut && ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to prepare the Micronaut skeleton." >&2
+    exit 1
+fi
+
+if $needs_grape && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Grape skeleton." >&2
+    echo "Install Ruby and Bundler, then run:" >&2
+    echo "  gem install bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_warp && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Warp skeleton." >&2
+    exit 1
+fi
+
+if $needs_salvo && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Salvo skeleton." >&2
+    exit 1
+fi
+
+if $needs_beego && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Beego skeleton." >&2
+    exit 1
+fi
+
+if $needs_fiber && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Fiber skeleton." >&2
+    exit 1
+fi
+
+if $needs_dropwizard && ! command -v mvn >/dev/null 2>&1; then
+    echo "Maven is required to prepare the Dropwizard skeleton." >&2
+    echo "Install Maven or set its path in Settings, then run:" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_gin && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Gin skeleton." >&2
+    exit 1
+fi
+
+if $needs_streamlit && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Streamlit skeleton." >&2
+    exit 1
+fi
+
+if $needs_pyramid && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Pyramid skeleton." >&2
+    exit 1
+fi
+
+if $needs_qwik && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Qwik skeleton." >&2
+    exit 1
+fi
+
+if $needs_sanic && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Sanic skeleton." >&2
+    exit 1
+fi
+
+if $needs_dash && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Dash skeleton." >&2
+    exit 1
+fi
+
+if $needs_tornado && ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
+    echo "pip is required to prepare the Tornado skeleton." >&2
+    exit 1
+fi
+
+if $needs_ionic && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Ionic skeleton." >&2
+    exit 1
+fi
+
+if $needs_starlette && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Starlette skeleton." >&2
+    exit 1
+fi
+
+if $needs_bottle && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Bottle skeleton." >&2
+    exit 1
+fi
+
+if $needs_litestar && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Litestar skeleton." >&2
+    exit 1
+fi
+
+if $needs_phoenix && ! command -v mix >/dev/null 2>&1; then
+    echo "Mix is required to prepare the Phoenix skeleton." >&2
+    echo "Install Elixir and Phoenix, then run:" >&2
+    echo "  mix archive.install hex phx_new" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_nextjs && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Next.js skeleton." >&2
+    exit 1
+fi
+
+if $needs_nuxt && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Nuxt skeleton." >&2
+    exit 1
+fi
+
+if $needs_rails && ! command -v rails >/dev/null 2>&1; then
+    echo "Rails is required to prepare the Rails skeleton." >&2
+    echo "Install Ruby, Bundler, and Rails, then run:" >&2
+    echo "  gem install rails bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_sinatra && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Sinatra skeleton." >&2
+    echo "Install Ruby and Bundler, then run:" >&2
+    echo "  gem install bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
+if $needs_padrino && ! command -v ruby >/dev/null 2>&1; then
+    echo "Ruby is required to prepare the Padrino skeleton." >&2
+    exit 1
+fi
+
+if $needs_cowboy && ! command -v rebar3 >/dev/null 2>&1; then
+    echo "rebar3 is required to prepare the Cowboy skeleton." >&2
     exit 1
 fi
 
@@ -646,6 +1178,523 @@ PY
         mix deps.get
         mix compile
     )
+fi
+
+if $needs_micronaut && [[ ! -f "$MICRONAUT_SRC/pom.xml" ]]; then
+    echo "Generating Micronaut skeleton..."
+    rm -rf "$MICRONAUT_SRC" "$GEN/micronaut-extract"
+    mkdir -p "$MICRONAUT_SRC"
+    curl -sSfLo "$GEN/micronaut.zip" \
+        "https://launch.micronaut.io/create/default/runspace-sandbox?build=maven&lang=java&test=junit&javaVersion=${MICRONAUT_JAVA_VERSION}&micronautVersion=${MICRONAUT_VERSION}&packageName=com.runspace.sandbox"
+    unzip -q "$GEN/micronaut.zip" -d "$GEN/micronaut-extract"
+    mv "$GEN/micronaut-extract/runspace-sandbox/"* "$MICRONAUT_SRC/"
+    rm -rf "$GEN/micronaut-extract" "$GEN/micronaut.zip"
+fi
+
+if $needs_grape && [[ ! -f "$GRAPE_SRC/.bundle/config" ]]; then
+    echo "Generating Grape skeleton..."
+    rm -rf "$GRAPE_SRC"
+    mkdir -p "$GRAPE_SRC"
+    cat > "$GRAPE_SRC/Gemfile" <<EOF
+source "https://rubygems.org"
+
+ruby ">= 2.7.8"
+
+gem "grape", "${GRAPE_VERSION}"
+EOF
+    (
+        cd "$GRAPE_SRC"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
+    )
+fi
+
+if $needs_warp && [[ ! -f "$WARP_SRC/Cargo.lock" ]]; then
+    echo "Generating Warp skeleton..."
+    rm -rf "$WARP_SRC"
+    mkdir -p "$WARP_SRC"
+    (
+        cd "$WARP_SRC"
+        cargo init --name runspace-warp-sandbox --bin
+        cargo add "warp@${WARP_VERSION}"
+        cargo add tokio --features full
+        printf '%s\n' 'fn main() {}' > src/main.rs
+    )
+fi
+
+if $needs_salvo && [[ ! -f "$SALVO_SRC/Cargo.lock" ]]; then
+    echo "Generating Salvo skeleton..."
+    rm -rf "$SALVO_SRC"
+    mkdir -p "$SALVO_SRC/src/bin"
+    cat > "$SALVO_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-salvo-sandbox"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Internal Salvo sandbox for Runspace"
+
+[dependencies]
+salvo = "${SALVO_VERSION}"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+
+[[bin]]
+name = "runspace-entry"
+path = "src/bin/runspace_entry.rs"
+EOF
+    cat > "$SALVO_SRC/build.rs" <<'EOF'
+fn main() {
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+        format!("{manifest_dir}/src/stub_entry.rs")
+    });
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    println!("cargo:rustc-env=RUNSPACE_ENTRY_PATH={entry}");
+}
+EOF
+    cat > "$SALVO_SRC/src/stub_entry.rs" <<'EOF'
+fn main() {
+    println!("Runspace Salvo sandbox");
+}
+EOF
+    cat > "$SALVO_SRC/src/bin/runspace_entry.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY_PATH"));
+EOF
+    (
+        cd "$SALVO_SRC"
+        cargo fetch --locked 2>/dev/null || cargo fetch
+        RUNSPACE_ENTRY_PATH="$SALVO_SRC/src/stub_entry.rs" cargo build --quiet --bin runspace-entry
+    )
+fi
+
+if $needs_beego && [[ ! -d "$BEEGO_SRC/vendor" ]]; then
+    echo "Generating Beego skeleton..."
+    rm -rf "$BEEGO_SRC"
+    mkdir -p "$BEEGO_SRC"
+    (
+        cd "$BEEGO_SRC"
+        go mod init runspace/beego-sandbox
+        go get "${BEEGO_MODULE}@${BEEGO_VERSION}"
+        go mod vendor
+    )
+fi
+
+if $needs_fiber && [[ ! -f "$FIBER_SRC/go.sum" ]]; then
+    echo "Generating Fiber skeleton..."
+    rm -rf "$FIBER_SRC"
+    mkdir -p "$FIBER_SRC"
+    (
+        cd "$FIBER_SRC"
+        go mod init runspace/fiber-sandbox
+        go get "${FIBER_MODULE}@${FIBER_VERSION}"
+        go mod tidy
+    )
+fi
+
+if $needs_dropwizard && [[ ! -f "$DROPWIZARD_SRC/pom.xml" ]]; then
+    echo "Generating Dropwizard skeleton..."
+    rm -rf "$DROPWIZARD_SRC" "$GEN/dropwizard-gen"
+    mkdir -p "$GEN/dropwizard-gen"
+    (
+        cd "$GEN/dropwizard-gen"
+        mvn -B archetype:generate \
+            -DarchetypeGroupId=io.dropwizard.archetypes \
+            -DarchetypeArtifactId=java-simple \
+            -DarchetypeVersion="$DROPWIZARD_VERSION" \
+            -DgroupId=com.runspace \
+            -DartifactId=sandbox \
+            -Dversion=1.0-SNAPSHOT \
+            -Dpackage=com.runspace.sandbox \
+            -Dname=RunspaceSandbox \
+            -DinteractiveMode=false
+        mv sandbox "$DROPWIZARD_SRC"
+    )
+    rm -rf "$GEN/dropwizard-gen"
+fi
+
+if $needs_gin && [[ ! -f "$GIN_SRC/go.mod" ]]; then
+    echo "Generating Gin skeleton..."
+    rm -rf "$GIN_SRC"
+    mkdir -p "$GIN_SRC"
+    (
+        cd "$GIN_SRC"
+        go mod init runspace/gin-sandbox
+        go get "github.com/gin-gonic/gin@${GIN_VERSION}"
+    )
+fi
+
+if $needs_adonisjs && [[ ! -d "$ADONISJS_SRC/node_modules" ]]; then
+    echo "Generating AdonisJS skeleton..."
+    rm -rf "$ADONISJS_SRC"
+    mkdir -p "$ADONISJS_SRC"
+    (
+        cd "$ADONISJS_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/adonisjs-sandbox"
+        npm pkg set description="Internal AdonisJS sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@adonisjs/core@${ADONISJS_VERSION}" --save
+    )
+fi
+
+if $needs_vertx && [[ ! -f "$VERTX_SRC/pom.xml" ]]; then
+    echo "Generating Vert.x skeleton..."
+    rm -rf "$VERTX_SRC"
+    mkdir -p "$VERTX_SRC"
+    cat > "$VERTX_SRC/pom.xml" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.runspace</groupId>
+    <artifactId>vertx-sandbox</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>runspace-vertx-sandbox</name>
+    <description>Internal Vert.x sandbox for Runspace</description>
+    <properties>
+        <vertx.version>${VERTX_VERSION}</vertx.version>
+        <maven.compiler.source>${VERTX_JAVA_VERSION}</maven.compiler.source>
+        <maven.compiler.target>${VERTX_JAVA_VERSION}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>\${vertx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>\${vertx.version}</version>
+        </dependency>
+    </dependencies>
+</project>
+EOF
+fi
+
+if $needs_cakephp && [[ ! -d "$CAKEPHP_SRC/vendor" ]]; then
+    echo "Generating CakePHP skeleton..."
+    rm -rf "$CAKEPHP_SRC"
+    composer create-project "$CAKEPHP_PROJECT" "$CAKEPHP_SRC" "$CAKEPHP_VERSION" --no-interaction
+fi
+
+if $needs_streamlit && [[ ! -d "$STREAMLIT_SRC/vendor" ]]; then
+    echo "Generating Streamlit skeleton..."
+    rm -rf "$STREAMLIT_SRC"
+    mkdir -p "$STREAMLIT_SRC"
+    (
+        cd "$STREAMLIT_SRC"
+        printf 'streamlit%s\n' "$STREAMLIT_VERSION" > requirements.txt
+        python3 -m venv .venv
+        .venv/bin/pip install -r requirements.txt
+        .venv/bin/pip freeze > requirements.lock
+        .venv/bin/pip install -r requirements.lock --target vendor
+    )
+fi
+
+if $needs_lumen && [[ ! -d "$LUMEN_SRC/vendor" ]]; then
+    echo "Generating Lumen skeleton..."
+    rm -rf "$LUMEN_SRC"
+    composer create-project "$LUMEN_PROJECT" "$LUMEN_SRC" "$LUMEN_VERSION" --no-interaction
+fi
+
+if $needs_slim && [[ ! -d "$SLIM_SRC/vendor" ]]; then
+    echo "Generating Slim skeleton..."
+    rm -rf "$SLIM_SRC"
+    composer create-project "$SLIM_PROJECT" "$SLIM_SRC" "$SLIM_VERSION" --no-interaction
+fi
+
+if $needs_pyramid && [[ ! -f "$PYRAMID_SRC/requirements.txt" ]]; then
+    echo "Generating Pyramid skeleton..."
+    rm -rf "$PYRAMID_SRC"
+    mkdir -p "$PYRAMID_SRC"
+    python3 -m venv "$PYRAMID_SRC/.venv"
+    (
+        cd "$PYRAMID_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "pyramid~=${PYRAMID_VERSION}" waitress
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from pyramid.config import Configurator
+from pyramid.response import Response
+
+
+def hello_world(request):
+    return Response('Hello from Runspace Pyramid sandbox')
+
+
+if __name__ == '__main__':
+    with Configurator() as config:
+        config.add_route('hello', '/')
+        config.add_view(hello_world, route_name='hello')
+        app = config.make_wsgi_app()
+    from waitress import serve
+
+    serve(app, host='127.0.0.1', port=8080)
+PY
+    )
+fi
+
+if $needs_qwik && [[ ! -d "$QWIK_SRC/node_modules" ]]; then
+    echo "Generating Qwik skeleton..."
+    rm -rf "$QWIK_SRC"
+    mkdir -p "$QWIK_SRC"
+    (
+        cd "$QWIK_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/qwik-sandbox"
+        npm pkg set description="Internal Qwik sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@builder.io/qwik@${QWIK_VERSION}" --save
+    )
+fi
+
+if $needs_sanic && [[ ! -f "$SANIC_SRC/requirements.txt" ]]; then
+    echo "Generating Sanic skeleton..."
+    rm -rf "$SANIC_SRC"
+    mkdir -p "$SANIC_SRC"
+    python3 -m venv "$SANIC_SRC/.venv"
+    (
+        cd "$SANIC_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "sanic==${SANIC_VERSION}"
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from sanic import Sanic
+from sanic.response import text
+
+app = Sanic("RunspaceSanicSandbox")
+
+
+@app.get("/")
+async def index(request):
+    return text("Hello from Runspace Sanic sandbox")
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=8000, debug=True)
+PY
+    )
+fi
+
+if $needs_dash && [[ ! -f "$DASH_SRC/requirements.txt" ]]; then
+    echo "Generating Dash skeleton..."
+    rm -rf "$DASH_SRC"
+    mkdir -p "$DASH_SRC"
+    python3 -m venv "$DASH_SRC/.venv"
+    (
+        cd "$DASH_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "dash==${DASH_VERSION}"
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from dash import Dash, html
+
+app = Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("Hello from Runspace Dash sandbox")
+])
+
+if __name__ == "__main__":
+    app.run(debug=True)
+PY
+    )
+fi
+
+if $needs_laminas && [[ ! -d "$LAMINAS_SRC/vendor" ]]; then
+    echo "Generating Laminas skeleton..."
+    rm -rf "$LAMINAS_SRC"
+    composer create-project -s dev "$LAMINAS_PROJECT" "$LAMINAS_SRC" "$LAMINAS_VERSION" --no-interaction --ignore-platform-reqs
+fi
+
+if $needs_tornado && [[ ! -d "$TORNADO_SRC/site-packages" ]]; then
+    echo "Generating Tornado skeleton..."
+    rm -rf "$TORNADO_SRC"
+    mkdir -p "$TORNADO_SRC"
+    (
+        cd "$TORNADO_SRC"
+        echo "tornado==${TORNADO_VERSION}" > requirements.txt
+        if command -v pip3 >/dev/null 2>&1; then
+            pip3 install -r requirements.txt --target site-packages --no-warn-script-location
+        else
+            pip install -r requirements.txt --target site-packages --no-warn-script-location
+        fi
+
+if $needs_ionic && [[ ! -d "$IONIC_SRC/node_modules" ]]; then
+    echo "Generating Ionic skeleton..."
+    rm -rf "$IONIC_SRC"
+    mkdir -p "$IONIC_SRC"
+    (
+        cd "$IONIC_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/ionic-sandbox"
+        npm pkg set description="Internal Ionic sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@ionic/core@${IONIC_VERSION}" --save
+    )
+fi
+
+if $needs_starlette && [[ ! -f "$STARLETTE_SRC/requirements.txt" ]]; then
+    echo "Generating Starlette skeleton..."
+    rm -rf "$STARLETTE_SRC"
+    mkdir -p "$STARLETTE_SRC"
+    python3 -m venv "$STARLETTE_SRC/.venv"
+    (
+        cd "$STARLETTE_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "starlette==${STARLETTE_VERSION}" uvicorn
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
+
+
+async def homepage(request):
+    return PlainTextResponse("Hello from Runspace Starlette sandbox")
+
+
+app = Starlette(
+    routes=[
+        Route("/", homepage),
+    ],
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+PY
+    )
+fi
+
+if $needs_codeigniter && [[ ! -d "$CODEIGNITER_SRC/vendor" ]]; then
+    echo "Generating CodeIgniter skeleton..."
+    rm -rf "$CODEIGNITER_SRC"
+    composer create-project "$CODEIGNITER_PROJECT" "$CODEIGNITER_SRC" "$CODEIGNITER_VERSION" --no-interaction
+fi
+
+if $needs_bottle && [[ ! -f "$BOTTLE_SRC/requirements.txt" ]]; then
+    echo "Generating Bottle skeleton..."
+    rm -rf "$BOTTLE_SRC"
+    mkdir -p "$BOTTLE_SRC"
+    echo "bottle${BOTTLE_VERSION}" > "$BOTTLE_SRC/requirements.txt"
+fi
+
+if $needs_litestar && [[ ! -f "$LITESTAR_SRC/requirements.txt" ]]; then
+    echo "Generating Litestar skeleton..."
+    rm -rf "$LITESTAR_SRC"
+    mkdir -p "$LITESTAR_SRC"
+    (
+        cd "$LITESTAR_SRC"
+        python3 -m pip install litestar "uvicorn[standard]" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        python3 - <<'PY' > requirements.txt
+import sys
+sys.path.insert(0, "site-packages")
+import litestar
+import uvicorn
+print(f"litestar=={litestar.__version__}")
+print(f"uvicorn=={uvicorn.__version__}")
+PY
+    )
+fi
+
+if $needs_phoenix && [[ ! -f "$PHOENIX_SRC/mix.lock" ]]; then
+    echo "Generating Phoenix skeleton..."
+    rm -rf "$PHOENIX_SRC"
+    mix local.hex --force
+    mix archive.install hex phx_new --force
+    mix phx.new "$PHOENIX_SRC" \
+        --no-install \
+        --app runspace_phoenix \
+        --database sqlite3 \
+        --no-mailer
+    (
+        cd "$PHOENIX_SRC"
+        mix deps.get
+        mix compile
+    )
+fi
+
+if $needs_nextjs && [[ ! -d "$NEXTJS_SRC/node_modules" ]]; then
+    echo "Generating Next.js skeleton..."
+    rm -rf "$NEXTJS_SRC"
+    mkdir -p "$NEXTJS_SRC"
+    (
+        cd "$NEXTJS_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/nextjs-sandbox"
+        npm pkg set description="Internal Next.js sandbox for Runspace"
+        npm pkg set private=true
+        npm install "next@${NEXTJS_VERSION}" react react-dom --save
+    )
+fi
+
+if $needs_nuxt && [[ ! -d "$NUXT_SRC/node_modules" ]]; then
+    echo "Generating Nuxt skeleton..."
+    rm -rf "$NUXT_SRC"
+    mkdir -p "$NUXT_SRC"
+    (
+        cd "$NUXT_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/nuxt-sandbox"
+        npm pkg set description="Internal Nuxt sandbox for Runspace"
+        npm pkg set private=true
+        npm install "nuxt@${NUXT_VERSION}" --save
+    )
+fi
+
+if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
+    echo "Generating Rails skeleton..."
+    rm -rf "$RAILS_SRC"
+
+    # Install specific Rails version if not already available
+    if ! gem list -i "^rails$" -v "$RAILS_VERSION" >/dev/null 2>&1; then
+        echo "Installing Rails ${RAILS_VERSION}..."
+        gem install rails -v "$RAILS_VERSION" --no-document
+    fi
+
+if $needs_sinatra && [[ ! -f "$SINATRA_SRC/.bundle/config" ]]; then
+    echo "Generating Sinatra skeleton..."
+    rm -rf "$SINATRA_SRC"
+    mkdir -p "$SINATRA_SRC"
+    (
+        cd "$SINATRA_SRC"
+        bundle init
+        bundle add "sinatra" --version "$SINATRA_VERSION"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
+    )
+fi
+
+if $needs_padrino && [[ ! -f "$PADRINO_SRC/Gemfile.lock" ]]; then
+    echo "Generating Padrino skeleton..."
+    rm -rf "$PADRINO_SRC" "$GEN/$PADRINO_PROJECT"
+    (
+        cd "$GEN"
+        padrino g project "$PADRINO_PROJECT" -b -i -a sqlite -d activerecord
+    )
+    mv "$GEN/$PADRINO_PROJECT" "$PADRINO_SRC"
+fi
+
+if $needs_cowboy && [[ ! -f "$COWBOY_SRC/_build/default/lib/cowboy/ebin/cowboy.app" ]]; then
+    echo "Generating Cowboy skeleton..."
+    rm -rf "$COWBOY_SRC"
+    mkdir -p "$COWBOY_SRC"
+    cat > "$COWBOY_SRC/rebar.config" <<EOF
+{erl_opts, [debug_info]}.
+{deps, [
+    {cowboy, "$COWBOY_VERSION"}
+]}.
+EOF
+    (cd "$COWBOY_SRC" && rebar3 compile)
 fi
 
 if $needs_chi && [[ ! -f "$CHI_SRC/go.sum" ]]; then
