@@ -24,6 +24,13 @@ jobs:
         with:
           otp-version: "27"
           rebar3-version: "3.24"
+      - uses: subosito/flutter-action@v2
+          channel: stable
+          cache: true
+      - uses: actions/setup-go@v5
+          go-version: "1.25"
+          cache: false
+      - uses: sbt/setup-sbt@v1
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen
