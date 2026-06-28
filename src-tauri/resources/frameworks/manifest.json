@@ -14,6 +14,11 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "aspnet-core": {
+      "dotnetTemplate": "web",
+      "projectName": "RunspaceAspNetSandbox",
+      "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting"
+    },
     "chi": {
       "goModule": "github.com/go-chi/chi/v5",
       "versionConstraint": "v5.2.1"

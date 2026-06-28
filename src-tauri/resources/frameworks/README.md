@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `aspnet-core/` — copied to `~/.runspace/frameworks/aspnet-core/` on first use
 - `chi/` — copied to `~/.runspace/frameworks/chi/` on first use
 - `yii/` — copied to `~/.runspace/frameworks/yii/` on first use
 - `react-native/` — copied to `~/.runspace/frameworks/react-native/` on first use
