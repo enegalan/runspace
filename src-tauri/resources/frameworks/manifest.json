@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "pyramid": {
+      "pipPackage": "pyramid",
+      "versionConstraint": "2.0.*"
+    },
     "qwik": {
       "npmPackage": "@builder.io/qwik",
       "versionConstraint": "^1.20.0"
