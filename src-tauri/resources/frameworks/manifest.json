@@ -17,6 +17,10 @@
     "koa": {
       "npmPackage": "koa",
       "versionConstraint": "^3.0.0"
+    },
+    "fastify": {
+      "npmPackage": "fastify",
+      "versionConstraint": "^5.0.0"
     }
   }
 }
