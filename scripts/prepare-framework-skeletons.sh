@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+POEM_SRC="$GEN/poem"
 KTOR_SRC="$GEN/ktor"
 ECHO_SRC="$GEN/echo"
 MINIMAL_APIS_SRC="$GEN/minimal-apis"
@@ -29,6 +30,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
 KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
 ECHO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/echo"
 MINIMAL_APIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/minimal-apis"
@@ -55,6 +57,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+POEM_VERSION="${RUNSPACE_POEM_VERSION:-3.1.12}"
 KTOR_GRADLE_VERSION="${RUNSPACE_KTOR_GRADLE_VERSION:-8.12}"
 ECHO_VERSION="${RUNSPACE_ECHO_VERSION:-v4.13.3}"
 ECHO_MODULE="${RUNSPACE_ECHO_MODULE:-github.com/labstack/echo/v4}"
@@ -100,6 +103,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+poem_ready() {
+    [[ -f "$POEM_DEST/Cargo.toml" ]] &&
+        [[ -f "$POEM_DEST/Cargo.lock" ]] &&
+        [[ -f "$POEM_DEST/skeleton.version" ]]
 }
 ktor_ready() {
     [[ -f "$KTOR_DEST/build.gradle.kts" ]] &&
@@ -201,6 +209,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_poem=false
 needs_ktor=false
 needs_echo=false
 needs_minimal-apis=false
@@ -230,6 +239,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! poem_ready; then
+    needs_poem=true
 fi
 if force_sync || ! ktor_ready; then
     needs_ktor=true
@@ -290,7 +302,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -323,6 +335,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_poem && ! command -v cargo >/dev/null 2>&1; then
+    echo "Cargo is required to prepare the Poem skeleton." >&2
+    exit 1
+fi
+
 if $needs_ktor && ! command -v gradle >/dev/null 2>&1; then
     echo "Gradle is required to prepare the Ktor skeleton." >&2
     exit 1
@@ -408,6 +425,61 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_poem && [[ ! -f "$POEM_SRC/Cargo.lock" ]]; then
+    echo "Generating Poem skeleton..."
+    rm -rf "$POEM_SRC"
+    cargo new "$POEM_SRC" --name runspace_poem_sandbox --bin
+    cat > "$POEM_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-poem-sandbox"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+publish = false
+
+[[bin]]
+name = "runspace_entry"
+path = "src/main.rs"
+
+[dependencies]
+poem = "${POEM_VERSION}"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+EOF
+    cat > "$POEM_SRC/build.rs" <<'EOF'
+fn main() {
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("stub_entry.rs")
+            .to_string_lossy()
+            .to_string()
+    });
+    println!("cargo:rustc-env=RUNSPACE_ENTRY={entry}");
+}
+EOF
+    cat > "$POEM_SRC/src/stub_entry.rs" <<'EOF'
+use poem::{get, handler, listener::TcpListener, Route, Server};
+
+#[handler]
+fn index() -> &'static str {
+    "Runspace Poem sandbox"
+}
+
+#[tokio::main]
+async fn main() -> Result<(), std::io::Error> {
+    let app = Route::new().at("/", get(index));
+    Server::new(TcpListener::bind("127.0.0.1:3000"))
+        .run(app)
+        .await
+}
+EOF
+    cat > "$POEM_SRC/src/main.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY"));
+EOF
+    (cd "$POEM_SRC" && cargo build --quiet)
+fi
+
 if $needs_ktor && [[ ! -f "$KTOR_SRC/build/runspace-deps.ready" ]]; then
     echo "Generating Ktor skeleton..."
     rm -rf "$KTOR_SRC"
