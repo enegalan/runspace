@@ -1,0 +1,43 @@
+{
+  "id": "buffalo",
+  "name": "Buffalo",
+  "category": "framework",
+  "file_extension": "go",
+  "install_guide_url": "https://gobuffalo.io/documentation/getting_started/installation/",
+  "presentation": { "accent": "#ffc836" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "go_path",
+      "label": "Go binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["go"] }
+    }
+  ],
+  "run": {
+    "program": "{{go_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "buffalo",
+    "sync_exclude_dirs": ["vendor"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{go_path}}",
+      "args": ["mod", "vendor"],
+      "vendor_marker": "vendor/modules.txt",
+      "manifest_files": ["go.mod", "go.sum"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.go",
+    "template": "go_mod_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "version" }
+}
