@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ASPNET_CORE_SRC="$GEN/aspnet-core"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,63 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$ASPNET_CORE_SRC/RunspaceAspNetSandbox.csproj" ]]; then
+    mkdir -p "$ASPNET_CORE_DEST"
+
+    cat > "$ASPNET_CORE_SRC/RunspaceEntryHost.cs" <<'CS'
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+
+namespace RunspaceAspNetSandbox;
+
+public static class RunspaceEntryHost
+{
+    public static async Task RunAsync(string entryPath, string[] args)
+    {
+        var source = await File.ReadAllTextAsync(entryPath);
+        var options = ScriptOptions.Default
+            .AddReferences(
+                typeof(Program).Assembly,
+                typeof(WebApplication).Assembly)
+            .AddImports(
+                "System",
+                "Microsoft.AspNetCore.Builder",
+                "Microsoft.AspNetCore.Http",
+                "Microsoft.AspNetCore.Hosting",
+                "Microsoft.Extensions.DependencyInjection",
+                "Microsoft.Extensions.Hosting");
+        await CSharpScript.RunAsync(source, options);
+    }
+}
+CS
+
+    cat > "$ASPNET_CORE_SRC/Program.cs" <<'CS'
+using RunspaceAspNetSandbox;
+
+var entryPath = Environment.GetEnvironmentVariable("RUNSPACE_ENTRY_PATH");
+if (!string.IsNullOrEmpty(entryPath) && File.Exists(entryPath))
+{
+    await RunspaceEntryHost.RunAsync(entryPath, args);
+    return;
+}
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+
+app.Run();
+CS
+
+    rsync -a --delete \
+        --exclude bin/ \
+        --exclude obj/ \
+        --exclude .git/ \
+        "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
+    echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
+    synced+=("ASP.NET Core")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
