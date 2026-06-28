@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BUFFALO_SRC="$GEN/buffalo"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BUFFALO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/buffalo"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,17 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$BUFFALO_SRC/go.mod" ]]; then
+    mkdir -p "$BUFFALO_DEST"
+
+    echo "Refreshing Buffalo go.sum after manifest edits..."
+    (cd "$BUFFALO_SRC" && go mod tidy)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$BUFFALO_SRC/" "$BUFFALO_DEST/"
+    echo "$SKELETON_VERSION" > "$BUFFALO_DEST/skeleton.version"
+    synced+=("Buffalo")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
