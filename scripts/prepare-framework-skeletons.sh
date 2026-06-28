@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PYRAMID_SRC="$GEN/pyramid"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PYRAMID_VERSION="${RUNSPACE_PYRAMID_VERSION:-2.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+pyramid_ready() {
+    [[ -f "$PYRAMID_DEST/requirements.txt" ]] &&
+        [[ -f "$PYRAMID_DEST/app.py" ]] &&
+        [[ -f "$PYRAMID_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_pyramid=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! pyramid_ready; then
+    needs_pyramid=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_pyramid; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_pyramid && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Pyramid skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +113,37 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_pyramid && [[ ! -f "$PYRAMID_SRC/requirements.txt" ]]; then
+    echo "Generating Pyramid skeleton..."
+    rm -rf "$PYRAMID_SRC"
+    mkdir -p "$PYRAMID_SRC"
+    python3 -m venv "$PYRAMID_SRC/.venv"
+    (
+        cd "$PYRAMID_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "pyramid~=${PYRAMID_VERSION}" waitress
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from pyramid.config import Configurator
+from pyramid.response import Response
+
+
+def hello_world(request):
+    return Response('Hello from Runspace Pyramid sandbox')
+
+
+if __name__ == '__main__':
+    with Configurator() as config:
+        config.add_route('hello', '/')
+        config.add_view(hello_world, route_name='hello')
+        app = config.make_wsgi_app()
+    from waitress import serve
+
+    serve(app, host='127.0.0.1', port=8080)
+PY
     )
 fi
 
