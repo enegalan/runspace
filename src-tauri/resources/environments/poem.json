@@ -1,0 +1,43 @@
+{
+  "id": "poem",
+  "name": "Poem",
+  "category": "framework",
+  "file_extension": "rs",
+  "install_guide_url": "https://github.com/poem-web/poem",
+  "presentation": { "accent": "#1677ff" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "cargo_path",
+      "label": "Cargo binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["cargo"] }
+    }
+  ],
+  "run": {
+    "program": "/bin/bash",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "poem",
+    "sync_exclude_dirs": ["target"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{cargo_path}}",
+      "args": ["build", "--quiet"],
+      "vendor_marker": "target/debug/runspace_entry",
+      "manifest_files": ["Cargo.toml", "Cargo.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.sh",
+    "template": "cargo_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
