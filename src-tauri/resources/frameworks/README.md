@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `minimal-apis/` — copied to `~/.runspace/frameworks/minimal-apis/` on first use
 - `nancy/` — copied to `~/.runspace/frameworks/nancy/` on first use
 - `flutter/` — copied to `~/.runspace/frameworks/flutter/` on first use
 - `expo/` — copied to `~/.runspace/frameworks/expo/` on first use

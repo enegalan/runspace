@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+MINIMAL_APIS_SRC="$GEN/minimal-apis"
 NANCY_SRC="$GEN/nancy"
 FLUTTER_SRC="$GEN/flutter"
 EXPO_SRC="$GEN/expo"
@@ -26,6 +27,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+MINIMAL_APIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/minimal-apis"
 NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
 FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
 EXPO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/expo"
@@ -49,6 +51,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+MINIMAL_APIS_PROJECT="${RUNSPACE_MINIMAL_APIS_PROJECT:-RunspaceMinimalApisSandbox}"
 NANCY_ROSLYN_VERSION="${RUNSPACE_NANCY_ROSLYN_VERSION:-4.14.0}"
 NANCY_OWIN_VERSION="${RUNSPACE_NANCY_OWIN_VERSION:-3.1.2}"
 NANCY_VERSION="${RUNSPACE_NANCY_VERSION:-2.0.0}"
@@ -181,6 +184,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_minimal-apis=false
 needs_nancy=false
 needs_flutter=false
 needs_expo=false
@@ -261,7 +265,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
