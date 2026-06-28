@@ -101,7 +101,7 @@ fi
 if $needs_laminas && [[ ! -d "$LAMINAS_SRC/vendor" ]]; then
     echo "Generating Laminas skeleton..."
     rm -rf "$LAMINAS_SRC"
-    composer create-project -s dev "$LAMINAS_PROJECT" "$LAMINAS_SRC" "$LAMINAS_VERSION" --no-interaction
+    composer create-project -s dev "$LAMINAS_PROJECT" "$LAMINAS_SRC" "$LAMINAS_VERSION" --no-interaction --ignore-platform-reqs
 fi
 
 if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
