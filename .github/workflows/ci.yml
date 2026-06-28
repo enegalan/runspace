@@ -20,8 +20,12 @@ jobs:
         with:
           php-version: "8.3"
           tools: composer
-      - uses: erlef/setup-beam@v1
+      - uses: ruby/setup-ruby@v1
         with:
+          ruby-version: "3.3"
+          bundler-cache: false
+      - run: gem install padrino --no-document
+      - uses: erlef/setup-beam@v1
           otp-version: "27"
           rebar3-version: "3.24"
       - uses: gradle/actions/setup-gradle@v4

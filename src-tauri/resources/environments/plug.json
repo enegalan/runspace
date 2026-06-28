@@ -1,0 +1,58 @@
+{
+  "id": "plug",
+  "name": "Plug",
+  "category": "framework",
+  "file_extension": "exs",
+  "install_guide_url": "https://hexdocs.pm/plug/readme.html",
+  "presentation": { "accent": "#4e915c" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "elixir_path",
+      "label": "Elixir binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["elixir"] }
+    },
+    {
+      "key": "mix_path",
+      "label": "Mix binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["mix"] }
+    }
+  ],
+  "run": {
+    "program": "{{elixir_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "plug",
+    "sync_exclude_dirs": ["deps", "_build", "tmp"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{mix_path}}",
+      "args": ["deps.get"],
+      "vendor_marker": "deps/plug/mix.exs",
+      "manifest_files": ["mix.exs", "mix.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.exs",
+    "template": "mix_bootstrap.tpl"
+  },
+  "post_install": [
+    {
+      "type": "run",
+      "program": "{{mix_path}}",
+      "cwd": "skeleton",
+      "args": ["deps.compile"]
+    }
+  ],
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
