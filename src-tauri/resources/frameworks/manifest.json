@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "nextjs": {
+      "npmPackages": ["next", "react", "react-dom"],
+      "versionConstraint": "^15.0.0"
     }
   }
 }
