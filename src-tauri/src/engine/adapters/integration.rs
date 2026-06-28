@@ -187,4 +187,21 @@ mod tests {
             "<?php\n\nuse Symfony\\Component\\String\\UnicodeString;\n\necho (new UnicodeString('hello'))->upper();\n",
         );
     }
+
+    #[test]
+    #[ignore = "requires dotnet and network for skeleton install"]
+    fn integration_minimal_apis_hello() {
+        let Some(binary) = runtime_binary(&["dotnet"]) else {
+            return;
+        };
+        run_hello("minimal-apis", binary, "Console.WriteLine(\"hi\");\n");
+    #[ignore = "requires php, composer, and network for skeleton install"]
+    fn integration_wordpress_hello() {
+        let Some(binary) = runtime_binary(&["php"]) else {
+        run_hello(
+            "wordpress",
+            binary,
+            "<?php\n\necho strtoupper(sanitize_title('Hello from WordPress!'));\n",
+        );
+    }
 }
