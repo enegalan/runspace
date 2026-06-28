@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+STARLETTE_SRC="$GEN/starlette"
 CODEIGNITER_SRC="$GEN/codeigniter"
 BOTTLE_SRC="$GEN/bottle"
 LITESTAR_SRC="$GEN/litestar"
@@ -54,6 +55,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
 CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
 BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
 LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
@@ -105,6 +107,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+STARLETTE_VERSION="${RUNSPACE_STARLETTE_VERSION:-0.49.*}"
 CODEIGNITER_PROJECT="${RUNSPACE_CODEIGNITER_PROJECT:-codeigniter4/appstarter}"
 CODEIGNITER_VERSION="${RUNSPACE_CODEIGNITER_VERSION:-4.*}"
 BOTTLE_VERSION="${RUNSPACE_BOTTLE_VERSION:-==0.13.2}"
@@ -178,6 +181,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+starlette_ready() {
+    [[ -f "$STARLETTE_DEST/requirements.txt" ]] &&
+        [[ -f "$STARLETTE_DEST/app.py" ]] &&
+        [[ -f "$STARLETTE_DEST/skeleton.version" ]]
 }
 codeigniter_ready() {
     [[ -f "$CODEIGNITER_DEST/spark" ]] &&
@@ -386,6 +394,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_starlette=false
 needs_codeigniter=false
 needs_bottle=false
 needs_litestar=false
@@ -440,6 +449,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! starlette_ready; then
+    needs_starlette=true
 fi
 if force_sync || ! codeigniter_ready; then
     needs_codeigniter=true
@@ -566,7 +578,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -599,6 +611,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_starlette && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Starlette skeleton." >&2
+    exit 1
+fi
+
 if $needs_bottle && ! command -v python3 >/dev/null 2>&1; then
     echo "python3 is required to prepare the Bottle skeleton." >&2
     exit 1
@@ -781,6 +798,41 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_starlette && [[ ! -f "$STARLETTE_SRC/requirements.txt" ]]; then
+    echo "Generating Starlette skeleton..."
+    rm -rf "$STARLETTE_SRC"
+    mkdir -p "$STARLETTE_SRC"
+    python3 -m venv "$STARLETTE_SRC/.venv"
+    (
+        cd "$STARLETTE_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "starlette==${STARLETTE_VERSION}" uvicorn
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
+
+
+async def homepage(request):
+    return PlainTextResponse("Hello from Runspace Starlette sandbox")
+
+
+app = Starlette(
+    routes=[
+        Route("/", homepage),
+    ],
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+PY
+    )
+fi
+
 if $needs_codeigniter && [[ ! -d "$CODEIGNITER_SRC/vendor" ]]; then
     echo "Generating CodeIgniter skeleton..."
     rm -rf "$CODEIGNITER_SRC"
