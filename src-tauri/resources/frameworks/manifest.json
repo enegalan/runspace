@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "astro": {
+      "npmPackage": "astro",
+      "versionConstraint": "^5.0.0"
     }
   }
 }
