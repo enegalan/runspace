@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `spring-boot/` — copied to `~/.runspace/frameworks/spring-boot/` on first use
 - `phoenix/` — copied to `~/.runspace/frameworks/phoenix/` on first use
 - `nextjs/` — copied to `~/.runspace/frameworks/nextjs/` on first use
 - `nuxt/` — copied to `~/.runspace/frameworks/nuxt/` on first use
