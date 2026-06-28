@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FLUTTER_SRC="$GEN/flutter"
 EXPO_SRC="$GEN/expo"
 GORILLA_MUX_SRC="$GEN/gorilla-mux"
 WORDPRESS_SRC="$GEN/wordpress"
@@ -24,6 +25,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
 EXPO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/expo"
 GORILLA_MUX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gorilla-mux"
 WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
@@ -45,6 +47,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+FLUTTER_PROJECT="${RUNSPACE_FLUTTER_PROJECT:-runspace_flutter_sandbox}"
 EXPO_VERSION="${RUNSPACE_EXPO_VERSION:-^52.0.0}"
 GORILLA_MUX_VERSION="${RUNSPACE_GORILLA_MUX_VERSION:-v1.8.1}"
 WORDPRESS_VERSION="${RUNSPACE_WORDPRESS_VERSION:-6.*}"
@@ -82,6 +85,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+flutter_ready() {
+    [[ -f "$FLUTTER_DEST/pubspec.yaml" ]] &&
+        [[ -f "$FLUTTER_DEST/pubspec.lock" ]] &&
+        [[ -f "$FLUTTER_DEST/skeleton.version" ]]
 }
 expo_ready() {
     [[ -f "$EXPO_DEST/package.json" ]] &&
@@ -163,6 +171,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_flutter=false
 needs_expo=false
 needs_gorilla-mux=false
 needs_wordpress=false
@@ -187,6 +196,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! flutter_ready; then
+    needs_flutter=true
 fi
 if force_sync || ! expo_ready; then
     needs_expo=true
@@ -235,7 +247,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -268,6 +280,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_flutter && ! command -v flutter >/dev/null 2>&1; then
+    echo "Flutter is required to prepare the Flutter skeleton." >&2
+    exit 1
+fi
+
 if $needs_expo && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Expo skeleton." >&2
     exit 1
@@ -333,6 +350,16 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_flutter && [[ ! -f "$FLUTTER_SRC/lib/main.dart" ]]; then
+    echo "Generating Flutter skeleton..."
+    rm -rf "$FLUTTER_SRC"
+    flutter create --project-name "$FLUTTER_PROJECT" --template "$FLUTTER_TEMPLATE" "$FLUTTER_SRC"
+    (
+        cd "$FLUTTER_SRC"
+        flutter pub get
+    )
+fi
+
 if $needs_expo && [[ ! -d "$EXPO_SRC/node_modules" ]]; then
     echo "Generating Expo skeleton..."
     rm -rf "$EXPO_SRC"
