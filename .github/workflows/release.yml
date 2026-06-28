@@ -22,10 +22,15 @@ jobs:
           php-version: "8.3"
           tools: composer
 
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen
-          key: runspace-skeleton-gen-v3-${{ runner.os }}
+          key: runspace-skeleton-gen-v4-${{ runner.os }}
 
       - run: npm ci
 

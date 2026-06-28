@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FLUTTER_SRC="$GEN/flutter"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,38 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$FLUTTER_SRC/lib/main.dart" ]]; then
+    mkdir -p "$FLUTTER_DEST"
+
+    python3 - <<'PY' "$FLUTTER_SRC/pubspec.yaml"
+import sys
+
+path = sys.argv[1]
+lines = []
+with open(path) as f:
+    for line in f:
+        if line.startswith("name:"):
+            lines.append("name: runspace_flutter_sandbox\n")
+        elif line.startswith("description:"):
+            lines.append("description: Internal Flutter sandbox for Runspace\n")
+        else:
+            lines.append(line)
+with open(path, "w") as f:
+    f.writelines(lines)
+PY
+
+    echo "Refreshing Flutter pubspec.lock after manifest edits..."
+    (cd "$FLUTTER_SRC" && flutter pub get)
+
+    rsync -a --delete \
+        --exclude .dart_tool/ \
+        --exclude build/ \
+        --exclude .git/ \
+        "$FLUTTER_SRC/" "$FLUTTER_DEST/"
+    echo "$SKELETON_VERSION" > "$FLUTTER_DEST/skeleton.version"
+    synced+=("Flutter")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
