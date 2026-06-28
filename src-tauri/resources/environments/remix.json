@@ -1,10 +1,10 @@
 {
-  "id": "express",
-  "name": "Express",
+  "id": "remix",
+  "name": "Remix",
   "category": "framework",
   "file_extension": "js",
-  "install_guide_url": "https://expressjs.com/",
-  "presentation": { "accent": "#353535" },
+  "install_guide_url": "https://remix.run/docs",
+  "presentation": { "accent": "#213dff" },
   "profile": "framework",
   "config_fields": [
     {
@@ -20,7 +20,6 @@
       "label": "npm binary (skeleton install)",
       "field_type": "file_path",
       "required": false,
-      "default": "npm",
       "detect": { "commands": ["npm"] }
     }
   ],
@@ -29,13 +28,13 @@
     "args": ["{{entry_file}}"]
   },
   "skeleton": {
-    "bundled_dir": "express",
+    "bundled_dir": "remix",
     "sync_exclude_dirs": ["node_modules"],
     "sync_exclude_files": [],
     "dependency_install": {
       "program": "{{npm_path}}",
       "args": ["ci", "--no-audit", "--no-fund"],
-      "vendor_marker": "node_modules/express/package.json",
+      "vendor_marker": "node_modules/@remix-run/node/package.json",
       "manifest_files": ["package.json", "package-lock.json"]
     }
   },
