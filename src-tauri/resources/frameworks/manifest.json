@@ -13,6 +13,11 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "rocket": {
+      "crate": "rocket",
+      "version": "0.5.1",
+      "features": ["json"]
     }
   }
 }

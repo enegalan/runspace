@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ROCKET_SRC="$GEN/rocket"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ROCKET_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rocket"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+ROCKET_VERSION="${RUNSPACE_ROCKET_VERSION:-0.5.1}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+rocket_ready() {
+    [[ -f "$ROCKET_DEST/Cargo.toml" ]] &&
+        [[ -f "$ROCKET_DEST/Cargo.lock" ]] &&
+        [[ -f "$ROCKET_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_rocket=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! rocket_ready; then
+    needs_rocket=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_rocket; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_rocket && ! command -v cargo >/dev/null 2>&1; then
+    echo "Cargo is required to prepare the Rocket skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +114,58 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_rocket && [[ ! -f "$ROCKET_SRC/Cargo.lock" ]]; then
+    echo "Generating Rocket skeleton..."
+    rm -rf "$ROCKET_SRC"
+    cargo new "$ROCKET_SRC" --name runspace_rocket_sandbox --bin
+    cat > "$ROCKET_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-rocket-sandbox"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+publish = false
+
+[[bin]]
+name = "runspace_entry"
+path = "src/main.rs"
+
+[dependencies]
+rocket = { version = "${ROCKET_VERSION}", features = ["json"] }
+EOF
+    cat > "$ROCKET_SRC/build.rs" <<'EOF'
+fn main() {
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("stub_entry.rs")
+            .to_string_lossy()
+            .to_string()
+    });
+    println!("cargo:rustc-env=RUNSPACE_ENTRY={entry}");
+}
+EOF
+    cat > "$ROCKET_SRC/src/stub_entry.rs" <<'EOF'
+#[macro_use]
+extern crate rocket;
+
+#[get("/")]
+fn index() -> &'static str {
+    "Runspace Rocket sandbox"
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![index])
+}
+EOF
+    cat > "$ROCKET_SRC/src/main.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY"));
+EOF
+    (cd "$ROCKET_SRC" && cargo build --quiet)
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
