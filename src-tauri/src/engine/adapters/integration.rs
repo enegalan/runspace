@@ -174,4 +174,17 @@ mod tests {
             "<?php\n\nuse Symfony\\Component\\String\\UnicodeString;\n\necho (new UnicodeString('hello'))->upper();\n",
         );
     }
+
+    #[test]
+    #[ignore = "requires php, composer, and network for skeleton install"]
+    fn integration_wordpress_hello() {
+        let Some(binary) = runtime_binary(&["php"]) else {
+            return;
+        };
+        run_hello(
+            "wordpress",
+            binary,
+            "<?php\n\necho strtoupper(sanitize_title('Hello from WordPress!'));\n",
+        );
+    }
 }

@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "wordpress": {
+      "createProject": "johnpbloch/wordpress",
+      "versionConstraint": "6.*"
+    },
     "solidstart": {
       "npmPackage": "@solidjs/start",
       "versionConstraint": "^1.3.0"
