@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+GRAPE_SRC="$GEN/grape"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+GRAPE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/grape"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+GRAPE_VERSION="${RUNSPACE_GRAPE_VERSION:-~> 2.2}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+grape_ready() {
+    [[ -f "$GRAPE_DEST/Gemfile" ]] &&
+        [[ -f "$GRAPE_DEST/Gemfile.lock" ]] &&
+        [[ -f "$GRAPE_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_grape=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! grape_ready; then
+    needs_grape=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_grape; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,14 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_grape && ! command -v bundle >/dev/null 2>&1; then
+    echo "Bundler is required to prepare the Grape skeleton." >&2
+    echo "Install Ruby and Bundler, then run:" >&2
+    echo "  gem install bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
 
@@ -95,6 +116,22 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_grape && [[ ! -f "$GRAPE_SRC/.bundle/config" ]]; then
+    echo "Generating Grape skeleton..."
+    rm -rf "$GRAPE_SRC"
+    mkdir -p "$GRAPE_SRC"
+    cat > "$GRAPE_SRC/Gemfile" <<EOF
+source "https://rubygems.org"
+
+gem "grape", "${GRAPE_VERSION}"
+EOF
+    (
+        cd "$GRAPE_SRC"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
     )
 fi
 
