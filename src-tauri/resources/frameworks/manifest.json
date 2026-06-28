@@ -18,6 +18,81 @@
       "pipPackage": "litestar",
       "extraPackages": ["uvicorn[standard]"]
     },
+    "spring-boot": {
+      "bootVersion": "3.4.5",
+      "javaVersion": "21",
+      "dependencies": "web"
+    },
+    "phoenix": {
+      "phoenixVersion": "1.8.*",
+      "database": "sqlite3"
+    },
+    "nextjs": {
+      "npmPackages": ["next", "react", "react-dom"],
+      "versionConstraint": "^15.0.0"
+    },
+    "nuxt": {
+      "npmPackage": "nuxt",
+      "versionConstraint": "^3.0.0"
+    },
+    "rails": {
+      "railsVersion": "8.0.*",
+      "database": "sqlite3"
+    },
+    "sinatra": {
+      "gemPackage": "sinatra",
+      "versionConstraint": "~> 4.0"
+    },
+    "padrino": {
+      "gemPackage": "padrino",
+      "versionConstraint": ">= 0.15.0"
+    },
+    "cowboy": {
+      "rebarPackage": "cowboy",
+      "versionConstraint": "2.13.0"
+    },
+    "aspnet-core": {
+      "dotnetTemplate": "web",
+      "projectName": "RunspaceAspNetSandbox",
+      "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting"
+    },
+    "chi": {
+      "goModule": "github.com/go-chi/chi/v5",
+      "versionConstraint": "v5.2.1"
+    },
+    "yii": {
+      "createProject": "yiisoft/yii2-app-basic",
+      "versionConstraint": "2.0.*"
+    },
+    "react-native": {
+      "npmPackage": "react-native",
+      "versionConstraint": "^0.79.0"
+    },
+    "meteor": {
+      "npmPackage": "meteor",
+      "versionConstraint": "^3.4.0"
+    },
+    "quarkus": {
+      "groupId": "com.runspace",
+      "artifactId": "sandbox",
+      "extensions": "io.quarkus:quarkus-rest"
+    },
+    "astro": {
+      "npmPackage": "astro",
+      "versionConstraint": "^5.0.0"
+    },
+    "axum": {
+      "cargoPackage": "axum",
+      "versionConstraint": "0.8"
+    },
+    "roda": {
+      "gem": "roda",
+      "versionConstraint": "~> 3.87"
+    },
+    "remix": {
+      "npmPackage": "@remix-run/node",
+      "versionConstraint": "^2.17.0"
+    },
     "sveltekit": {
       "createTool": "sv",
       "template": "minimal",
