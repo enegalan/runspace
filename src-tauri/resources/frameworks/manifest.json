@@ -18,6 +18,11 @@
       "npmPackage": "koa",
       "versionConstraint": "^3.0.0"
     },
+    "hono": {
+      "npmPackage": "hono",
+      "versionConstraint": "^4.0.0",
+      "extraNpmPackages": ["@hono/node-server"]
+    },
     "fastify": {
       "npmPackage": "fastify",
       "versionConstraint": "^5.0.0"
