@@ -168,10 +168,12 @@ fi
 
 if $needs_hanami && [[ ! -f "$HANAMI_SRC/.bundle/config" ]]; then
     echo "Generating Hanami skeleton..."
-    rm -rf "$HANAMI_SRC"
-    hanami new "$HANAMI_SRC" \
-        --database=sqlite \
-        --test=minitest
+    rm -rf "$HANAMI_SRC" "$GEN/runspace_hanami"
+    (
+        cd "$GEN"
+        hanami new runspace_hanami --database=sqlite
+    )
+    mv "$GEN/runspace_hanami" "$HANAMI_SRC"
     (
         cd "$HANAMI_SRC"
         bundle config set --local path 'vendor/bundle'
