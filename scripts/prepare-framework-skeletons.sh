@@ -162,4 +162,4 @@ if $needs_fastify; then
     fi
 fi
 
-exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
+exec bash "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
