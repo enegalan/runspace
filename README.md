@@ -28,6 +28,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | Laminas | PHP + [Composer](https://getcomposer.org/) |
 | Phalcon | PHP (with [Phalcon extension](https://docs.phalcon.io/5.9/installation/)) + [Composer](https://getcomposer.org/) |
 | Express | [Node.js](https://nodejs.org/en/download) + npm |
+| Micronaut | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Vert.x | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Spring Boot | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Ktor | [Kotlin](https://kotlinlang.org/docs/command-line.html) + [Gradle](https://gradle.org/install/) |
@@ -59,6 +60,7 @@ To build or contribute to Runspace from source:
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Laminas skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Phalcon skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
+- curl — generates bundled Micronaut skeleton via launch.micronaut.io during build
 - curl — generates bundled Spring Boot skeleton via start.spring.io during build
 - Ruby 3.2+ with Bundler and the `padrino` gem — generates the bundled Padrino skeleton during build (`npm run prepare:frameworks`)
 - curl — generates bundled Quarkus skeleton via code.quarkus.io during build
