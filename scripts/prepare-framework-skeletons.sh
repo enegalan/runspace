@@ -6,9 +6,11 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+LITESTAR_SRC="$GEN/litestar"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
@@ -34,6 +36,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+litestar_ready() {
+    [[ -f "$LITESTAR_DEST/requirements.txt" ]] &&
+        [[ -f "$LITESTAR_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +48,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_litestar=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +59,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! litestar_ready; then
+    needs_litestar=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_litestar; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +77,16 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_litestar && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Litestar skeleton." >&2
+    exit 1
+fi
+
+if $needs_litestar && ! python3 -m pip --version >/dev/null 2>&1; then
+    echo "pip is required to prepare the Litestar skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +116,27 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_litestar && [[ ! -f "$LITESTAR_SRC/requirements.txt" ]]; then
+    echo "Generating Litestar skeleton..."
+    rm -rf "$LITESTAR_SRC"
+    mkdir -p "$LITESTAR_SRC"
+    (
+        cd "$LITESTAR_SRC"
+        python3 -m pip install litestar "uvicorn[standard]" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        python3 - <<'PY' > requirements.txt
+import sys
+sys.path.insert(0, "site-packages")
+import litestar
+import uvicorn
+print(f"litestar=={litestar.__version__}")
+print(f"uvicorn=={uvicorn.__version__}")
+PY
     )
 fi
 
