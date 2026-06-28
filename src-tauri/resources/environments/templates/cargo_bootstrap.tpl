@@ -15,3 +15,11 @@ cp "$ENTRY" "$RUN/src/main.rs"
 
 cd "$RUN"
 exec {{cargo_path}} run --quiet
+export RUNSPACE_ENTRY_PATH='{{entry_file}}'
+
+cd '{{skeleton_root}}'
+exec '{{cargo_path}}' run --quiet --bin runspace_entry
+#!/bin/sh
+set -e
+cd "$RUNSPACE_FRAMEWORK_ROOT"
+exec '{{cargo_path}}' run --quiet --bin runspace-entry
