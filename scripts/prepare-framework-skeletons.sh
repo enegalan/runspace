@@ -10,6 +10,10 @@ if command -v brew >/dev/null 2>&1; then
     unset _ruby_prefix
 fi
 
+if command -v ruby >/dev/null 2>&1; then
+    export PATH="$(ruby -e 'print Gem.bindir'):${PATH}"
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
@@ -114,6 +118,7 @@ fi
 if $needs_hanami && ! command -v hanami >/dev/null 2>&1; then
     echo "Installing Hanami for skeleton generation..."
     gem install hanami bundler --no-document
+    export PATH="$(ruby -e 'print Gem.bindir'):${PATH}"
 fi
 
 if $needs_hanami && ! command -v bundle >/dev/null 2>&1; then
