@@ -20,6 +20,7 @@
       "label": "npm binary (skeleton install)",
       "field_type": "file_path",
       "required": false,
+      "default": "npm",
       "detect": { "commands": ["npm"] }
     }
   ],

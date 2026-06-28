@@ -33,6 +33,27 @@ RSYNC_EXCLUDES=(
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
 synced=()
 
+# Helper function to sync directories
+sync_dir() {
+    local src="$1"
+    local dest="$2"
+    shift 2
+    local excludes=("$@")
+
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete "${excludes[@]}" "$src/" "$dest/"
+    else
+        # Fallback to cp when rsync is not available
+        rm -rf "$dest"
+        mkdir -p "$dest"
+        cp -r "$src"/* "$dest/" 2>/dev/null || true
+        # Remove excluded patterns
+        for pattern in vendor node_modules .git; do
+            rm -rf "$dest/$pattern" 2>/dev/null || true
+        done
+    fi
+}
+
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
     mkdir -p "$LARAVEL_DEST"
 
@@ -51,7 +72,7 @@ PY
     echo "Refreshing Laravel composer.lock after manifest edits..."
     (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
 
-    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
+    sync_dir "$LARAVEL_SRC" "$LARAVEL_DEST" "${RSYNC_EXCLUDES[@]}"
     echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
     synced+=("Laravel")
 fi
@@ -97,7 +118,7 @@ with open(path, "w") as f:
 PY
     fi
 
-    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    sync_dir "$SYMFONY_SRC" "$SYMFONY_DEST" "${RSYNC_EXCLUDES[@]}"
     echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
     synced+=("Symfony")
 fi
