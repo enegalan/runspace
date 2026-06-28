@@ -9,13 +9,17 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PHOENIX_SRC="$GEN/phoenix"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude deps/
+    --exclude _build/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +109,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$PHOENIX_SRC/mix.lock" ]]; then
+    mkdir -p "$PHOENIX_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" --exclude tmp/ --exclude priv/static/assets/ "$PHOENIX_SRC/" "$PHOENIX_DEST/"
+    echo "$SKELETON_VERSION" > "$PHOENIX_DEST/skeleton.version"
+    synced+=("Phoenix")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
