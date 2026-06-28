@@ -26,6 +26,18 @@
     "fastify": {
       "npmPackage": "fastify",
       "versionConstraint": "^5.0.0"
+    },
+    "nestjs": {
+      "npmPackages": [
+        "@nestjs/core",
+        "@nestjs/common",
+        "@nestjs/platform-express",
+        "reflect-metadata",
+        "rxjs",
+        "ts-node",
+        "typescript"
+      ],
+      "versionConstraint": "^11.0.0"
     }
   }
 }

@@ -12,12 +12,14 @@ EXPRESS_SRC="$GEN/express"
 KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
+NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
 HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
 FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
+NESTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nestjs"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -153,6 +155,13 @@ if [[ -d "$FASTIFY_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$FASTIFY_SRC/" "$FASTIFY_DEST/"
     echo "$SKELETON_VERSION" > "$FASTIFY_DEST/skeleton.version"
     synced+=("Fastify")
+fi
+
+if [[ -d "$NESTJS_SRC/node_modules" ]]; then
+    mkdir -p "$NESTJS_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$NESTJS_SRC/" "$NESTJS_DEST/"
+    echo "$SKELETON_VERSION" > "$NESTJS_DEST/skeleton.version"
+    synced+=("NestJS")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
