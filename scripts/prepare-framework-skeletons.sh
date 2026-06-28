@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Prefer Homebrew Ruby when system Ruby is too old for modern gems.
+if command -v brew >/dev/null 2>&1; then
+    _ruby_prefix="$(brew --prefix ruby 2>/dev/null || true)"
+    if [[ -n "${_ruby_prefix:-}" && -x "${_ruby_prefix}/bin/ruby" ]]; then
+        export PATH="${_ruby_prefix}/bin:${PATH}"
+    fi
+    unset _ruby_prefix
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
@@ -103,11 +112,8 @@ if $needs_aspnet_core && ! command -v dotnet >/dev/null 2>&1; then
 fi
 
 if $needs_hanami && ! command -v hanami >/dev/null 2>&1; then
-    echo "Hanami is required to prepare the Hanami skeleton." >&2
-    echo "Install Ruby 3.1+, Bundler, and Hanami, then run:" >&2
-    echo "  gem install hanami bundler" >&2
-    echo "  npm run prepare:frameworks" >&2
-    exit 1
+    echo "Installing Hanami for skeleton generation..."
+    gem install hanami bundler --no-document
 fi
 
 if $needs_hanami && ! command -v bundle >/dev/null 2>&1; then
