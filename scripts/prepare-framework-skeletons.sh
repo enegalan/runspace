@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+REMIX_SRC="$GEN/remix"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+REMIX_VERSION="${RUNSPACE_REMIX_VERSION:-^2.17.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+remix_ready() {
+    [[ -f "$REMIX_DEST/package.json" ]] &&
+        [[ -f "$REMIX_DEST/package-lock.json" ]] &&
+        [[ -f "$REMIX_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_remix=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! remix_ready; then
+    needs_remix=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_remix; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -64,8 +77,8 @@ if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; 
     exit 1
 fi
 
-if $needs_express && ! command -v npm >/dev/null 2>&1; then
-    echo "npm is required to prepare the Express skeleton." >&2
+if ($needs_express || $needs_remix) && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare Express/Remix skeletons." >&2
     exit 1
 fi
 
@@ -95,6 +108,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_remix && [[ ! -d "$REMIX_SRC/node_modules" ]]; then
+    echo "Generating Remix skeleton..."
+    rm -rf "$REMIX_SRC"
+    mkdir -p "$REMIX_SRC"
+    (
+        cd "$REMIX_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/remix-sandbox"
+        npm pkg set description="Internal Remix sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@remix-run/node@${REMIX_VERSION}" "@remix-run/react@${REMIX_VERSION}" react react-dom --save
     )
 fi
 
