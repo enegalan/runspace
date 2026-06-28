@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+YII_SRC="$GEN/yii"
 REACT_NATIVE_SRC="$GEN/react-native"
 METEOR_SRC="$GEN/meteor"
 QUARKUS_SRC="$GEN/quarkus"
@@ -40,6 +41,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
 REACT_NATIVE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/react-native"
 METEOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/meteor"
 QUARKUS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quarkus"
@@ -77,6 +79,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+YII_PROJECT="${RUNSPACE_YII_PROJECT:-yiisoft/yii2-app-basic}"
+YII_VERSION="${RUNSPACE_YII_VERSION:-2.0.*}"
 REACT_NATIVE_VERSION="${RUNSPACE_REACT_NATIVE_VERSION:-^0.79.0}"
 METEOR_VERSION="${RUNSPACE_METEOR_VERSION:-^3.4.0}"
 ASTRO_VERSION="${RUNSPACE_ASTRO_VERSION:-^5.0.0}"
@@ -131,6 +135,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+yii_ready() {
+    [[ -f "$YII_DEST/yii" ]] &&
+        [[ -f "$YII_DEST/composer.lock" ]] &&
+        [[ -f "$YII_DEST/skeleton.version" ]]
 }
 meteor_ready() {
     [[ -f "$METEOR_DEST/package.json" ]] &&
@@ -280,6 +289,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_yii=false
 needs_react-native=false
 needs_meteor=false
 needs_quarkus=false
@@ -320,6 +330,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! yii_ready; then
+    needs_yii=true
 fi
 if force_sync || ! meteor_ready; then
     needs_meteor=true
@@ -410,7 +423,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -566,6 +579,12 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_yii && [[ ! -d "$YII_SRC/vendor" ]]; then
+    echo "Generating Yii skeleton..."
+    rm -rf "$YII_SRC"
+    composer create-project "$YII_PROJECT" "$YII_SRC" "$YII_VERSION" --no-interaction
+fi
+
 if $needs_meteor && [[ ! -d "$METEOR_SRC/node_modules" ]]; then
     echo "Generating Meteor skeleton..."
     rm -rf "$METEOR_SRC"
