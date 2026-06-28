@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "tornado": {
+      "pipPackage": "tornado",
+      "versionConstraint": "==6.4.2"
+    },
     "ionic": {
       "npmPackage": "@ionic/core",
       "versionConstraint": "^8.0.0"
