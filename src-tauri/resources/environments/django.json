@@ -61,5 +61,7 @@
     "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
     "workspace": "RUNSPACE_WORKSPACE"
   },
-  "version_probe": { "arg": "--version" }
+  "version_probe": {
+    "args": ["-c", "import django; print(django.get_version())"]
+  }
 }

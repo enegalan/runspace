@@ -83,14 +83,20 @@ if $needs_express && ! command -v npm >/dev/null 2>&1; then
     exit 1
 fi
 
-if $needs_django && ! command -v python3 >/dev/null 2>&1; then
-    echo "python3 is required to prepare the Django skeleton." >&2
-    exit 1
-fi
+if $needs_django; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_CMD=python3
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_CMD=python
+    else
+        echo "python3 or python is required to prepare the Django skeleton." >&2
+        exit 1
+    fi
 
-if $needs_django && ! python3 -m pip --version >/dev/null 2>&1; then
-    echo "pip is required to prepare the Django skeleton." >&2
-    exit 1
+    if ! "$PYTHON_CMD" -m pip --version >/dev/null 2>&1; then
+        echo "pip is required to prepare the Django skeleton." >&2
+        exit 1
+    fi
 fi
 
 mkdir -p "$GEN"
@@ -128,17 +134,14 @@ if $needs_django && [[ ! -f "$DJANGO_SRC/manage.py" ]]; then
     mkdir -p "$DJANGO_SRC"
     (
         cd "$DJANGO_SRC"
-        python3 -m pip install "django${DJANGO_VERSION}" \
+        "$PYTHON_CMD" -m pip install "django${DJANGO_VERSION}" \
             --target site-packages \
             --no-warn-script-location \
             --disable-pip-version-check
-        PYTHONPATH="$(pwd)/site-packages" python3 -m django startproject "$DJANGO_PROJECT" .
-        python3 - <<'PY' > requirements.txt
-import sys
-sys.path.insert(0, "site-packages")
-import django
-print(f"django=={django.get_version()}")
-PY
+        PYTHONPATH="$(pwd)/site-packages" "$PYTHON_CMD" -m django startproject "$DJANGO_PROJECT" .
+        "$PYTHON_CMD" -m pip freeze \
+            --path site-packages \
+            --disable-pip-version-check > requirements.txt
     )
 fi
 
