@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "expo": {
+      "npmPackage": "expo",
+      "versionConstraint": "^52.0.0"
+    },
     "gorilla-mux": {
       "goModule": "github.com/gorilla/mux",
       "versionConstraint": "v1.8.1"
