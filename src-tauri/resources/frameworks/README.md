@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Yii, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -12,6 +12,23 @@ Output directories:
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
 - `yii/` — copied to `~/.runspace/frameworks/yii/` on first use
+- `react-native/` — copied to `~/.runspace/frameworks/react-native/` on first use
+- `meteor/` — copied to `~/.runspace/frameworks/meteor/` on first use
+- `quarkus/` — copied to `~/.runspace/frameworks/quarkus/` on first use
+- `astro/` — copied to `~/.runspace/frameworks/astro/` on first use
+- `axum/` — copied to `~/.runspace/frameworks/axum/` on first use
+- `roda/` — copied to `~/.runspace/frameworks/roda/` on first use
+- `remix/` — copied to `~/.runspace/frameworks/remix/` on first use
+- `sveltekit/` — copied to `~/.runspace/frameworks/sveltekit/` on first use
+- `fastapi/` — copied to `~/.runspace/frameworks/fastapi/` on first use
+- `phalcon/` — copied to `~/.runspace/frameworks/phalcon/` on first use
+- `poem/` — copied to `~/.runspace/frameworks/poem/` on first use
+- `ktor/` — copied to `~/.runspace/frameworks/ktor/` on first use
+- `echo/` — copied to `~/.runspace/frameworks/echo/` on first use
+- `minimal-apis/` — copied to `~/.runspace/frameworks/minimal-apis/` on first use
+- `nancy/` — copied to `~/.runspace/frameworks/nancy/` on first use
+- `flutter/` — copied to `~/.runspace/frameworks/flutter/` on first use
+- `expo/` — copied to `~/.runspace/frameworks/expo/` on first use
 - `gorilla-mux/` — copied to `~/.runspace/frameworks/gorilla-mux/` on first use
 - `wordpress/` — copied to `~/.runspace/frameworks/wordpress/` on first use
 - `solidstart/` — copied to `~/.runspace/frameworks/solidstart/` on first use
