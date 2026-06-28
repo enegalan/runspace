@@ -9,12 +9,15 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+RODA_SRC="$GEN/roda"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
+    --exclude .bundle/
     --exclude node_modules/
     --exclude .git/
     --exclude database/database.sqlite
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$RODA_SRC/.bundle/config" ]]; then
+    mkdir -p "$RODA_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$RODA_SRC/" "$RODA_DEST/"
+    echo "$SKELETON_VERSION" > "$RODA_DEST/skeleton.version"
+    synced+=("Roda")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
