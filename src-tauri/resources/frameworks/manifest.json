@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "echo": {
+      "goModule": "github.com/labstack/echo/v4",
+      "versionConstraint": "v4.13.3"
     }
   }
 }
