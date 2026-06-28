@@ -10,10 +10,12 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+SINATRA_SRC="$GEN/sinatra"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -164,6 +166,13 @@ CS
         "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
     echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
     synced+=("ASP.NET Core")
+fi
+
+if [[ -f "$SINATRA_SRC/.bundle/config" ]]; then
+    mkdir -p "$SINATRA_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SINATRA_SRC/" "$SINATRA_DEST/"
+    echo "$SKELETON_VERSION" > "$SINATRA_DEST/skeleton.version"
+    synced+=("Sinatra")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then

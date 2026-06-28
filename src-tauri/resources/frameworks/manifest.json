@@ -18,6 +18,10 @@
       "dotnetTemplate": "web",
       "projectName": "RunspaceAspNetSandbox",
       "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting"
+    },
+    "sinatra": {
+      "gemPackage": "sinatra",
+      "versionConstraint": "~> 4.0"
     }
   }
 }
