@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ECHO_SRC="$GEN/echo"
 MINIMAL_APIS_SRC="$GEN/minimal-apis"
 NANCY_SRC="$GEN/nancy"
 FLUTTER_SRC="$GEN/flutter"
@@ -27,6 +28,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ECHO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/echo"
 MINIMAL_APIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/minimal-apis"
 NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
 FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
@@ -51,6 +53,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+ECHO_VERSION="${RUNSPACE_ECHO_VERSION:-v4.13.3}"
+ECHO_MODULE="${RUNSPACE_ECHO_MODULE:-github.com/labstack/echo/v4}"
 MINIMAL_APIS_PROJECT="${RUNSPACE_MINIMAL_APIS_PROJECT:-RunspaceMinimalApisSandbox}"
 NANCY_ROSLYN_VERSION="${RUNSPACE_NANCY_ROSLYN_VERSION:-4.14.0}"
 NANCY_OWIN_VERSION="${RUNSPACE_NANCY_OWIN_VERSION:-3.1.2}"
@@ -93,6 +97,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+echo_ready() {
+    [[ -f "$ECHO_DEST/go.mod" ]] &&
+        [[ -f "$ECHO_DEST/go.sum" ]] &&
+        [[ -f "$ECHO_DEST/skeleton.version" ]]
 }
 nancy_ready() {
     [[ -f "$NANCY_DEST/RunspaceNancySandbox.csproj" ]] &&
@@ -184,6 +193,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_echo=false
 needs_minimal-apis=false
 needs_nancy=false
 needs_flutter=false
@@ -211,6 +221,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! echo_ready; then
+    needs_echo=true
 fi
 if force_sync || ! nancy_ready; then
     needs_nancy=true
@@ -265,7 +278,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -298,6 +311,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_echo && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Echo skeleton." >&2
+    exit 1
+fi
+
 if $needs_nancy && ! command -v dotnet >/dev/null 2>&1; then
     echo "The .NET SDK is required to prepare the Nancy skeleton." >&2
     exit 1
@@ -373,6 +391,18 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_echo && [[ ! -f "$ECHO_SRC/go.sum" ]]; then
+    echo "Generating Echo skeleton..."
+    rm -rf "$ECHO_SRC"
+    mkdir -p "$ECHO_SRC"
+    (
+        cd "$ECHO_SRC"
+        go mod init github.com/runspace/echo-sandbox
+        go get "${ECHO_MODULE}@${ECHO_VERSION}"
+        go mod tidy
+    )
+fi
+
 if $needs_nancy && [[ ! -f "$NANCY_SRC/obj/project.assets.json" ]]; then
     echo "Generating Nancy skeleton..."
     rm -rf "$NANCY_SRC"
