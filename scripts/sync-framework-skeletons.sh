@@ -9,10 +9,12 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
 FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
 
 RSYNC_EXCLUDES=(
@@ -33,6 +35,27 @@ RSYNC_EXCLUDES=(
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
 synced=()
 
+# Helper function to sync directories
+sync_dir() {
+    local src="$1"
+    local dest="$2"
+    shift 2
+    local excludes=("$@")
+
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete "${excludes[@]}" "$src/" "$dest/"
+    else
+        # Fallback to cp when rsync is not available
+        rm -rf "$dest"
+        mkdir -p "$dest"
+        cp -r "$src"/* "$dest/" 2>/dev/null || true
+        # Remove excluded patterns
+        for pattern in vendor node_modules .git; do
+            rm -rf "$dest/$pattern" 2>/dev/null || true
+        done
+    fi
+}
+
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
     mkdir -p "$LARAVEL_DEST"
 
@@ -51,7 +74,7 @@ PY
     echo "Refreshing Laravel composer.lock after manifest edits..."
     (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
 
-    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
+    sync_dir "$LARAVEL_SRC" "$LARAVEL_DEST" "${RSYNC_EXCLUDES[@]}"
     echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
     synced+=("Laravel")
 fi
@@ -97,7 +120,7 @@ with open(path, "w") as f:
 PY
     fi
 
-    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    sync_dir "$SYMFONY_SRC" "$SYMFONY_DEST" "${RSYNC_EXCLUDES[@]}"
     echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
     synced+=("Symfony")
 fi
@@ -107,6 +130,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -d "$HONO_SRC/node_modules" ]]; then
+    mkdir -p "$HONO_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$HONO_SRC/" "$HONO_DEST/"
+    echo "$SKELETON_VERSION" > "$HONO_DEST/skeleton.version"
+    synced+=("Hono")
 fi
 
 if [[ -d "$FASTIFY_SRC/node_modules" ]]; then
