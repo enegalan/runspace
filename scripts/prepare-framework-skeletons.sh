@@ -6,11 +6,13 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
 HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
 FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
 
@@ -19,6 +21,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+KOA_VERSION="${RUNSPACE_KOA_VERSION:-^3.0.0}"
 HONO_VERSION="${RUNSPACE_HONO_VERSION:-^4.0.0}"
 FASTIFY_VERSION="${RUNSPACE_FASTIFY_VERSION:-^5.0.0}"
 
@@ -40,6 +43,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+koa_ready() {
+    [[ -f "$KOA_DEST/package.json" ]] &&
+        [[ -f "$KOA_DEST/package-lock.json" ]] &&
+        [[ -f "$KOA_DEST/skeleton.version" ]]
+}
+
 hono_ready() {
     [[ -f "$HONO_DEST/package.json" ]] &&
         [[ -f "$HONO_DEST/package-lock.json" ]] &&
@@ -59,6 +68,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_koa=false
 needs_hono=false
 needs_fastify=false
 
@@ -71,6 +81,16 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! koa_ready; then
+    needs_koa=true
+elif [[ -f "$KOA_SRC/.koa_version" ]]; then
+    cached_version=$(cat "$KOA_SRC/.koa_version")
+    if [[ "$cached_version" != "$KOA_VERSION" ]]; then
+        needs_koa=true
+    fi
+else
+    needs_koa=true
+fi
 if force_sync || ! hono_ready; then
     needs_hono=true
 fi
@@ -78,7 +98,7 @@ if force_sync || ! fastify_ready; then
     needs_fastify=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_hono && ! $needs_fastify; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_koa && ! $needs_hono && ! $needs_fastify; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -89,8 +109,8 @@ if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; 
     needs_symfony=false
 fi
 
-if ($needs_express || $needs_hono || $needs_fastify) && ! command -v npm >/dev/null 2>&1; then
-    echo "npm is required to prepare the Express/Hono/Fastify skeletons." >&2
+if ($needs_express || $needs_koa || $needs_hono || $needs_fastify) && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Express/Koa/Hono/Fastify skeletons." >&2
     exit 1
 fi
 
@@ -121,6 +141,21 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_koa && [[ ! -d "$KOA_SRC/node_modules" ]]; then
+    echo "Generating Koa skeleton..."
+    rm -rf "$KOA_SRC"
+    mkdir -p "$KOA_SRC"
+    (
+        cd "$KOA_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/koa-sandbox"
+        npm pkg set description="Internal Koa sandbox for Runspace"
+        npm pkg set private=true
+        npm install "koa@${KOA_VERSION}" --save
+    )
+    echo "$KOA_VERSION" > "$KOA_SRC/.koa_version"
 fi
 
 if $needs_hono && [[ ! -d "$HONO_SRC/node_modules" ]]; then
