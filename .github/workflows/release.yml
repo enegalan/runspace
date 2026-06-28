@@ -22,8 +22,13 @@ jobs:
           php-version: "8.3"
           tools: composer
 
-      - uses: actions/setup-go@v5
+      - uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: "8.12"
+      - uses: subosito/flutter-action@v2
+          channel: stable
+          cache: true
+      - uses: actions/setup-go@v5
           go-version: "1.25"
           cache: false
       - uses: sbt/setup-sbt@v1
