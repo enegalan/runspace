@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "grape": {
+      "gemPackage": "grape",
+      "versionConstraint": "~> 2.2"
+    },
     "warp": {
       "cargoCrate": "warp",
       "versionConstraint": "0.3"
