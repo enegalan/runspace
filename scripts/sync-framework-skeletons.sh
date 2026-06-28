@@ -10,10 +10,12 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
+PHALCON_SRC="$GEN/phalcon"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
+PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -28,6 +30,8 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude storage/cache/
+    --exclude storage/logs/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -164,6 +168,29 @@ CS
         "$ASPNET_CORE_SRC/" "$ASPNET_CORE_DEST/"
     echo "$SKELETON_VERSION" > "$ASPNET_CORE_DEST/skeleton.version"
     synced+=("ASP.NET Core")
+fi
+
+if [[ -d "$PHALCON_SRC/vendor" ]]; then
+    mkdir -p "$PHALCON_DEST"
+
+    python3 - <<'PY' "$PHALCON_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/phalcon-sandbox"
+data["description"] = "Internal Phalcon sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Phalcon composer.lock after manifest edits..."
+    (cd "$PHALCON_SRC" && composer update --lock --no-install --no-interaction --ignore-platform-reqs)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$PHALCON_SRC/" "$PHALCON_DEST/"
+    echo "$SKELETON_VERSION" > "$PHALCON_DEST/skeleton.version"
+    synced+=("Phalcon")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
