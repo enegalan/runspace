@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+JHISTER_SRC="$GEN/jhipster"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+JHISTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/jhipster"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude target/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +108,29 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$JHISTER_SRC/pom.xml" ]]; then
+    mkdir -p "$JHISTER_DEST"
+
+    python3 - <<'PY' "$JHISTER_SRC/pom.xml"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'(<description>).*?(</description>)',
+    r'\1Internal JHipster sandbox for Runspace\2',
+    content,
+    count=1,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$JHISTER_SRC/" "$JHISTER_DEST/"
+    echo "$SKELETON_VERSION" > "$JHISTER_DEST/skeleton.version"
+    synced+=("JHipster")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
