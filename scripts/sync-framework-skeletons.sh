@@ -10,10 +10,12 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
 HONO_SRC="$GEN/hono"
+FASTIFY_SRC="$GEN/fastify"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
+FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -135,6 +137,13 @@ if [[ -d "$HONO_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$HONO_SRC/" "$HONO_DEST/"
     echo "$SKELETON_VERSION" > "$HONO_DEST/skeleton.version"
     synced+=("Hono")
+fi
+
+if [[ -d "$FASTIFY_SRC/node_modules" ]]; then
+    mkdir -p "$FASTIFY_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$FASTIFY_SRC/" "$FASTIFY_DEST/"
+    echo "$SKELETON_VERSION" > "$FASTIFY_DEST/skeleton.version"
+    synced+=("Fastify")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
