@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+WORDPRESS_SRC="$GEN/wordpress"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+WORDPRESS_PROJECT="${RUNSPACE_WORDPRESS_PROJECT:-johnpbloch/wordpress}"
+WORDPRESS_VERSION="${RUNSPACE_WORDPRESS_VERSION:-6.*}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+wordpress_ready() {
+    [[ -f "$WORDPRESS_DEST/composer.lock" ]] &&
+        [[ -f "$WORDPRESS_DEST/wp-config.php" ]] &&
+        [[ -f "$WORDPRESS_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_wordpress=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,14 +62,17 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! wordpress_ready; then
+    needs_wordpress=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_wordpress; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
 
-if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; then
-    echo "Composer is required to prepare Laravel/Symfony skeletons." >&2
+if ($needs_laravel || $needs_symfony || $needs_wordpress) && ! command -v composer >/dev/null 2>&1; then
+    echo "Composer is required to prepare Laravel/Symfony/WordPress skeletons." >&2
     echo "Install Composer or set its path in Settings, then run:" >&2
     echo "  npm run prepare:frameworks" >&2
     exit 1
@@ -95,6 +109,19 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_wordpress && [[ ! -d "$WORDPRESS_SRC/vendor" ]]; then
+    echo "Generating WordPress skeleton..."
+    rm -rf "$WORDPRESS_SRC"
+    composer create-project "$WORDPRESS_PROJECT" "$WORDPRESS_SRC" "$WORDPRESS_VERSION" --no-interaction --no-install
+    (
+        cd "$WORDPRESS_SRC"
+        composer config allow-plugins.johnpbloch/wordpress-core-installer true
+        composer install --no-interaction
+        composer config allow-plugins.composer/installers true
+        composer require aaemnnosttv/wp-sqlite-db --no-interaction
     )
 fi
 

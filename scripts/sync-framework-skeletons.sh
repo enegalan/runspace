@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+WORDPRESS_SRC="$GEN/wordpress"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -26,6 +28,7 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude wordpress/wp-content/database/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -105,6 +108,52 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -d "$WORDPRESS_SRC/vendor" ]]; then
+    mkdir -p "$WORDPRESS_DEST"
+
+    python3 - <<'PY' "$WORDPRESS_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/wordpress-sandbox"
+data["description"] = "Internal WordPress sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing WordPress composer.lock after manifest edits..."
+    (cd "$WORDPRESS_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$WORDPRESS_SRC/wp-content/wp-sqlite-db/src/db.php" ]]; then
+        mkdir -p "$WORDPRESS_SRC/wordpress/wp-content"
+        cp "$WORDPRESS_SRC/wp-content/wp-sqlite-db/src/db.php" "$WORDPRESS_SRC/wordpress/wp-content/db.php"
+    fi
+
+    cat > "$WORDPRESS_SRC/wp-config.php" <<'PHP'
+<?php
+define('DB_NAME', 'runspace');
+define('DB_USER', 'runspace');
+define('DB_PASSWORD', 'runspace');
+define('DB_HOST', 'localhost');
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
+$table_prefix = 'wp_';
+define('WP_DEBUG', true);
+define('DB_DIR', __DIR__ . '/wordpress/wp-content/database/');
+define('DB_FILE', 'runspace.sqlite');
+if (!defined('ABSPATH')) {
+    define('ABSPATH', __DIR__ . '/wordpress/');
+}
+require_once ABSPATH . 'wp-settings.php';
+PHP
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$WORDPRESS_SRC/" "$WORDPRESS_DEST/"
+    echo "$SKELETON_VERSION" > "$WORDPRESS_DEST/skeleton.version"
+    synced+=("WordPress")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
