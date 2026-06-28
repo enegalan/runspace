@@ -176,11 +176,15 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires dotnet and network for skeleton install"]
+    fn integration_minimal_apis_hello() {
+        let Some(binary) = runtime_binary(&["dotnet"]) else {
+            return;
+        };
+        run_hello("minimal-apis", binary, "Console.WriteLine(\"hi\");\n");
     #[ignore = "requires php, composer, and network for skeleton install"]
     fn integration_wordpress_hello() {
         let Some(binary) = runtime_binary(&["php"]) else {
-            return;
-        };
         run_hello(
             "wordpress",
             binary,
