@@ -22,6 +22,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | G++ (C++) | G++ ([Xcode Command Line Tools](https://developer.apple.com/xcode/resources/) on macOS) |
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
+| Dropwizard | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | CakePHP | PHP + [Composer](https://getcomposer.org/) |
 | Slim | PHP + [Composer](https://getcomposer.org/) |
 | Laminas | PHP + [Composer](https://getcomposer.org/) |

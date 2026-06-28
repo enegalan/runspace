@@ -19,6 +19,13 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "dropwizard": {
+      "archetypeVersion": "4.0.16",
+      "groupId": "com.runspace",
+      "artifactId": "sandbox",
+      "packageName": "com.runspace.sandbox",
+      "name": "RunspaceSandbox"
+    },
     "gin": {
       "goModule": "runspace/gin-sandbox",
       "goPackage": "github.com/gin-gonic/gin",
