@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ADONISJS_SRC="$GEN/adonisjs"
 VERTX_SRC="$GEN/vertx"
 CAKEPHP_SRC="$GEN/cakephp"
 STREAMLIT_SRC="$GEN/streamlit"
@@ -67,6 +68,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ADONISJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/adonisjs"
 VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
 CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
 STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
@@ -131,6 +133,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+ADONISJS_VERSION="${RUNSPACE_ADONISJS_VERSION:-^6.0.0}"
 VERTX_VERSION="${RUNSPACE_VERTX_VERSION:-5.0.1}"
 VERTX_JAVA_VERSION="${RUNSPACE_VERTX_JAVA_VERSION:-21}"
 CAKEPHP_PROJECT="${RUNSPACE_CAKEPHP_PROJECT:-cakephp/app}"
@@ -222,6 +225,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+adonisjs_ready() {
+    [[ -f "$ADONISJS_DEST/package.json" ]] &&
+        [[ -f "$ADONISJS_DEST/package-lock.json" ]] &&
+        [[ -f "$ADONISJS_DEST/skeleton.version" ]]
 }
 vertx_ready() {
     [[ -f "$VERTX_DEST/pom.xml" ]] &&
@@ -493,6 +501,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_adonisjs=false
 needs_vertx=false
 needs_cakephp=false
 needs_streamlit=false
@@ -560,6 +569,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! adonisjs_ready; then
+    needs_adonisjs=true
 fi
 if force_sync || ! vertx_ready; then
     needs_vertx=true
@@ -725,7 +737,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -980,6 +992,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_adonisjs && [[ ! -d "$ADONISJS_SRC/node_modules" ]]; then
+    echo "Generating AdonisJS skeleton..."
+    rm -rf "$ADONISJS_SRC"
+    mkdir -p "$ADONISJS_SRC"
+    (
+        cd "$ADONISJS_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/adonisjs-sandbox"
+        npm pkg set description="Internal AdonisJS sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@adonisjs/core@${ADONISJS_VERSION}" --save
+    )
+fi
+
 if $needs_vertx && [[ ! -f "$VERTX_SRC/pom.xml" ]]; then
     echo "Generating Vert.x skeleton..."
     rm -rf "$VERTX_SRC"
