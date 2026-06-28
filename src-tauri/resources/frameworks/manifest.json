@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "bottle": {
+      "pipPackage": "bottle",
+      "versionConstraint": "==0.13.2"
     }
   }
 }

@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BOTTLE_SRC="$GEN/bottle"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude site-packages/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$BOTTLE_SRC/requirements.txt" ]]; then
+    mkdir -p "$BOTTLE_DEST"
+    rsync -a --delete --exclude site-packages/ --exclude .git/ "$BOTTLE_SRC/" "$BOTTLE_DEST/"
+    echo "$SKELETON_VERSION" > "$BOTTLE_DEST/skeleton.version"
+    synced+=("Bottle")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
