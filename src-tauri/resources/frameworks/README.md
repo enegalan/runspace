@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `roda/` — copied to `~/.runspace/frameworks/roda/` on first use
 - `remix/` — copied to `~/.runspace/frameworks/remix/` on first use
 - `sveltekit/` — copied to `~/.runspace/frameworks/sveltekit/` on first use
 - `fastapi/` — copied to `~/.runspace/frameworks/fastapi/` on first use
