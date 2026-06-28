@@ -21,7 +21,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 tasks.register("runspaceResolveDeps") {
@@ -39,7 +39,7 @@ fun compileRunspaceEntry(entryPath: String): TaskProvider<KotlinCompile> {
         destinationDirectory.set(layout.buildDirectory.dir("runspace-entry/classes"))
         libraries.from(sourceSets.named("main").get().compileClasspath)
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 }
