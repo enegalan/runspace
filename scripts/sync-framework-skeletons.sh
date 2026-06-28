@@ -9,6 +9,7 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+COWBOY_SRC="$GEN/cowboy"
 ASPNET_CORE_SRC="$GEN/aspnet-core"
 CHI_SRC="$GEN/chi"
 YII_SRC="$GEN/yii"
@@ -46,6 +47,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
 ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
 CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
 YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
@@ -197,6 +199,164 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
 fi
+if [[ -d "$LARAVEL_SRC/vendor" ]]; then
+    mkdir -p "$LARAVEL_DEST"
+
+    python3 - <<'PY' "$LARAVEL_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/laravel-sandbox"
+data["description"] = "Internal Laravel sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Laravel composer.lock after manifest edits..."
+    (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+
+    sync_dir "$LARAVEL_SRC" "$LARAVEL_DEST" "${RSYNC_EXCLUDES[@]}"
+    echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
+    synced+=("Laravel")
+fi
+
+if [[ -d "$SYMFONY_SRC/vendor" ]]; then
+    mkdir -p "$SYMFONY_DEST"
+
+    python3 - <<'PY' "$SYMFONY_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/symfony-sandbox"
+data["description"] = "Internal Symfony sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Symfony composer.lock after manifest edits..."
+    (cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$SYMFONY_SRC/.env" ]]; then
+        python3 - <<'PY' "$SYMFONY_SRC/.env"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'^APP_SECRET=.*$',
+    'APP_SECRET=runspace-symfony-sandbox-secret-not-for-production',
+    content,
+    flags=re.M,
+)
+content = re.sub(
+    r'^DATABASE_URL=.*$',
+    'DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"',
+    content,
+    flags=re.M,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    sync_dir "$SYMFONY_SRC" "$SYMFONY_DEST" "${RSYNC_EXCLUDES[@]}"
+    echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+    synced+=("Symfony")
+fi
+
+if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
+    mkdir -p "$EXPRESS_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
+    echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
+    synced+=("Express")
+fi
+if [[ -d "$LARAVEL_SRC/vendor" ]]; then
+    mkdir -p "$LARAVEL_DEST"
+
+    python3 - <<'PY' "$LARAVEL_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/laravel-sandbox"
+data["description"] = "Internal Laravel sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Laravel composer.lock after manifest edits..."
+    (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
+    echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
+    synced+=("Laravel")
+fi
+
+if [[ -d "$SYMFONY_SRC/vendor" ]]; then
+    mkdir -p "$SYMFONY_DEST"
+
+    python3 - <<'PY' "$SYMFONY_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/symfony-sandbox"
+data["description"] = "Internal Symfony sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Symfony composer.lock after manifest edits..."
+    (cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$SYMFONY_SRC/.env" ]]; then
+        python3 - <<'PY' "$SYMFONY_SRC/.env"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'^APP_SECRET=.*$',
+    'APP_SECRET=runspace-symfony-sandbox-secret-not-for-production',
+    content,
+    flags=re.M,
+)
+content = re.sub(
+    r'^DATABASE_URL=.*$',
+    'DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"',
+    content,
+    flags=re.M,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+    synced+=("Symfony")
+fi
+
+if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
+    mkdir -p "$EXPRESS_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
+    echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
+    synced+=("Express")
+fi
+
+if [[ -f "$COWBOY_SRC/_build/default/lib/cowboy/ebin/cowboy.app" ]]; then
+    mkdir -p "$COWBOY_DEST"
+    rsync -a --delete --exclude _build/ --exclude .git/ "$COWBOY_SRC/" "$COWBOY_DEST/"
+    echo "$SKELETON_VERSION" > "$COWBOY_DEST/skeleton.version"
+    synced+=("Cowboy")
+fi
+
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
     mkdir -p "$LARAVEL_DEST"
 
