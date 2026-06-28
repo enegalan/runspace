@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Sinatra, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -12,6 +12,20 @@ Output directories:
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
 - `sinatra/` — copied to `~/.runspace/frameworks/sinatra/` on first use
+- `padrino/` — copied to `~/.runspace/frameworks/padrino/` on first use
+- `cowboy/` — copied to `~/.runspace/frameworks/cowboy/` on first use
+- `aspnet-core/` — copied to `~/.runspace/frameworks/aspnet-core/` on first use
+- `chi/` — copied to `~/.runspace/frameworks/chi/` on first use
+- `yii/` — copied to `~/.runspace/frameworks/yii/` on first use
+- `react-native/` — copied to `~/.runspace/frameworks/react-native/` on first use
+- `meteor/` — copied to `~/.runspace/frameworks/meteor/` on first use
+- `quarkus/` — copied to `~/.runspace/frameworks/quarkus/` on first use
+- `astro/` — copied to `~/.runspace/frameworks/astro/` on first use
+- `axum/` — copied to `~/.runspace/frameworks/axum/` on first use
+- `roda/` — copied to `~/.runspace/frameworks/roda/` on first use
+- `remix/` — copied to `~/.runspace/frameworks/remix/` on first use
+- `sveltekit/` — copied to `~/.runspace/frameworks/sveltekit/` on first use
+- `fastapi/` — copied to `~/.runspace/frameworks/fastapi/` on first use
 - `phalcon/` — copied to `~/.runspace/frameworks/phalcon/` on first use
 - `poem/` — copied to `~/.runspace/frameworks/poem/` on first use
 - `ktor/` — copied to `~/.runspace/frameworks/ktor/` on first use
