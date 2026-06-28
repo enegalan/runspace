@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+KTOR_SRC="$GEN/ktor"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,17 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$KTOR_SRC/build.gradle.kts" ]]; then
+    mkdir -p "$KTOR_DEST"
+    rsync -a --delete \
+        --exclude .gradle/ \
+        --exclude build/ \
+        --exclude .git/ \
+        "$KTOR_SRC/" "$KTOR_DEST/"
+    echo "$SKELETON_VERSION" > "$KTOR_DEST/skeleton.version"
+    synced+=("Ktor")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
