@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "sanic": {
+      "pipPackage": "sanic",
+      "versionConstraint": "24.12.*"
     }
   }
 }
