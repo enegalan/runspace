@@ -55,4 +55,5 @@ Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`).
 ```
 
 To add a new bundled environment: add a manifest here, skeleton assets under
-`resources/frameworks/` if needed, and optional templates under `templates/`.
+`resources/frameworks/` if needed (see `frameworks/README.md` for Express/NestJS
+generation), and optional templates under `templates/`.
