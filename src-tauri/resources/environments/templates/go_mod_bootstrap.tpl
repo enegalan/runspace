@@ -9,13 +9,25 @@ import (
 
 func main() {
 	skeletonRoot := "{{skeleton_root}}"
-	entryPath := "{{entry_file}}"
+	entryFile := "{{entry_file}}"
 	workspacePath := "{{workspace_path}}"
-	goPath := "{{go_path}}"
+	goBinary := "{{go_path}}"
 
 	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
-	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryFile)
 	os.Setenv("RUNSPACE_WORKSPACE", workspacePath)
+	os.Setenv("GOMOD", filepath.Join(skeletonRoot, "go.mod"))
+	os.Setenv("GOFLAGS", "-mod=vendor")
+
+	cmd := exec.Command(goBinary, "run", entryFile)
+	cmd.Dir = workspacePath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	entryPath := "{{entry_file}}"
+	goPath := "{{go_path}}"
+
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
 
 	if err := syncModuleFiles(skeletonRoot, workspacePath); err != nil {
 		os.Exit(1)
@@ -50,13 +62,11 @@ func main() {
 		"{{entry_file}}",
 	)
 	cmd.Dir = "{{workspace_path}}"
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
 	skeletonRoot := `{{skeleton_root}}`
 	entryPath := `{{entry_file}}`
 	goPath := `{{go_path}}`
 
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
 
 	cmd := exec.Command(goPath, "run", "-mod=vendor", entryPath)
 	cmd.Dir = skeletonRoot
