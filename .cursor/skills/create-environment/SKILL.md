@@ -80,6 +80,8 @@ Task Progress:
 | PHP framework      | `laravel.json`, `symfony.json`, `wordpress.json`      |
 | PHP framework      | `laravel.json`, `symfony.json`                        |
 | Go framework       | `chi.json` (go mod + vendor bootstrap)                |
+| Node.js framework  | `express.json`, `react-native.json`                   |
+| JVM framework      | `ktor.json` (Gradle dependency install + Kotlin bootstrap) |
 | Go framework       | `gorilla-mux.json`                                    |
 | Go framework       | `buffalo.json` (go mod vendor pattern)                |
 
@@ -123,6 +125,8 @@ Minimal script example:
    - Node: `npmPackage` + `versionConstraint`
    - Go: `goModule` + `versionConstraint`
 2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Node, Go for Go modules).
+2. Run `npm run prepare:frameworks` (requires Composer for PHP frameworks; npm for Express/React Native).
+2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, Gradle for Ktor; generates `laravel/`, `symfony/`, `express/`, `ktor/` dirs).
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `wordpress/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, Go for Buffalo).
 3. Add bootstrap template under `src-tauri/resources/environments/templates/` if existing templates do not fit.
