@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "qwik": {
+      "npmPackage": "@builder.io/qwik",
+      "versionConstraint": "^1.20.0"
+    },
     "sanic": {
       "pipPackage": "sanic",
       "versionConstraint": "24.12.*"
