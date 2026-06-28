@@ -78,6 +78,7 @@ Task Progress:
 | Simple interpreter | `nodejs.json`, `python.json`, `php.json`, `ruby.json` |
 | Compiler           | `gcc.json`, `gpp.json`                                |
 | PHP framework      | `laravel.json`, `symfony.json`                        |
+| Go framework       | `chi.json` (go mod + vendor bootstrap)                |
 
 ### Step 2: Create the manifest
 
@@ -115,8 +116,14 @@ Minimal script example:
 ### Step 3: Framework extras (only if `profile: "framework"`)
 
 1. Add skeleton entry to `src-tauri/resources/frameworks/manifest.json`.
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`-style dirs).
+   - PHP: `createProject` + `versionConstraint`
+   - Node: `npmPackage` + `versionConstraint`
+   - Go: `goModule` + `versionConstraint`
+2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Node, Go for Go modules).
 3. Add bootstrap template under `src-tauri/resources/environments/templates/` if existing templates do not fit.
+   - PHP: `php_vendor_bootstrap.tpl`
+   - Node: `node_modules_bootstrap.tpl`
+   - Go: `go_mod_bootstrap.tpl` (`GOMOD` + `GOFLAGS=-mod=vendor`, `go mod vendor` install)
 4. Point `skeleton.bundled_dir` at the generated folder name.
 5. Set `prepare.template` and `prepare.output` (bootstrap file written into workspace).
 

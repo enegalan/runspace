@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "chi": {
+      "goModule": "github.com/go-chi/chi/v5",
+      "versionConstraint": "v5.2.1"
     }
   }
 }

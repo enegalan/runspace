@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+CHI_SRC="$GEN/chi"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+CHI_MODULE="${RUNSPACE_CHI_MODULE:-github.com/go-chi/chi/v5}"
+CHI_VERSION="${RUNSPACE_CHI_VERSION:-v5.2.1}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+chi_ready() {
+    [[ -f "$CHI_DEST/go.mod" ]] &&
+        [[ -f "$CHI_DEST/go.sum" ]] &&
+        [[ -f "$CHI_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_chi=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +62,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! chi_ready; then
+    needs_chi=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_chi; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +80,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_chi && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Chi skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +114,19 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_chi && [[ ! -f "$CHI_SRC/go.sum" ]]; then
+    echo "Generating Chi skeleton..."
+    rm -rf "$CHI_SRC"
+    mkdir -p "$CHI_SRC"
+    (
+        cd "$CHI_SRC"
+        go mod init github.com/runspace/chi-sandbox
+        go get "${CHI_MODULE}@${CHI_VERSION}"
+        go mod tidy
+        go mod vendor
     )
 fi
 
