@@ -8,9 +8,11 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
+LUMEN_SRC="$GEN/lumen"
 EXPRESS_SRC="$GEN/express"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
+LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 
 RSYNC_EXCLUDES=(
@@ -98,6 +100,29 @@ PY
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
     echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
     synced+=("Symfony")
+fi
+
+if [[ -d "$LUMEN_SRC/vendor" ]]; then
+    mkdir -p "$LUMEN_DEST"
+
+    python3 - <<'PY' "$LUMEN_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/lumen-sandbox"
+data["description"] = "Internal Lumen sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Lumen composer.lock after manifest edits..."
+    (cd "$LUMEN_SRC" && composer update --lock --no-install --no-interaction)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LUMEN_SRC/" "$LUMEN_DEST/"
+    echo "$SKELETON_VERSION" > "$LUMEN_DEST/skeleton.version"
+    synced+=("Lumen")
 fi
 
 if [[ -d "$EXPRESS_SRC/node_modules" ]]; then

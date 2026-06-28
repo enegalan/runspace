@@ -5,15 +5,19 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
+LUMEN_SRC="$GEN/lumen"
 EXPRESS_SRC="$GEN/express"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
+LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
+LUMEN_PROJECT="${RUNSPACE_LUMEN_PROJECT:-laravel/lumen}"
+LUMEN_VERSION="${RUNSPACE_LUMEN_VERSION:-10.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
 
 laravel_ready() {
@@ -28,6 +32,12 @@ symfony_ready() {
         [[ -f "$SYMFONY_DEST/skeleton.version" ]]
 }
 
+lumen_ready() {
+    [[ -f "$LUMEN_DEST/artisan" ]] &&
+        [[ -f "$LUMEN_DEST/composer.lock" ]] &&
+        [[ -f "$LUMEN_DEST/skeleton.version" ]]
+}
+
 express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
@@ -40,6 +50,7 @@ force_sync() {
 
 needs_laravel=false
 needs_symfony=false
+needs_lumen=false
 needs_express=false
 
 if force_sync || ! laravel_ready; then
@@ -48,17 +59,20 @@ fi
 if force_sync || ! symfony_ready; then
     needs_symfony=true
 fi
+if force_sync || ! lumen_ready; then
+    needs_lumen=true
+fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_lumen && ! $needs_express; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
 
-if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; then
-    echo "Composer is required to prepare Laravel/Symfony skeletons." >&2
+if ($needs_laravel || $needs_symfony || $needs_lumen) && ! command -v composer >/dev/null 2>&1; then
+    echo "Composer is required to prepare Laravel/Symfony/Lumen skeletons." >&2
     echo "Install Composer or set its path in Settings, then run:" >&2
     echo "  npm run prepare:frameworks" >&2
     exit 1
@@ -82,6 +96,12 @@ if $needs_symfony && [[ ! -d "$SYMFONY_SRC/vendor" ]]; then
     rm -rf "$SYMFONY_SRC"
     composer create-project "$SYMFONY_PROJECT" "$SYMFONY_SRC" "$SYMFONY_VERSION" --no-interaction
     (cd "$SYMFONY_SRC" && composer require webapp --no-interaction)
+fi
+
+if $needs_lumen && [[ ! -d "$LUMEN_SRC/vendor" ]]; then
+    echo "Generating Lumen skeleton..."
+    rm -rf "$LUMEN_SRC"
+    composer create-project "$LUMEN_PROJECT" "$LUMEN_SRC" "$LUMEN_VERSION" --no-interaction
 fi
 
 if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then

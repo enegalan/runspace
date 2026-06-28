@@ -10,6 +10,10 @@
       "versionConstraint": "7.4.*",
       "extraPackages": ["webapp"]
     },
+    "lumen": {
+      "createProject": "laravel/lumen",
+      "versionConstraint": "10.*"
+    },
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
