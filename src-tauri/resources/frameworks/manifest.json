@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "streamlit": {
+      "pipPackage": "streamlit",
+      "versionConstraint": ">=1.42.0,<2"
+    },
     "lumen": {
       "createProject": "laravel/lumen",
       "versionConstraint": "10.*"
