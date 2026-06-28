@@ -20,6 +20,7 @@ jobs:
         with:
           php-version: "8.3"
           tools: composer
+      - uses: sbt/setup-sbt@v1
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen

@@ -1,5 +1,5 @@
 {
-  "skeletonVersion": "4",
+  "skeletonVersion": "5",
   "frameworks": {
     "laravel": {
       "createProject": "laravel/laravel",
@@ -13,6 +13,11 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "play": {
+      "playVersion": "3.0.7",
+      "scalaVersion": "3.3.6",
+      "sbtVersion": "1.10.7"
     }
   }
 }

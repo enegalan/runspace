@@ -6,15 +6,20 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PLAY_SRC="$GEN/play"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PLAY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/play"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PLAY_VERSION="${RUNSPACE_PLAY_VERSION:-3.0.7}"
+SCALA_VERSION="${RUNSPACE_SCALA_VERSION:-3.3.6}"
+SBT_VERSION="${RUNSPACE_SBT_VERSION:-1.10.7}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +39,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+play_ready() {
+    [[ -f "$PLAY_DEST/build.sbt" ]] &&
+        [[ -f "$PLAY_DEST/project/build.properties" ]] &&
+        [[ -f "$PLAY_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +52,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_play=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +63,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! play_ready; then
+    needs_play=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_play; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +81,13 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_play && ! command -v sbt >/dev/null 2>&1; then
+    echo "sbt is required to prepare the Play skeleton." >&2
+    echo "Install sbt, then run:" >&2
+    echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
 
@@ -96,6 +118,36 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_play && [[ ! -f "$PLAY_SRC/target/runspace-classpath" ]]; then
+    echo "Generating Play skeleton..."
+    rm -rf "$PLAY_SRC"
+    mkdir -p "$PLAY_SRC/project"
+    cat > "$PLAY_SRC/build.sbt" <<EOF
+name := "runspace-play-sandbox"
+version := "1.0-SNAPSHOT"
+scalaVersion := "$SCALA_VERSION"
+
+ThisBuild / libraryDependencies ++= Seq(
+  "org.playframework" %% "play" % "$PLAY_VERSION"
+)
+
+lazy val exportRunspaceClasspath = taskKey[Unit]("Write runtime classpath for Runspace")
+
+exportRunspaceClasspath := {
+  import java.nio.file.{Files, Paths}
+  val cp = (Compile / fullClasspath).value.map(_.data.getAbsolutePath).mkString(java.io.File.pathSeparator)
+  Files.writeString(Paths.get(target.value.getAbsolutePath, "runspace-classpath"), cp)
+}
+EOF
+    cat > "$PLAY_SRC/project/plugins.sbt" <<EOF
+addSbtPlugin("org.playframework" % "sbt-plugin" % "$PLAY_VERSION")
+EOF
+    cat > "$PLAY_SRC/project/build.properties" <<EOF
+sbt.version=$SBT_VERSION
+EOF
+    (cd "$PLAY_SRC" && sbt -batch update compile exportRunspaceClasspath)
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
