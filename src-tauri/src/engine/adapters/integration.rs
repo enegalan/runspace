@@ -164,6 +164,19 @@ mod tests {
 
     #[test]
     #[ignore = "requires php, composer, and network for skeleton install"]
+    fn integration_lumen_hello() {
+        let Some(binary) = runtime_binary(&["php"]) else {
+            return;
+        };
+        run_hello(
+            "lumen",
+            binary,
+            "<?php\n\nuse Illuminate\\Support\\Str;\n\necho Str::upper('Hello from Lumen!');\n",
+        );
+    }
+
+    #[test]
+    #[ignore = "requires php, composer, and network for skeleton install"]
     fn integration_symfony_hello() {
         let Some(binary) = runtime_binary(&["php"]) else {
             return;
