@@ -82,9 +82,15 @@ if $needs_express && ! command -v npm >/dev/null 2>&1; then
     exit 1
 fi
 
-if $needs_flask && ! command -v python3 >/dev/null 2>&1; then
-    echo "python3 is required to prepare the Flask skeleton." >&2
-    exit 1
+if $needs_flask; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_BIN="python3"
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_BIN="python"
+    else
+        echo "python3 or python is required to prepare the Flask skeleton." >&2
+        exit 1
+    fi
 fi
 
 mkdir -p "$GEN"
@@ -116,11 +122,11 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
     )
 fi
 
-if $needs_flask && [[ ! -f "$FLASK_SRC/requirements.txt" ]]; then
+if $needs_flask; then
     echo "Generating Flask skeleton..."
     rm -rf "$FLASK_SRC"
     mkdir -p "$FLASK_SRC"
-    python3 -m venv "$FLASK_SRC/.venv"
+    "$PYTHON_BIN" -m venv "$FLASK_SRC/.venv"
     (
         cd "$FLASK_SRC"
         .venv/bin/pip install --upgrade pip
