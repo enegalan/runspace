@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+DROPWIZARD_SRC="$GEN/dropwizard"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+DROPWIZARD_VERSION="${RUNSPACE_DROPWIZARD_VERSION:-4.0.16}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+dropwizard_ready() {
+    [[ -f "$DROPWIZARD_DEST/pom.xml" ]] &&
+        [[ -f "$DROPWIZARD_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +49,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_dropwizard=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +60,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! dropwizard_ready; then
+    needs_dropwizard=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_dropwizard; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +78,13 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_dropwizard && ! command -v mvn >/dev/null 2>&1; then
+    echo "Maven is required to prepare the Dropwizard skeleton." >&2
+    echo "Install Maven or set its path in Settings, then run:" >&2
+    echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
 
@@ -96,6 +115,27 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_dropwizard && [[ ! -f "$DROPWIZARD_SRC/pom.xml" ]]; then
+    echo "Generating Dropwizard skeleton..."
+    rm -rf "$DROPWIZARD_SRC" "$GEN/dropwizard-gen"
+    mkdir -p "$GEN/dropwizard-gen"
+    (
+        cd "$GEN/dropwizard-gen"
+        mvn -B archetype:generate \
+            -DarchetypeGroupId=io.dropwizard.archetypes \
+            -DarchetypeArtifactId=java-simple \
+            -DarchetypeVersion="$DROPWIZARD_VERSION" \
+            -DgroupId=com.runspace \
+            -DartifactId=sandbox \
+            -Dversion=1.0-SNAPSHOT \
+            -Dpackage=com.runspace.sandbox \
+            -Dname=RunspaceSandbox \
+            -DinteractiveMode=false
+        mv sandbox "$DROPWIZARD_SRC"
+    )
+    rm -rf "$GEN/dropwizard-gen"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
