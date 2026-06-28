@@ -11,7 +11,7 @@ repositories {
     mavenCentral()
 }
 
-val ktorVersion: String by project
+val ktorVersion: String = findProperty("ktorVersion") as String? ?: "3.1.1"
 
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktorVersion")
@@ -37,7 +37,7 @@ fun compileRunspaceEntry(entryPath: String): TaskProvider<KotlinCompile> {
     return tasks.register<KotlinCompile>("compileRunspaceEntry") {
         source(entryFile)
         destinationDirectory.set(layout.buildDirectory.dir("runspace-entry/classes"))
-        classpath = sourceSets["main"].compileClasspath
+        libraries.from(sourceSets.named("main").get().compileClasspath)
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
