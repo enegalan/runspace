@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SLIM_SRC="$GEN/slim"
 PYRAMID_SRC="$GEN/pyramid"
 QWIK_SRC="$GEN/qwik"
 SANIC_SRC="$GEN/sanic"
@@ -62,6 +63,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
 PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
 QWIK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/qwik"
 SANIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sanic"
@@ -121,6 +123,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+SLIM_PROJECT="${RUNSPACE_SLIM_PROJECT:-slim/slim-skeleton}"
+SLIM_VERSION="${RUNSPACE_SLIM_VERSION:-4.*}"
 PYRAMID_VERSION="${RUNSPACE_PYRAMID_VERSION:-2.0}"
 QWIK_VERSION="${RUNSPACE_QWIK_VERSION:-^1.20.0}"
 SANIC_VERSION="${RUNSPACE_SANIC_VERSION:-24.12.*}"
@@ -203,6 +207,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+slim_ready() {
+    [[ -f "$SLIM_DEST/public/index.php" ]] &&
+        [[ -f "$SLIM_DEST/composer.lock" ]] &&
+        [[ -f "$SLIM_DEST/skeleton.version" ]]
 }
 pyramid_ready() {
     [[ -f "$PYRAMID_DEST/requirements.txt" ]] &&
@@ -450,6 +459,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_slim=false
 needs_pyramid=false
 needs_qwik=false
 needs_sanic=false
@@ -512,6 +522,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! slim_ready; then
+    needs_slim=true
 fi
 if force_sync || ! pyramid_ready; then
     needs_pyramid=true
@@ -662,7 +675,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -912,6 +925,12 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_slim && [[ ! -d "$SLIM_SRC/vendor" ]]; then
+    echo "Generating Slim skeleton..."
+    rm -rf "$SLIM_SRC"
+    composer create-project "$SLIM_PROJECT" "$SLIM_SRC" "$SLIM_VERSION" --no-interaction
+fi
+
 if $needs_pyramid && [[ ! -f "$PYRAMID_SRC/requirements.txt" ]]; then
     echo "Generating Pyramid skeleton..."
     rm -rf "$PYRAMID_SRC"

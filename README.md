@@ -22,11 +22,11 @@ Each environment you add in the playground needs its own runtime installed and c
 | G++ (C++) | G++ ([Xcode Command Line Tools](https://developer.apple.com/xcode/resources/) on macOS) |
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
+| Slim | PHP + [Composer](https://getcomposer.org/) |
 | Laminas | PHP + [Composer](https://getcomposer.org/) |
 | Phalcon | PHP (with [Phalcon extension](https://docs.phalcon.io/5.9/installation/)) + [Composer](https://getcomposer.org/) |
 | Express | [Node.js](https://nodejs.org/en/download) + npm |
 | Spring Boot | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
-| Phalcon | PHP (with [Phalcon extension](https://docs.phalcon.io/5.9/installation/)) + [Composer](https://getcomposer.org/) |
 | Ktor | [Kotlin](https://kotlinlang.org/docs/command-line.html) + [Gradle](https://gradle.org/install/) |
 | Padrino | Ruby + [Bundler](https://bundler.io/) + [Padrino](https://padrinorb.com/guides/getting-started/installation/) |
 | Quarkus | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
@@ -51,6 +51,7 @@ To build or contribute to Runspace from source:
 - Node.js 20+
 - Rust stable
 - Xcode Command Line Tools (macOS)
+- [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Slim skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Laminas skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony/Phalcon skeletons during build (`npm run prepare:frameworks`)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
@@ -90,6 +91,7 @@ Run tests:
 npm test
 ```
 
+Generate Laravel/Symfony/Slim skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/Laminas skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/Express/Spring Boot skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/Express/ASP.NET Core/Padrino skeletons manually (first clone or after bumping `manifest.json`):
