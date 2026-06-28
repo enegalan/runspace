@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+DJANGO_SRC="$GEN/django"
 PLAY_SRC="$GEN/play"
 FLASK_SRC="$GEN/flask"
 KOA_SRC="$GEN/koa"
@@ -15,6 +16,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+DJANGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/django"
 PLAY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/play"
 FLASK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flask"
 KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
@@ -27,6 +29,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+DJANGO_VERSION="${RUNSPACE_DJANGO_VERSION:-~=4.2.0}"
+DJANGO_PROJECT="${RUNSPACE_DJANGO_PROJECT:-runspace_project}"
 PLAY_VERSION="${RUNSPACE_PLAY_VERSION:-3.0.7}"
 SCALA_VERSION="${RUNSPACE_SCALA_VERSION:-3.3.6}"
 SBT_VERSION="${RUNSPACE_SBT_VERSION:-1.10.7}"
@@ -52,6 +56,12 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+
+django_ready() {
+    [[ -f "$DJANGO_DEST/manage.py" ]] &&
+        [[ -f "$DJANGO_DEST/requirements.txt" ]] &&
+        [[ -f "$DJANGO_DEST/skeleton.version" ]]
 }
 
 play_ready() {
@@ -97,6 +107,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_django=false
 needs_play=false
 needs_flask=false
 needs_koa=false
@@ -112,6 +123,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! django_ready; then
+    needs_django=true
 fi
 if force_sync || ! play_ready; then
     needs_play=true
@@ -139,7 +153,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -173,6 +187,22 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     exit 1
 fi
 
+if $needs_django; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_CMD=python3
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_CMD=python
+    else
+        echo "python3 or python is required to prepare the Django skeleton." >&2
+        exit 1
+    fi
+
+    if ! "$PYTHON_CMD" -m pip --version >/dev/null 2>&1; then
+        echo "pip is required to prepare the Django skeleton." >&2
+        exit 1
+    fi
+fi
+
 mkdir -p "$GEN"
 
 if $needs_laravel && [[ ! -d "$LARAVEL_SRC/vendor" ]]; then
@@ -199,6 +229,23 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_django && [[ ! -f "$DJANGO_SRC/manage.py" ]]; then
+    echo "Generating Django skeleton..."
+    rm -rf "$DJANGO_SRC"
+    mkdir -p "$DJANGO_SRC"
+    (
+        cd "$DJANGO_SRC"
+        "$PYTHON_CMD" -m pip install "django${DJANGO_VERSION}" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        PYTHONPATH="$(pwd)/site-packages" "$PYTHON_CMD" -m django startproject "$DJANGO_PROJECT" .
+        "$PYTHON_CMD" -m pip freeze \
+            --path site-packages \
+            --disable-pip-version-check > requirements.txt
     )
 fi
 
