@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+NUXT_SRC="$GEN/nuxt"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -d "$NUXT_SRC/node_modules" ]]; then
+    mkdir -p "$NUXT_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$NUXT_SRC/" "$NUXT_DEST/"
+    echo "$SKELETON_VERSION" > "$NUXT_DEST/skeleton.version"
+    synced+=("Nuxt")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
