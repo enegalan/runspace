@@ -1,0 +1,54 @@
+{
+  "id": "cowboy",
+  "name": "Cowboy",
+  "category": "framework",
+  "file_extension": "erl",
+  "install_guide_url": "https://github.com/ninenines/cowboy",
+  "presentation": { "accent": "#A90533" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "erl_path",
+      "label": "Erlang binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["erl"] }
+    },
+    {
+      "key": "rebar3_path",
+      "label": "rebar3 binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["rebar3"] }
+    }
+  ],
+  "run": {
+    "program": "{{erl_path}}",
+    "args": [
+      "-noshell",
+      "-eval",
+      "case compile:file(\"{{entry_file}}\") of {ok, runspace_bootstrap} -> runspace_bootstrap:main(); Error -> io:format(\"~p~n\", [Error]), halt(1) end."
+    ]
+  },
+  "skeleton": {
+    "bundled_dir": "cowboy",
+    "sync_exclude_dirs": ["_build"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{rebar3_path}}",
+      "args": ["compile"],
+      "vendor_marker": "_build/default/lib/cowboy/ebin/cowboy.app",
+      "manifest_files": ["rebar.config", "rebar.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.erl",
+    "template": "rebar_build_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "+V" }
+}
