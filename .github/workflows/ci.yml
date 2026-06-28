@@ -25,6 +25,9 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: false
       - run: gem install padrino --no-document
+      - uses: erlef/setup-beam@v1
+          otp-version: "27"
+          rebar3-version: "3.24"
       - uses: gradle/actions/setup-gradle@v4
           gradle-version: "8.12"
       - uses: subosito/flutter-action@v2
