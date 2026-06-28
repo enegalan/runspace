@@ -23,6 +23,16 @@ Each environment you add in the playground needs its own runtime installed and c
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
 | Padrino | Ruby + [Bundler](https://bundler.io/) + [Padrino](https://padrinorb.com/guides/getting-started/installation/) |
+| Express | [Node.js](https://nodejs.org/en/download) + npm |
+| Ktor | [Kotlin](https://kotlinlang.org/docs/command-line.html) + [Gradle](https://gradle.org/install/) |
+| Express | [Node.js](https://nodejs.org/en/download) |
+| JHipster | [Java](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
+| Flask | [Python](https://www.python.org/downloads/) |
+| Koa | [Node.js](https://nodejs.org/en/download) |
+| Hono | [Node.js](https://nodejs.org/en/download) |
+| Fastify | [Node.js](https://nodejs.org/en/download) |
+| NestJS | [Node.js](https://nodejs.org/en/download) |
+| Play Framework | [Scala](https://www.scala-lang.org/download/) + [sbt](https://www.scala-sbt.org/download.html) |
 
 You only install the runtimes for the environments you use. Node.js is not required to run PHP, and so on.
 
@@ -35,6 +45,10 @@ To build or contribute to Runspace from source:
 - Xcode Command Line Tools (macOS)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
 - Ruby 3.2+ with Bundler and the `padrino` gem — generates the bundled Padrino skeleton during build (`npm run prepare:frameworks`)
+- Gradle — generates bundled Ktor skeleton during build (`npm run prepare:frameworks`)
+- npm — generates bundled Express/JHipster skeletons during build (`npm run prepare:frameworks`)
+- Python with pip — generates the bundled Flask skeleton during build (`npm run prepare:frameworks`)
+- [sbt](https://www.scala-sbt.org/download.html) — generates the bundled Play skeleton during build (`npm run prepare:frameworks`)
 
 ## Development
 
@@ -63,6 +77,9 @@ npm test
 ```
 
 Generate Laravel/Symfony/Express/ASP.NET Core/Padrino skeletons manually (first clone or after bumping `manifest.json`):
+Generate Laravel/Symfony/Express/Ktor skeletons manually (first clone or after bumping `manifest.json`):
+Generate Laravel/Symfony/Express/JHipster skeletons manually (first clone or after bumping `manifest.json`):
+Generate framework skeletons manually (first clone or after bumping `manifest.json`):
 
 ```bash
 npm run prepare:frameworks

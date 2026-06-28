@@ -25,6 +25,15 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: false
       - run: gem install padrino --no-document
+      - uses: gradle/actions/setup-gradle@v4
+          gradle-version: "8.12"
+      - uses: subosito/flutter-action@v2
+          channel: stable
+          cache: true
+      - uses: actions/setup-go@v5
+          go-version: "1.25"
+          cache: false
+      - uses: sbt/setup-sbt@v1
       - uses: actions/cache@v4
         with:
           path: /tmp/runspace-skeleton-gen

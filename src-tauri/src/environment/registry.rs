@@ -248,6 +248,8 @@ mod tests {
         assert!(ids.contains(&"nodejs".to_string()));
         assert!(ids.contains(&"laravel".to_string()));
         assert!(ids.contains(&"padrino".to_string()));
+        assert!(ids.contains(&"wordpress".to_string()));
+        assert!(ids.contains(&"play".to_string()));
         assert_eq!(registry.default_id(), "nodejs");
     }
 }
