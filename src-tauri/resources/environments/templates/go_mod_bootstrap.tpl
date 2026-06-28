@@ -27,8 +27,6 @@ func main() {
 	download.Stdout = os.Stdout
 	download.Stderr = os.Stderr
 	if err := download.Run(); err != nil {
-		os.Exit(1)
-	}
 
 	run := exec.Command(goPath, "run", entryPath)
 	run.Dir = workspacePath
@@ -37,6 +35,34 @@ func main() {
 	run.Stderr = os.Stderr
 	run.Stdin = os.Stdin
 	if err := run.Run(); err != nil {
+//go:build ignore
+
+
+
+	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", "{{skeleton_root}}")
+	os.Setenv("RUNSPACE_WORKSPACE", "{{workspace_path}}")
+	os.Setenv("RUNSPACE_ENTRY_PATH", "{{entry_file}}")
+
+	cmd := exec.Command(
+		"{{go_path}}",
+		"run",
+		"-modfile={{skeleton_root}}/go.mod",
+		"{{entry_file}}",
+	)
+	cmd.Dir = "{{workspace_path}}"
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	skeletonRoot := `{{skeleton_root}}`
+	entryPath := `{{entry_file}}`
+	goPath := `{{go_path}}`
+
+
+	cmd := exec.Command(goPath, "run", "-mod=vendor", entryPath)
+	cmd.Dir = skeletonRoot
+	cmd.Env = os.Environ()
+
+	if err := cmd.Run(); err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			os.Exit(exitErr.ExitCode())
 		}
@@ -51,26 +77,18 @@ func syncModuleFiles(skeletonRoot, workspacePath string) error {
 		if err := copyFile(src, dst); err != nil {
 			return err
 		}
-	}
 	return nil
-}
 
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err
-	}
 	defer in.Close()
 
 	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
 	defer out.Close()
 
 	if _, err := io.Copy(out, in); err != nil {
-		return err
-	}
 
 	return out.Close()
-}
+		panic(err)
