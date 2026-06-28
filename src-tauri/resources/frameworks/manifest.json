@@ -19,6 +19,11 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "gin": {
+      "goModule": "runspace/gin-sandbox",
+      "goPackage": "github.com/gin-gonic/gin",
+      "versionConstraint": "v1.10.0"
+    },
     "adonisjs": {
       "npmPackage": "@adonisjs/core",
       "versionConstraint": "^6.0.0"
