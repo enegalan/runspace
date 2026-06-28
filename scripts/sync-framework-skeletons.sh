@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+YII_SRC="$GEN/yii"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -26,6 +28,8 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude runtime/*
+    --exclude web/assets/*
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -105,6 +109,56 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -d "$YII_SRC/vendor" ]]; then
+    mkdir -p "$YII_DEST"
+
+    python3 - <<'PY' "$YII_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/yii-sandbox"
+data["description"] = "Internal Yii sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Yii composer.lock after manifest edits..."
+    (cd "$YII_SRC" && composer update --lock --no-install --no-interaction)
+
+    python3 - <<'PY' "$YII_SRC/config/db.php"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r"'dsn'\s*=>\s*'[^']*'",
+    "'dsn' => 'sqlite:' . dirname(__DIR__) . '/runtime/runspace.db'",
+    content,
+    count=1,
+)
+content = re.sub(
+    r"'username'\s*=>\s*'[^']*'",
+    "'username' => ''",
+    content,
+    count=1,
+)
+content = re.sub(
+    r"'password'\s*=>\s*'[^']*'",
+    "'password' => ''",
+    content,
+    count=1,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$YII_SRC/" "$YII_DEST/"
+    echo "$SKELETON_VERSION" > "$YII_DEST/skeleton.version"
+    synced+=("Yii")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
