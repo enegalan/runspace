@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, and Play sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Play, Flask, Koa, Hono, Fastify, and NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -12,7 +12,12 @@ Output directories:
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
 - `play/` — copied to `~/.runspace/frameworks/play/` on first use
+- `flask/` — copied to `~/.runspace/frameworks/flask/` on first use
+- `koa/` — copied to `~/.runspace/frameworks/koa/` on first use
+- `hono/` — copied to `~/.runspace/frameworks/hono/` on first use
+- `fastify/` — copied to `~/.runspace/frameworks/fastify/` on first use
+- `nestjs/` — copied to `~/.runspace/frameworks/nestjs/` on first use
 
-Laravel and Symfony require Composer; Express requires npm; Play requires sbt. End users of the installed app do not run this; only developers and release builds do.
+Laravel and Symfony require Composer; Express, Koa, Hono, Fastify, and NestJS require npm; Flask requires Python with pip; Play requires sbt. End users of the installed app do not run this; only developers and release builds do.
 
 See `manifest.json` for pinned project versions.
