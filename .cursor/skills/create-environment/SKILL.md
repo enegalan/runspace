@@ -50,7 +50,7 @@ Infer from context when possible. If any item below is missing or ambiguous, use
 12. **Dependency install** — package manager binary field, install args, `vendor_marker`, `manifest_files`?
 13. **Bootstrap** — template file in `templates/` and `prepare.output` filename?
 14. **Post-install steps** — `create_empty_file`, `create_dir`, or `run` steps after skeleton sync?
-15. **Terminal env** — needed? Copy pattern from `laravel.json` / `symfony.json` if yes.
+15. **Terminal env** — needed? Copy pattern from `laravel.json` / `symfony.json` / `cakephp.json` if yes.
 16. **Sync exclusions** — dirs/files to skip when syncing skeleton (e.g. `vendor`, `database/database.sqlite`)?
 
 ### Optional
@@ -77,6 +77,7 @@ Task Progress:
 |--------------------|-------------------------------------------------------|
 | Simple interpreter | `nodejs.json`, `python.json`, `php.json`, `ruby.json` |
 | Compiler           | `gcc.json`, `gpp.json`                                |
+| PHP framework      | `laravel.json`, `symfony.json`, `cakephp.json`        |
 | PHP framework      | `laravel.json`, `lumen.json`, `symfony.json`          |
 | PHP framework      | `laravel.json`, `symfony.json`, `slim.json`         |
 | PHP framework      | `laravel.json`, `symfony.json`, `laminas.json`        |
@@ -126,6 +127,7 @@ Minimal script example:
 ### Step 3: Framework extras (only if `profile: "framework"`)
 
 1. Add skeleton entry to `src-tauri/resources/frameworks/manifest.json`.
+2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `cakephp/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, pip for Streamlit; generates `laravel/`, `symfony/`, `express/`, `streamlit/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `lumen/`, `symfony/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `slim/`-style dirs).

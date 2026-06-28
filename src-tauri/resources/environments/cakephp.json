@@ -1,0 +1,62 @@
+{
+  "id": "cakephp",
+  "name": "CakePHP",
+  "category": "framework",
+  "file_extension": "php",
+  "install_guide_url": "https://book.cakephp.org/5/en/installation.html",
+  "presentation": { "accent": "#d33c43" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "php_path",
+      "label": "PHP binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["php"] }
+    },
+    {
+      "key": "composer_path",
+      "label": "Composer binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["composer"] }
+    }
+  ],
+  "run": {
+    "program": "{{php_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "cakephp",
+    "sync_exclude_dirs": ["vendor", "tmp", "logs"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{composer_path}}",
+      "args": ["install", "--no-interaction", "--prefer-dist", "--no-scripts"],
+      "vendor_marker": "vendor/autoload.php",
+      "manifest_files": ["composer.json", "composer.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.php",
+    "template": "php_vendor_bootstrap.tpl"
+  },
+  "post_install": [
+    { "type": "create_dir", "path": "tmp/cache" },
+    { "type": "create_dir", "path": "tmp/sessions" },
+    { "type": "create_dir", "path": "tmp/tests" },
+    { "type": "create_dir", "path": "logs" },
+    {
+      "type": "run",
+      "program": "{{php_path}}",
+      "cwd": "skeleton",
+      "args": ["bin/cake", "migrations", "migrate", "-q"]
+    }
+  ],
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

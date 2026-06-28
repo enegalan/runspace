@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "cakephp": {
+      "createProject": "cakephp/app",
+      "versionConstraint": "5.3.*"
+    },
     "streamlit": {
       "pipPackage": "streamlit",
       "versionConstraint": ">=1.42.0,<2"

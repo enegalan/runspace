@@ -10,6 +10,7 @@ LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 LUMEN_SRC="$GEN/lumen"
 EXPRESS_SRC="$GEN/express"
+CAKEPHP_SRC="$GEN/cakephp"
 STREAMLIT_SRC="$GEN/streamlit"
 SLIM_SRC="$GEN/slim"
 PYRAMID_SRC="$GEN/pyramid"
@@ -69,6 +70,7 @@ LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
 STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
 SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
 PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
@@ -241,6 +243,194 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
 fi
+if [[ -d "$LARAVEL_SRC/vendor" ]]; then
+    mkdir -p "$LARAVEL_DEST"
+
+    python3 - <<'PY' "$LARAVEL_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/laravel-sandbox"
+data["description"] = "Internal Laravel sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Laravel composer.lock after manifest edits..."
+    (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+
+    sync_dir "$LARAVEL_SRC" "$LARAVEL_DEST" "${RSYNC_EXCLUDES[@]}"
+    echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
+    synced+=("Laravel")
+fi
+
+if [[ -d "$SYMFONY_SRC/vendor" ]]; then
+    mkdir -p "$SYMFONY_DEST"
+
+    python3 - <<'PY' "$SYMFONY_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/symfony-sandbox"
+data["description"] = "Internal Symfony sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Symfony composer.lock after manifest edits..."
+    (cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$SYMFONY_SRC/.env" ]]; then
+        python3 - <<'PY' "$SYMFONY_SRC/.env"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'^APP_SECRET=.*$',
+    'APP_SECRET=runspace-symfony-sandbox-secret-not-for-production',
+    content,
+    flags=re.M,
+)
+content = re.sub(
+    r'^DATABASE_URL=.*$',
+    'DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"',
+    content,
+    flags=re.M,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    sync_dir "$SYMFONY_SRC" "$SYMFONY_DEST" "${RSYNC_EXCLUDES[@]}"
+    echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+    synced+=("Symfony")
+fi
+
+if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
+    mkdir -p "$EXPRESS_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
+    echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
+    synced+=("Express")
+fi
+if [[ -d "$LARAVEL_SRC/vendor" ]]; then
+    mkdir -p "$LARAVEL_DEST"
+
+    python3 - <<'PY' "$LARAVEL_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/laravel-sandbox"
+data["description"] = "Internal Laravel sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Laravel composer.lock after manifest edits..."
+    (cd "$LARAVEL_SRC" && composer update --lock --no-install --no-interaction)
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LARAVEL_SRC/" "$LARAVEL_DEST/"
+    echo "$SKELETON_VERSION" > "$LARAVEL_DEST/skeleton.version"
+    synced+=("Laravel")
+fi
+
+if [[ -d "$SYMFONY_SRC/vendor" ]]; then
+    mkdir -p "$SYMFONY_DEST"
+
+    python3 - <<'PY' "$SYMFONY_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/symfony-sandbox"
+data["description"] = "Internal Symfony sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing Symfony composer.lock after manifest edits..."
+    (cd "$SYMFONY_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$SYMFONY_SRC/.env" ]]; then
+        python3 - <<'PY' "$SYMFONY_SRC/.env"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'^APP_SECRET=.*$',
+    'APP_SECRET=runspace-symfony-sandbox-secret-not-for-production',
+    content,
+    flags=re.M,
+)
+content = re.sub(
+    r'^DATABASE_URL=.*$',
+    'DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"',
+    content,
+    flags=re.M,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
+    echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
+    synced+=("Symfony")
+fi
+
+if [[ -d "$CAKEPHP_SRC/vendor" ]]; then
+    mkdir -p "$CAKEPHP_DEST"
+
+    python3 - <<'PY' "$CAKEPHP_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/cakephp-sandbox"
+data["description"] = "Internal CakePHP sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing CakePHP composer.lock after manifest edits..."
+    (cd "$CAKEPHP_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$CAKEPHP_SRC/config/app_local.php" ]]; then
+        python3 - <<'PY' "$CAKEPHP_SRC/config/app_local.php"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r"'salt' => env\('SECURITY_SALT', '[^']*'\),",
+    "'salt' => env('SECURITY_SALT', 'runspace-cakephp-sandbox-salt-not-for-production'),",
+    content,
+)
+content = re.sub(
+    r"'url' => env\('DATABASE_URL', null\),",
+    "'url' => env('DATABASE_URL', 'sqlite:///' . ROOT . DS . 'tmp' . DS . 'runspace.db'),",
+    content,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$CAKEPHP_SRC/" "$CAKEPHP_DEST/"
+    echo "$SKELETON_VERSION" > "$CAKEPHP_DEST/skeleton.version"
+    synced+=("CakePHP")
+fi
+
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
     mkdir -p "$LARAVEL_DEST"
 
