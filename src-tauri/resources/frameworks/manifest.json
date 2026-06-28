@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "codeigniter": {
+      "createProject": "codeigniter4/appstarter",
+      "versionConstraint": "4.*"
     }
   }
 }
