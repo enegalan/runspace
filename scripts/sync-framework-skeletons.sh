@@ -8,9 +8,11 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
+CAKEPHP_SRC="$GEN/cakephp"
 EXPRESS_SRC="$GEN/express"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
+CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
 
 RSYNC_EXCLUDES=(
@@ -26,6 +28,8 @@ RSYNC_EXCLUDES=(
     --exclude var/cache/
     --exclude var/log/
     --exclude var/data*.db
+    --exclude tmp/
+    --exclude logs/
 )
 
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
@@ -98,6 +102,50 @@ PY
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SYMFONY_SRC/" "$SYMFONY_DEST/"
     echo "$SKELETON_VERSION" > "$SYMFONY_DEST/skeleton.version"
     synced+=("Symfony")
+fi
+
+if [[ -d "$CAKEPHP_SRC/vendor" ]]; then
+    mkdir -p "$CAKEPHP_DEST"
+
+    python3 - <<'PY' "$CAKEPHP_SRC/composer.json"
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["name"] = "runspace/cakephp-sandbox"
+data["description"] = "Internal CakePHP sandbox for Runspace"
+with open(path, "w") as f:
+    json.dump(data, f, indent=4)
+    f.write("\n")
+PY
+
+    echo "Refreshing CakePHP composer.lock after manifest edits..."
+    (cd "$CAKEPHP_SRC" && composer update --lock --no-install --no-interaction)
+
+    if [[ -f "$CAKEPHP_SRC/config/app_local.php" ]]; then
+        python3 - <<'PY' "$CAKEPHP_SRC/config/app_local.php"
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r"'salt' => env\('SECURITY_SALT', '[^']*'\),",
+    "'salt' => env('SECURITY_SALT', 'runspace-cakephp-sandbox-salt-not-for-production'),",
+    content,
+)
+content = re.sub(
+    r"'url' => env\('DATABASE_URL', null\),",
+    "'url' => env('DATABASE_URL', 'sqlite:///' . ROOT . DS . 'tmp' . DS . 'runspace.db'),",
+    content,
+)
+with open(path, "w") as f:
+    f.write(content)
+PY
+    fi
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$CAKEPHP_SRC/" "$CAKEPHP_DEST/"
+    echo "$SKELETON_VERSION" > "$CAKEPHP_DEST/skeleton.version"
+    synced+=("CakePHP")
 fi
 
 if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
