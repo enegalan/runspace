@@ -1,10 +1,10 @@
 {
-  "id": "express",
-  "name": "Express",
+  "id": "astro",
+  "name": "Astro",
   "category": "framework",
-  "file_extension": "js",
-  "install_guide_url": "https://expressjs.com/",
-  "presentation": { "accent": "#353535" },
+  "file_extension": "mjs",
+  "install_guide_url": "https://docs.astro.build/",
+  "presentation": { "accent": "#BC52EE" },
   "profile": "framework",
   "config_fields": [
     {
@@ -20,7 +20,6 @@
       "label": "npm binary (skeleton install)",
       "field_type": "file_path",
       "required": false,
-      "default": "npm",
       "detect": { "commands": ["npm"] }
     }
   ],
@@ -29,19 +28,19 @@
     "args": ["{{entry_file}}"]
   },
   "skeleton": {
-    "bundled_dir": "express",
+    "bundled_dir": "astro",
     "sync_exclude_dirs": ["node_modules"],
     "sync_exclude_files": [],
     "dependency_install": {
       "program": "{{npm_path}}",
       "args": ["ci", "--no-audit", "--no-fund"],
-      "vendor_marker": "node_modules/express/package.json",
+      "vendor_marker": "node_modules/astro/package.json",
       "manifest_files": ["package.json", "package-lock.json"]
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.js",
-    "template": "node_modules_bootstrap.tpl"
+    "output": "_runspace_bootstrap.mjs",
+    "template": "node_modules_esm_bootstrap.tpl"
   },
   "terminal_env": {
     "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
