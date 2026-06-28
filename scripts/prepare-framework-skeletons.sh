@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+MICRONAUT_SRC="$GEN/micronaut"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+MICRONAUT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/micronaut"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+MICRONAUT_VERSION="${RUNSPACE_MICRONAUT_VERSION:-4.7.6}"
+MICRONAUT_JAVA_VERSION="${RUNSPACE_MICRONAUT_JAVA_VERSION:-JDK_21}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+micronaut_ready() {
+    [[ -f "$MICRONAUT_DEST/pom.xml" ]] &&
+        [[ -f "$MICRONAUT_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_micronaut=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! micronaut_ready; then
+    needs_micronaut=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_micronaut; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_micronaut && ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to prepare the Micronaut skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +114,17 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_micronaut && [[ ! -f "$MICRONAUT_SRC/pom.xml" ]]; then
+    echo "Generating Micronaut skeleton..."
+    rm -rf "$MICRONAUT_SRC" "$GEN/micronaut-extract"
+    mkdir -p "$MICRONAUT_SRC"
+    curl -sSfLo "$GEN/micronaut.zip" \
+        "https://launch.micronaut.io/create/default/runspace-sandbox?build=maven&lang=java&test=junit&javaVersion=${MICRONAUT_JAVA_VERSION}&micronautVersion=${MICRONAUT_VERSION}&packageName=com.runspace.sandbox"
+    unzip -q "$GEN/micronaut.zip" -d "$GEN/micronaut-extract"
+    mv "$GEN/micronaut-extract/runspace-sandbox/"* "$MICRONAUT_SRC/"
+    rm -rf "$GEN/micronaut-extract" "$GEN/micronaut.zip"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
