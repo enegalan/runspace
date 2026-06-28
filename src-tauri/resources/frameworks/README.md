@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `react-native/` — copied to `~/.runspace/frameworks/react-native/` on first use
 - `meteor/` — copied to `~/.runspace/frameworks/meteor/` on first use
 - `quarkus/` — copied to `~/.runspace/frameworks/quarkus/` on first use
 - `astro/` — copied to `~/.runspace/frameworks/astro/` on first use
