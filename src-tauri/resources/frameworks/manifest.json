@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "plug": {
+      "plugVersion": "~> 1.16",
+      "serverVersion": "~> 1.6"
     }
   }
 }
