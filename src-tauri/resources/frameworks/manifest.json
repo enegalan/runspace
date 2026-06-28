@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "plug": {
+      "plugVersion": "~> 1.16",
+      "serverVersion": "~> 1.6"
+    },
     "micronaut": {
       "micronautVersion": "4.7.6",
       "javaVersion": "JDK_21"

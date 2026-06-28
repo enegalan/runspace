@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+PLUG_SRC="$GEN/plug"
 MICRONAUT_SRC="$GEN/micronaut"
 GRAPE_SRC="$GEN/grape"
 WARP_SRC="$GEN/warp"
@@ -76,6 +77,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+PLUG_DEST="$REPO_ROOT/src-tauri/resources/frameworks/plug"
 MICRONAUT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/micronaut"
 GRAPE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/grape"
 WARP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/warp"
@@ -149,6 +151,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+PLUG_SERVER_VERSION="${RUNSPACE_PLUG_SERVER_VERSION:-~> 1.6}"
+PLUG_VERSION="${RUNSPACE_PLUG_VERSION:-~> 1.16}"
 MICRONAUT_JAVA_VERSION="${RUNSPACE_MICRONAUT_JAVA_VERSION:-JDK_21}"
 MICRONAUT_VERSION="${RUNSPACE_MICRONAUT_VERSION:-4.7.6}"
 GRAPE_VERSION="${RUNSPACE_GRAPE_VERSION:-~> 2.2}"
@@ -252,6 +256,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+plug_ready() {
+    [[ -f "$PLUG_DEST/mix.exs" ]] &&
+        [[ -f "$PLUG_DEST/mix.lock" ]] &&
+        [[ -f "$PLUG_DEST/skeleton.version" ]]
 }
 micronaut_ready() {
     [[ -f "$MICRONAUT_DEST/pom.xml" ]] &&
@@ -566,6 +575,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_plug=false
 needs_micronaut=false
 needs_grape=false
 needs_warp=false
@@ -642,6 +652,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! plug_ready; then
+    needs_plug=true
 fi
 if force_sync || ! micronaut_ready; then
     needs_micronaut=true
@@ -834,7 +847,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -867,6 +880,13 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_plug && ! command -v mix >/dev/null 2>&1; then
+    echo "Mix is required to prepare the Plug skeleton." >&2
+    echo "Install Elixir, then run:" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
 if $needs_micronaut && ! command -v curl >/dev/null 2>&1; then
     echo "curl is required to prepare the Micronaut skeleton." >&2
     exit 1
@@ -1134,6 +1154,32 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_plug && [[ ! -f "$PLUG_SRC/mix.lock" ]]; then
+    echo "Generating Plug skeleton..."
+    rm -rf "$PLUG_SRC"
+    mix new "$PLUG_SRC" --sup --app runspace_plug --module RunspacePlug
+    (
+        cd "$PLUG_SRC"
+        python3 - <<'PY' mix.exs "$PLUG_VERSION" "$PLUG_SERVER_VERSION"
+import re, sys
+path, plug_version, server_version = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f:
+    content = f.read()
+deps = f"""defp deps do
+    [
+      {{:plug, "{plug_version}"}},
+      {{:bandit, "{server_version}"}}
+    ]
+  end"""
+content = re.sub(r"defp deps do\s*\[\s*\]", deps, content, count=1)
+with open(path, "w") as f:
+    f.write(content)
+PY
+        mix deps.get
+        mix compile
+    )
+fi
+
 if $needs_micronaut && [[ ! -f "$MICRONAUT_SRC/pom.xml" ]]; then
     echo "Generating Micronaut skeleton..."
     rm -rf "$MICRONAUT_SRC" "$GEN/micronaut-extract"
