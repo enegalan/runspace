@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ASTRO_SRC="$GEN/astro"
 AXUM_SRC="$GEN/axum"
 RODA_SRC="$GEN/roda"
 REMIX_SRC="$GEN/remix"
@@ -36,6 +37,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ASTRO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/astro"
 AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
 RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
 REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
@@ -69,6 +71,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+ASTRO_VERSION="${RUNSPACE_ASTRO_VERSION:-^5.0.0}"
 AXUM_VERSION="${RUNSPACE_AXUM_VERSION:-0.8}"
 RODA_VERSION="${RUNSPACE_RODA_VERSION:-~> 3.87}"
 REMIX_VERSION="${RUNSPACE_REMIX_VERSION:-^2.17.0}"
@@ -120,6 +123,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+astro_ready() {
+    [[ -f "$ASTRO_DEST/package.json" ]] &&
+        [[ -f "$ASTRO_DEST/package-lock.json" ]] &&
+        [[ -f "$ASTRO_DEST/skeleton.version" ]]
 }
 axum_ready() {
     [[ -f "$AXUM_DEST/Cargo.toml" ]] &&
@@ -255,6 +263,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_astro=false
 needs_axum=false
 needs_roda=false
 needs_remix=false
@@ -291,6 +300,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! astro_ready; then
+    needs_astro=true
 fi
 if force_sync || ! axum_ready; then
     needs_axum=true
@@ -372,7 +384,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -405,6 +417,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_astro && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Astro skeleton." >&2
+    exit 1
+fi
+
 if $needs_axum && ! command -v cargo >/dev/null 2>&1; then
     echo "cargo is required to prepare the Axum skeleton." >&2
     exit 1
@@ -518,6 +535,21 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_astro && [[ ! -d "$ASTRO_SRC/node_modules" ]]; then
+    echo "Generating Astro skeleton..."
+    rm -rf "$ASTRO_SRC"
+    mkdir -p "$ASTRO_SRC"
+    (
+        cd "$ASTRO_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/astro-sandbox"
+        npm pkg set description="Internal Astro sandbox for Runspace"
+        npm pkg set private=true
+        npm pkg set type=module
+        npm install "astro@${ASTRO_VERSION}" --save
+    )
+fi
+
 if $needs_axum && [[ ! -f "$AXUM_SRC/Cargo.lock" ]]; then
     echo "Generating Axum skeleton..."
     rm -rf "$AXUM_SRC"
