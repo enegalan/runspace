@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+AXUM_SRC="$GEN/axum"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude target/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$AXUM_SRC/Cargo.lock" ]]; then
+    mkdir -p "$AXUM_DEST"
+    rsync -a --delete --exclude target/ --exclude .git/ "$AXUM_SRC/" "$AXUM_DEST/"
+    echo "$SKELETON_VERSION" > "$AXUM_DEST/skeleton.version"
+    synced+=("Axum")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
