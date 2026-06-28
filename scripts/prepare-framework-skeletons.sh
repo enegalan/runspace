@@ -111,18 +111,29 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
     )
 fi
 
-if $needs_fastify && [[ ! -d "$FASTIFY_SRC/node_modules" ]]; then
-    echo "Generating Fastify skeleton..."
-    rm -rf "$FASTIFY_SRC"
-    mkdir -p "$FASTIFY_SRC"
-    (
-        cd "$FASTIFY_SRC"
-        npm init -y --scope=runspace
-        npm pkg set name="@runspace/fastify-sandbox"
-        npm pkg set description="Internal Fastify sandbox for Runspace"
-        npm pkg set private=true
-        npm install "fastify@${FASTIFY_VERSION}" --save
-    )
+if $needs_fastify; then
+    # Check if we can skip regeneration: package metadata exists and version matches
+    skip_fastify=false
+    if [[ -f "$FASTIFY_SRC/package.json" ]] && [[ -f "$FASTIFY_SRC/package-lock.json" ]]; then
+        installed_version=$(node -p "require('$FASTIFY_SRC/package.json').dependencies?.fastify || ''" 2>/dev/null || echo "")
+        if [[ "$installed_version" == "^${FASTIFY_VERSION#^}" ]] || [[ "$installed_version" == "${FASTIFY_VERSION}" ]]; then
+            skip_fastify=true
+        fi
+    fi
+
+    if ! $skip_fastify; then
+        echo "Generating Fastify skeleton..."
+        rm -rf "$FASTIFY_SRC"
+        mkdir -p "$FASTIFY_SRC"
+        (
+            cd "$FASTIFY_SRC"
+            npm init -y --scope=runspace
+            npm pkg set name="@runspace/fastify-sandbox"
+            npm pkg set description="Internal Fastify sandbox for Runspace"
+            npm pkg set private=true
+            npm install "fastify@${FASTIFY_VERSION}" --save
+        )
+    fi
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
