@@ -27,6 +27,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | Laminas | PHP + [Composer](https://getcomposer.org/) |
 | Phalcon | PHP (with [Phalcon extension](https://docs.phalcon.io/5.9/installation/)) + [Composer](https://getcomposer.org/) |
 | Express | [Node.js](https://nodejs.org/en/download) + npm |
+| Vert.x | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Spring Boot | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Ktor | [Kotlin](https://kotlinlang.org/docs/command-line.html) + [Gradle](https://gradle.org/install/) |
 | Padrino | Ruby + [Bundler](https://bundler.io/) + [Padrino](https://padrinorb.com/guides/getting-started/installation/) |
@@ -93,6 +94,7 @@ Run tests:
 npm test
 ```
 
+Generate Laravel/Symfony/Express/Vert.x skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/CakePHP skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/Slim skeletons manually (first clone or after bumping `manifest.json`):
 Generate Laravel/Symfony/Laminas skeletons manually (first clone or after bumping `manifest.json`):

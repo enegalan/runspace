@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+VERTX_SRC="$GEN/vertx"
 CAKEPHP_SRC="$GEN/cakephp"
 STREAMLIT_SRC="$GEN/streamlit"
 LUMEN_SRC="$GEN/lumen"
@@ -66,6 +67,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
 CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
 STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
 LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
@@ -129,6 +131,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+VERTX_VERSION="${RUNSPACE_VERTX_VERSION:-5.0.1}"
+VERTX_JAVA_VERSION="${RUNSPACE_VERTX_JAVA_VERSION:-21}"
 CAKEPHP_PROJECT="${RUNSPACE_CAKEPHP_PROJECT:-cakephp/app}"
 CAKEPHP_VERSION="${RUNSPACE_CAKEPHP_VERSION:-5.3.*}"
 STREAMLIT_VERSION="${RUNSPACE_STREAMLIT_VERSION:->=1.42.0,<2}"
@@ -218,6 +222,10 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+vertx_ready() {
+    [[ -f "$VERTX_DEST/pom.xml" ]] &&
+        [[ -f "$VERTX_DEST/skeleton.version" ]]
 }
 cakephp_ready() {
     [[ -f "$CAKEPHP_DEST/bin/cake" ]] &&
@@ -485,6 +493,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_vertx=false
 needs_cakephp=false
 needs_streamlit=false
 needs_lumen=false
@@ -551,6 +560,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! vertx_ready; then
+    needs_vertx=true
 fi
 if force_sync || ! cakephp_ready; then
     needs_cakephp=true
@@ -713,7 +725,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -968,6 +980,43 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_vertx && [[ ! -f "$VERTX_SRC/pom.xml" ]]; then
+    echo "Generating Vert.x skeleton..."
+    rm -rf "$VERTX_SRC"
+    mkdir -p "$VERTX_SRC"
+    cat > "$VERTX_SRC/pom.xml" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.runspace</groupId>
+    <artifactId>vertx-sandbox</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>runspace-vertx-sandbox</name>
+    <description>Internal Vert.x sandbox for Runspace</description>
+    <properties>
+        <vertx.version>${VERTX_VERSION}</vertx.version>
+        <maven.compiler.source>${VERTX_JAVA_VERSION}</maven.compiler.source>
+        <maven.compiler.target>${VERTX_JAVA_VERSION}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>\${vertx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>\${vertx.version}</version>
+        </dependency>
+    </dependencies>
+</project>
+EOF
+fi
+
 if $needs_cakephp && [[ ! -d "$CAKEPHP_SRC/vendor" ]]; then
     echo "Generating CakePHP skeleton..."
     rm -rf "$CAKEPHP_SRC"

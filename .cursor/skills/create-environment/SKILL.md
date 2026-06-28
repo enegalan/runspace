@@ -83,6 +83,7 @@ Task Progress:
 | PHP framework      | `laravel.json`, `symfony.json`, `laminas.json`        |
 | PHP framework      | `laravel.json`, `symfony.json`, `wordpress.json`      |
 | PHP framework      | `laravel.json`, `symfony.json`                        |
+| JVM Maven framework | `vertx.json` (copy `java_maven_bootstrap.tpl`)       |
 | Node.js framework  | `express.json`                                        |
 | Python framework   | `streamlit.json`                                      |
 | Go framework       | `chi.json` (go mod + vendor bootstrap)                |
@@ -127,6 +128,7 @@ Minimal script example:
 ### Step 3: Framework extras (only if `profile: "framework"`)
 
 1. Add skeleton entry to `src-tauri/resources/frameworks/manifest.json`.
+2. Run `npm run prepare:frameworks` (requires Composer for PHP; generates `laravel/`, `symfony/`, `express/`, `vertx/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `cakephp/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, pip for Streamlit; generates `laravel/`, `symfony/`, `express/`, `streamlit/`-style dirs).
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `lumen/`, `symfony/`-style dirs).
