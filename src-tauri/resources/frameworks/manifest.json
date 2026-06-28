@@ -13,6 +13,11 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "sveltekit": {
+      "createTool": "sv",
+      "template": "minimal",
+      "types": "ts"
     }
   }
 }
