@@ -122,6 +122,8 @@ fi
 if $needs_phoenix && [[ ! -f "$PHOENIX_SRC/mix.lock" ]]; then
     echo "Generating Phoenix skeleton..."
     rm -rf "$PHOENIX_SRC"
+    mix local.hex --force
+    mix archive.install hex phx_new --force
     mix phx.new "$PHOENIX_SRC" \
         --no-install \
         --app runspace_phoenix \
