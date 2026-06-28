@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ACTIX_WEB_SRC="$GEN/actix-web"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ACTIX_WEB_DEST="$REPO_ROOT/src-tauri/resources/frameworks/actix-web"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+ACTIX_WEB_VERSION="${RUNSPACE_ACTIX_WEB_VERSION:-4}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+actix_web_ready() {
+    [[ -f "$ACTIX_WEB_DEST/Cargo.toml" ]] &&
+        [[ -f "$ACTIX_WEB_DEST/Cargo.lock" ]] &&
+        [[ -f "$ACTIX_WEB_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_actix_web=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! actix_web_ready; then
+    needs_actix_web=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_actix_web; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_actix_web && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Actix Web skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +113,50 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_actix_web && [[ ! -f "$ACTIX_WEB_SRC/Cargo.lock" ]]; then
+    echo "Generating Actix Web skeleton..."
+    rm -rf "$ACTIX_WEB_SRC"
+    mkdir -p "$ACTIX_WEB_SRC/src/bin"
+    cat > "$ACTIX_WEB_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-actix-web-sandbox"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Internal Actix Web sandbox for Runspace"
+
+[dependencies]
+actix-web = "${ACTIX_WEB_VERSION}"
+
+[[bin]]
+name = "runspace-entry"
+path = "src/bin/runspace_entry.rs"
+EOF
+    cat > "$ACTIX_WEB_SRC/build.rs" <<'EOF'
+fn main() {
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+        format!("{manifest_dir}/src/stub_entry.rs")
+    });
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    println!("cargo:rustc-env=RUNSPACE_ENTRY_PATH={entry}");
+}
+EOF
+    cat > "$ACTIX_WEB_SRC/src/stub_entry.rs" <<'EOF'
+fn main() {
+    println!("Runspace Actix Web sandbox");
+}
+EOF
+    cat > "$ACTIX_WEB_SRC/src/bin/runspace_entry.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY_PATH"));
+EOF
+    (
+        cd "$ACTIX_WEB_SRC"
+        cargo fetch --locked 2>/dev/null || cargo fetch
+        RUNSPACE_ENTRY_PATH="$ACTIX_WEB_SRC/src/stub_entry.rs" cargo build --quiet --bin runspace-entry
     )
 fi
 

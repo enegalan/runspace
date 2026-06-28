@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+ACTIX_WEB_SRC="$GEN/actix-web"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+ACTIX_WEB_DEST="$REPO_ROOT/src-tauri/resources/frameworks/actix-web"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude target/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$ACTIX_WEB_SRC/Cargo.lock" ]]; then
+    mkdir -p "$ACTIX_WEB_DEST"
+    rsync -a --delete --exclude target/ --exclude .git/ "$ACTIX_WEB_SRC/" "$ACTIX_WEB_DEST/"
+    echo "$SKELETON_VERSION" > "$ACTIX_WEB_DEST/skeleton.version"
+    synced+=("Actix Web")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
