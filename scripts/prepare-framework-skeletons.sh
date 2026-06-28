@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Prefer Homebrew Ruby when system Ruby is too old for modern gems.
+if command -v brew >/dev/null 2>&1; then
+    _ruby_prefix="$(brew --prefix ruby 2>/dev/null || true)"
+    if [[ -n "${_ruby_prefix:-}" && -x "${_ruby_prefix}/bin/ruby" ]]; then
+        export PATH="${_ruby_prefix}/bin:${PATH}"
+    fi
+    unset _ruby_prefix
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
@@ -17,7 +26,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
-RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-8.0.*}"
+RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
