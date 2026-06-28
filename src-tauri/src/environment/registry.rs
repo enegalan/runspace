@@ -247,6 +247,7 @@ mod tests {
         assert!(ids.len() >= 8);
         assert!(ids.contains(&"nodejs".to_string()));
         assert!(ids.contains(&"laravel".to_string()));
+        assert!(ids.contains(&"codeigniter".to_string()));
         assert!(ids.contains(&"bottle".to_string()));
         assert!(ids.contains(&"padrino".to_string()));
         assert!(ids.contains(&"wordpress".to_string()));

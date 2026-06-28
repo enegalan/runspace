@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+CODEIGNITER_SRC="$GEN/codeigniter"
 BOTTLE_SRC="$GEN/bottle"
 LITESTAR_SRC="$GEN/litestar"
 SPRING_BOOT_SRC="$GEN/spring-boot"
@@ -53,6 +54,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
 BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
 LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
 SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
@@ -103,6 +105,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+CODEIGNITER_PROJECT="${RUNSPACE_CODEIGNITER_PROJECT:-codeigniter4/appstarter}"
+CODEIGNITER_VERSION="${RUNSPACE_CODEIGNITER_VERSION:-4.*}"
 BOTTLE_VERSION="${RUNSPACE_BOTTLE_VERSION:-==0.13.2}"
 SPRING_BOOT_VERSION="${RUNSPACE_SPRING_BOOT_VERSION:-3.5.0}"
 SPRING_BOOT_JAVA_VERSION="${RUNSPACE_SPRING_BOOT_JAVA_VERSION:-21}"
@@ -174,6 +178,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+codeigniter_ready() {
+    [[ -f "$CODEIGNITER_DEST/spark" ]] &&
+        [[ -f "$CODEIGNITER_DEST/composer.lock" ]] &&
+        [[ -f "$CODEIGNITER_DEST/skeleton.version" ]]
 }
 bottle_ready() {
     [[ -f "$BOTTLE_DEST/requirements.txt" ]] &&
@@ -377,6 +386,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_codeigniter=false
 needs_bottle=false
 needs_litestar=false
 needs_spring-boot=false
@@ -430,6 +440,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! codeigniter_ready; then
+    needs_codeigniter=true
 fi
 if force_sync || ! bottle_ready; then
     needs_bottle=true
@@ -553,7 +566,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -768,6 +781,12 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_codeigniter && [[ ! -d "$CODEIGNITER_SRC/vendor" ]]; then
+    echo "Generating CodeIgniter skeleton..."
+    rm -rf "$CODEIGNITER_SRC"
+    composer create-project "$CODEIGNITER_PROJECT" "$CODEIGNITER_SRC" "$CODEIGNITER_VERSION" --no-interaction
+fi
+
 if $needs_bottle && [[ ! -f "$BOTTLE_SRC/requirements.txt" ]]; then
     echo "Generating Bottle skeleton..."
     rm -rf "$BOTTLE_SRC"

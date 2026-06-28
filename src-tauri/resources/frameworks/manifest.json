@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "codeigniter": {
+      "createProject": "codeigniter4/appstarter",
+      "versionConstraint": "4.*"
+    },
     "bottle": {
       "pipPackage": "bottle",
       "versionConstraint": "==0.13.2"

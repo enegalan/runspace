@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Bottle, Phoenix, Nextjs, Nuxt, Rails, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Codeigniter, Bottle, Phoenix, Nextjs, Nuxt, Rails, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `codeigniter/` — copied to `~/.runspace/frameworks/codeigniter/` on first use
 - `bottle/` — copied to `~/.runspace/frameworks/bottle/` on first use
 - `spring-boot/` — copied to `~/.runspace/frameworks/spring-boot/` on first use
 - `phoenix/` — copied to `~/.runspace/frameworks/phoenix/` on first use
