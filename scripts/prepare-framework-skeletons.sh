@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+LAMINAS_SRC="$GEN/laminas"
 TORNADO_SRC="$GEN/tornado"
 IONIC_SRC="$GEN/ionic"
 STARLETTE_SRC="$GEN/starlette"
@@ -57,6 +58,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
 TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
 IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
 STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
@@ -111,6 +113,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+LAMINAS_PROJECT="${RUNSPACE_LAMINAS_PROJECT:-laminas/laminas-mvc-skeleton}"
+LAMINAS_VERSION="${RUNSPACE_LAMINAS_VERSION:-2.4.*}"
 TORNADO_VERSION="${RUNSPACE_TORNADO_VERSION:-6.4.2}"
 IONIC_VERSION="${RUNSPACE_IONIC_VERSION:-^8.0.0}"
 STARLETTE_VERSION="${RUNSPACE_STARLETTE_VERSION:-0.49.*}"
@@ -187,6 +191,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+laminas_ready() {
+    [[ -f "$LAMINAS_DEST/public/index.php" ]] &&
+        [[ -f "$LAMINAS_DEST/composer.lock" ]] &&
+        [[ -f "$LAMINAS_DEST/skeleton.version" ]]
 }
 tornado_ready() {
     [[ -f "$TORNADO_DEST/requirements.txt" ]] &&
@@ -409,6 +418,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_laminas=false
 needs_tornado=false
 needs_ionic=false
 needs_starlette=false
@@ -466,6 +476,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! laminas_ready; then
+    needs_laminas=true
 fi
 if force_sync || ! tornado_ready; then
     needs_tornado=true
@@ -601,7 +614,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -831,6 +844,12 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_laminas && [[ ! -d "$LAMINAS_SRC/vendor" ]]; then
+    echo "Generating Laminas skeleton..."
+    rm -rf "$LAMINAS_SRC"
+    composer create-project -s dev "$LAMINAS_PROJECT" "$LAMINAS_SRC" "$LAMINAS_VERSION" --no-interaction --ignore-platform-reqs
+fi
+
 if $needs_tornado && [[ ! -d "$TORNADO_SRC/site-packages" ]]; then
     echo "Generating Tornado skeleton..."
     rm -rf "$TORNADO_SRC"
