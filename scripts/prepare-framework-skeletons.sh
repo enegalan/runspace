@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+GORILLA_MUX_SRC="$GEN/gorilla-mux"
 WORDPRESS_SRC="$GEN/wordpress"
 SOLIDSTART_SRC="$GEN/solidstart"
 JHIPSTER_SRC="$GEN/jhipster"
@@ -22,6 +23,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+GORILLA_MUX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gorilla-mux"
 WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
 SOLIDSTART_DEST="$REPO_ROOT/src-tauri/resources/frameworks/solidstart"
 JHIPSTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/jhipster"
@@ -41,6 +43,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+GORILLA_MUX_VERSION="${RUNSPACE_GORILLA_MUX_VERSION:-v1.8.1}"
 WORDPRESS_VERSION="${RUNSPACE_WORDPRESS_VERSION:-6.*}"
 WORDPRESS_PROJECT="${RUNSPACE_WORDPRESS_PROJECT:-johnpbloch/wordpress}"
 SOLIDSTART_VERSION="${RUNSPACE_SOLIDSTART_VERSION:-^1.3.0}"
@@ -152,6 +155,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_gorilla-mux=false
 needs_wordpress=false
 needs_solidstart=false
 needs_jhipster=false
@@ -219,7 +223,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi

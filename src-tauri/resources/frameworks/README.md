@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `gorilla-mux/` — copied to `~/.runspace/frameworks/gorilla-mux/` on first use
 - `wordpress/` — copied to `~/.runspace/frameworks/wordpress/` on first use
 - `solidstart/` — copied to `~/.runspace/frameworks/solidstart/` on first use
 - `jhipster/` — copied to `~/.runspace/frameworks/jhipster/` on first use

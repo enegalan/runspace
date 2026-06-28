@@ -79,6 +79,7 @@ Task Progress:
 | Compiler           | `gcc.json`, `gpp.json`                                |
 | PHP framework      | `laravel.json`, `symfony.json`, `wordpress.json`      |
 | PHP framework      | `laravel.json`, `symfony.json`                        |
+| Go framework       | `gorilla-mux.json`                                    |
 | Go framework       | `buffalo.json` (go mod vendor pattern)                |
 
 ### Step 2: Create the manifest
@@ -125,6 +126,7 @@ Minimal script example:
 
 Framework skeletons are **not** committed to git; CI and release builds run `prepare:frameworks`.
 
+**Go module frameworks** (`go_mod_bootstrap.tpl`): skeleton is a `go mod init` + `go get` sandbox. Use `dependency_install` with `go mod download`, `vendor_marker: "go.sum"`, and `manifest_files: ["go.mod", "go.sum"]`. Register in `frameworks/manifest.json` with `goModule` and `versionConstraint`.
 Go module frameworks (`buffalo.json` pattern) vendor dependencies into the skeleton:
 
 ```json
