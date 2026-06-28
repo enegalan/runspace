@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+AXUM_SRC="$GEN/axum"
 RODA_SRC="$GEN/roda"
 REMIX_SRC="$GEN/remix"
 SVELTEKIT_SRC="$GEN/sveltekit"
@@ -35,6 +36,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
 RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
 REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
 SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
@@ -67,6 +69,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+AXUM_VERSION="${RUNSPACE_AXUM_VERSION:-0.8}"
 RODA_VERSION="${RUNSPACE_RODA_VERSION:-~> 3.87}"
 REMIX_VERSION="${RUNSPACE_REMIX_VERSION:-^2.17.0}"
 PHALCON_VERSION="${RUNSPACE_PHALCON_VERSION:-1.*}"
@@ -117,6 +120,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+axum_ready() {
+    [[ -f "$AXUM_DEST/Cargo.toml" ]] &&
+        [[ -f "$AXUM_DEST/Cargo.lock" ]] &&
+        [[ -f "$AXUM_DEST/skeleton.version" ]]
 }
 roda_ready() {
     [[ -f "$RODA_DEST/Gemfile" ]] &&
@@ -247,6 +255,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_axum=false
 needs_roda=false
 needs_remix=false
 needs_sveltekit=false
@@ -282,6 +291,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! axum_ready; then
+    needs_axum=true
 fi
 if force_sync || ! roda_ready; then
     needs_roda=true
@@ -360,7 +372,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -393,6 +405,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_axum && ! command -v cargo >/dev/null 2>&1; then
+    echo "cargo is required to prepare the Axum skeleton." >&2
+    exit 1
+fi
+
 if $needs_roda && ! command -v bundle >/dev/null 2>&1; then
     echo "Bundler is required to prepare the Roda skeleton." >&2
     echo "Install Ruby and Bundler, then run:" >&2
@@ -501,6 +518,51 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_axum && [[ ! -f "$AXUM_SRC/Cargo.lock" ]]; then
+    echo "Generating Axum skeleton..."
+    rm -rf "$AXUM_SRC"
+    mkdir -p "$AXUM_SRC/src/bin"
+    cat > "$AXUM_SRC/Cargo.toml" <<EOF
+[package]
+name = "runspace-axum-sandbox"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Internal Axum sandbox for Runspace"
+
+[dependencies]
+axum = "${AXUM_VERSION}"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+
+[[bin]]
+name = "runspace-entry"
+path = "src/bin/runspace_entry.rs"
+EOF
+    cat > "$AXUM_SRC/build.rs" <<'EOF'
+fn main() {
+    let entry = std::env::var("RUNSPACE_ENTRY_PATH").unwrap_or_else(|_| {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+        format!("{manifest_dir}/src/stub_entry.rs")
+    });
+    println!("cargo:rerun-if-env-changed=RUNSPACE_ENTRY_PATH");
+    println!("cargo:rustc-env=RUNSPACE_ENTRY_PATH={entry}");
+}
+EOF
+    cat > "$AXUM_SRC/src/stub_entry.rs" <<'EOF'
+fn main() {
+    println!("Runspace Axum sandbox");
+}
+EOF
+    cat > "$AXUM_SRC/src/bin/runspace_entry.rs" <<'EOF'
+include!(env!("RUNSPACE_ENTRY_PATH"));
+EOF
+    (
+        cd "$AXUM_SRC"
+        cargo fetch --locked 2>/dev/null || cargo fetch
+        RUNSPACE_ENTRY_PATH="$AXUM_SRC/src/stub_entry.rs" cargo build --quiet --bin runspace-entry
+    )
+fi
+
 if $needs_roda && [[ ! -f "$RODA_SRC/.bundle/config" ]]; then
     echo "Generating Roda skeleton..."
     rm -rf "$RODA_SRC"
