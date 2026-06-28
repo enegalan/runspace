@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -d /opt/homebrew/share/flutter/bin ]]; then
+    export PATH="/opt/homebrew/share/flutter/bin:${PATH}"
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
