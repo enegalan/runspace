@@ -22,6 +22,8 @@ Each environment you add in the playground needs its own runtime installed and c
 | G++ (C++) | G++ ([Xcode Command Line Tools](https://developer.apple.com/xcode/resources/) on macOS) |
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
+| Express | [Node.js](https://nodejs.org/en/download) + npm |
+| Quarkus | [Java JDK](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 
 You only install the runtimes for the environments you use. Node.js is not required to run PHP, and so on.
 
@@ -33,6 +35,7 @@ To build or contribute to Runspace from source:
 - Rust stable
 - Xcode Command Line Tools (macOS)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
+- curl — generates bundled Quarkus skeleton via code.quarkus.io during build
 
 ## Development
 
@@ -60,7 +63,7 @@ Run tests:
 npm test
 ```
 
-Generate Laravel/Symfony skeletons manually (first clone or after bumping `manifest.json`):
+Generate Laravel/Symfony/Express/Quarkus skeletons manually (first clone or after bumping `manifest.json`):
 
 ```bash
 npm run prepare:frameworks

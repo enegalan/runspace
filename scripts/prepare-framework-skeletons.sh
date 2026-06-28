@@ -6,15 +6,20 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+QUARKUS_SRC="$GEN/quarkus"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+QUARKUS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quarkus"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+QUARKUS_GROUP_ID="${RUNSPACE_QUARKUS_GROUP_ID:-com.runspace}"
+QUARKUS_ARTIFACT_ID="${RUNSPACE_QUARKUS_ARTIFACT_ID:-sandbox}"
+QUARKUS_EXTENSIONS="${RUNSPACE_QUARKUS_EXTENSIONS:-io.quarkus:quarkus-rest}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +39,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+quarkus_ready() {
+    [[ -f "$QUARKUS_DEST/pom.xml" ]] &&
+        [[ -f "$QUARKUS_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_quarkus=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +62,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! quarkus_ready; then
+    needs_quarkus=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_quarkus; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +80,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_quarkus && ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to prepare the Quarkus skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +115,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_quarkus && [[ ! -f "$QUARKUS_SRC/pom.xml" ]]; then
+    echo "Generating Quarkus skeleton..."
+    rm -rf "$QUARKUS_SRC"
+    mkdir -p "$QUARKUS_SRC"
+    curl -sSfLo "$GEN/quarkus.zip" \
+        "https://code.quarkus.io/api/download" \
+        -G \
+        --data-urlencode "g=${QUARKUS_GROUP_ID}" \
+        --data-urlencode "a=${QUARKUS_ARTIFACT_ID}" \
+        --data-urlencode "e=${QUARKUS_EXTENSIONS}"
+    unzip -q "$GEN/quarkus.zip" -d "$QUARKUS_SRC"
+    rm -f "$GEN/quarkus.zip"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
