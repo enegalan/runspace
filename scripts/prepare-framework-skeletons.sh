@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BEEGO_SRC="$GEN/beego"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+BEEGO_MODULE="${RUNSPACE_BEEGO_MODULE:-github.com/beego/beego/v2}"
+BEEGO_VERSION="${RUNSPACE_BEEGO_VERSION:-v2.3.8}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+beego_ready() {
+    [[ -f "$BEEGO_DEST/go.mod" ]] &&
+        [[ -f "$BEEGO_DEST/go.sum" ]] &&
+        [[ -f "$BEEGO_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_beego=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +62,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! beego_ready; then
+    needs_beego=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_beego; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +80,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_beego && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Beego skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +114,18 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_beego && [[ ! -d "$BEEGO_SRC/vendor" ]]; then
+    echo "Generating Beego skeleton..."
+    rm -rf "$BEEGO_SRC"
+    mkdir -p "$BEEGO_SRC"
+    (
+        cd "$BEEGO_SRC"
+        go mod init runspace/beego-sandbox
+        go get "${BEEGO_MODULE}@${BEEGO_VERSION}"
+        go mod vendor
     )
 fi
 
