@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SALVO_SRC="$GEN/salvo"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SALVO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/salvo"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$SALVO_SRC/Cargo.lock" ]]; then
+    mkdir -p "$SALVO_DEST"
+    rsync -a --delete --exclude target/ --exclude .git/ "$SALVO_SRC/" "$SALVO_DEST/"
+    echo "$SKELETON_VERSION" > "$SALVO_DEST/skeleton.version"
+    synced+=("Salvo")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
