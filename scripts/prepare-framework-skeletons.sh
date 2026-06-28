@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BEEGO_SRC="$GEN/beego"
 FIBER_SRC="$GEN/fiber"
 DROPWIZARD_SRC="$GEN/dropwizard"
 GIN_SRC="$GEN/gin"
@@ -71,6 +72,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
 FIBER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fiber"
 DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
 GIN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gin"
@@ -139,6 +141,8 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+BEEGO_VERSION="${RUNSPACE_BEEGO_VERSION:-v2.3.8}"
+BEEGO_MODULE="${RUNSPACE_BEEGO_MODULE:-github.com/beego/beego/v2}"
 FIBER_MODULE="${RUNSPACE_FIBER_MODULE:-github.com/gofiber/fiber/v2}"
 FIBER_VERSION="${RUNSPACE_FIBER_VERSION:-v2.52.9}"
 DROPWIZARD_VERSION="${RUNSPACE_DROPWIZARD_VERSION:-4.0.16}"
@@ -235,6 +239,11 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+beego_ready() {
+    [[ -f "$BEEGO_DEST/go.mod" ]] &&
+        [[ -f "$BEEGO_DEST/go.sum" ]] &&
+        [[ -f "$BEEGO_DEST/skeleton.version" ]]
 }
 fiber_ready() {
     [[ -f "$FIBER_DEST/go.mod" ]] &&
@@ -525,6 +534,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_beego=false
 needs_fiber=false
 needs_dropwizard=false
 needs_gin=false
@@ -596,6 +606,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! beego_ready; then
+    needs_beego=true
 fi
 if force_sync || ! fiber_ready; then
     needs_fiber=true
@@ -773,7 +786,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -806,6 +819,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_beego && ! command -v go >/dev/null 2>&1; then
+    echo "Go is required to prepare the Beego skeleton." >&2
+    exit 1
+fi
+
 if $needs_fiber && ! command -v go >/dev/null 2>&1; then
     echo "Go is required to prepare the Fiber skeleton." >&2
     exit 1
@@ -1045,6 +1063,18 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_beego && [[ ! -d "$BEEGO_SRC/vendor" ]]; then
+    echo "Generating Beego skeleton..."
+    rm -rf "$BEEGO_SRC"
+    mkdir -p "$BEEGO_SRC"
+    (
+        cd "$BEEGO_SRC"
+        go mod init runspace/beego-sandbox
+        go get "${BEEGO_MODULE}@${BEEGO_VERSION}"
+        go mod vendor
+    )
+fi
+
 if $needs_fiber && [[ ! -f "$FIBER_SRC/go.sum" ]]; then
     echo "Generating Fiber skeleton..."
     rm -rf "$FIBER_SRC"

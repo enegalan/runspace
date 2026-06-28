@@ -11,12 +11,23 @@ import (
 )
 
 func main() {
+	skeletonRoot := "{{skeleton_root}}"
+	entryFile := "{{entry_file}}"
+
+	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryFile)
+
+	cmd := exec.Command("{{go_path}}", "run", "-mod=vendor", entryFile)
+	cmd.Env = append(os.Environ(), "GOMOD="+skeletonRoot+"/go.mod")
+	entryPath := "{{entry_file}}"
+	workspacePath := "{{workspace_path}}"
+	goPath := "{{go_path}}"
+
+	os.Setenv("RUNSPACE_ENTRY_PATH", entryPath)
 	skeletonRoot := `{{skeleton_root}}`
 	entryFile := `{{entry_file}}`
 	workspacePath := `{{workspace_path}}`
 
-	os.Setenv("RUNSPACE_FRAMEWORK_ROOT", skeletonRoot)
-	os.Setenv("RUNSPACE_ENTRY_PATH", entryFile)
 	os.Setenv("RUNSPACE_WORKSPACE", workspacePath)
 
 	modfile := filepath.Join(skeletonRoot, "go.mod")
@@ -102,6 +113,7 @@ func main() {
 			os.Exit(exitErr.ExitCode())
 		}
 		os.Exit(1)
+		panic(err)
 	}
 }
 

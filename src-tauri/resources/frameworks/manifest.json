@@ -19,6 +19,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "beego": {
+      "goModule": "github.com/beego/beego/v2",
+      "versionConstraint": "v2.3.8"
+    },
     "fiber": {
       "goModule": "github.com/gofiber/fiber/v2",
       "versionConstraint": "v2.52.9"
