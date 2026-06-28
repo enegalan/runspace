@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+RAILS_SRC="$GEN/rails"
 SINATRA_SRC="$GEN/sinatra"
 PADRINO_SRC="$GEN/padrino"
 COWBOY_SRC="$GEN/cowboy"
@@ -46,6 +47,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
 SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
 PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
 COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
@@ -89,6 +91,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+RAILS_VERSION="${RUNSPACE_RAILS_VERSION:-~> 8.0}"
 SINATRA_VERSION="${RUNSPACE_SINATRA_VERSION:-~> 4.0}"
 PADRINO_PROJECT="${RUNSPACE_PADRINO_PROJECT:-runspace_padrino_sandbox}"
 PADRINO_GEM_VERSION="${RUNSPACE_PADRINO_GEM_VERSION:->= 0.15.0}"
@@ -153,6 +156,12 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+rails_ready() {
+    [[ -f "$RAILS_DEST/Gemfile" ]] &&
+        [[ -f "$RAILS_DEST/Gemfile.lock" ]] &&
+        [[ -f "$RAILS_DEST/bin/rails" ]] &&
+        [[ -f "$RAILS_DEST/skeleton.version" ]]
 }
 sinatra_ready() {
     [[ -f "$SINATRA_DEST/Gemfile" ]] &&
@@ -327,6 +336,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_rails=false
 needs_sinatra=false
 needs_padrino=false
 needs_cowboy=false
@@ -373,6 +383,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! rails_ready; then
+    needs_rails=true
 fi
 if force_sync || ! sinatra_ready; then
     needs_sinatra=true
@@ -478,7 +491,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -511,6 +524,14 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_rails && ! command -v rails >/dev/null 2>&1; then
+    echo "Rails is required to prepare the Rails skeleton." >&2
+    echo "Install Ruby, Bundler, and Rails, then run:" >&2
+    echo "  gem install rails bundler" >&2
+    echo "  npm run prepare:frameworks" >&2
+    exit 1
+fi
+
 if $needs_sinatra && ! command -v bundle >/dev/null 2>&1; then
     echo "Bundler is required to prepare the Sinatra skeleton." >&2
     echo "Install Ruby and Bundler, then run:" >&2
@@ -657,6 +678,16 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
+    echo "Generating Rails skeleton..."
+    rm -rf "$RAILS_SRC"
+
+    # Install specific Rails version if not already available
+    if ! gem list -i "^rails$" -v "$RAILS_VERSION" >/dev/null 2>&1; then
+        echo "Installing Rails ${RAILS_VERSION}..."
+        gem install rails -v "$RAILS_VERSION" --no-document
+    fi
+
 if $needs_sinatra && [[ ! -f "$SINATRA_SRC/.bundle/config" ]]; then
     echo "Generating Sinatra skeleton..."
     rm -rf "$SINATRA_SRC"
