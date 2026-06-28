@@ -182,5 +182,13 @@ mod tests {
             return;
         };
         run_hello("minimal-apis", binary, "Console.WriteLine(\"hi\");\n");
+    #[ignore = "requires php, composer, and network for skeleton install"]
+    fn integration_wordpress_hello() {
+        let Some(binary) = runtime_binary(&["php"]) else {
+        run_hello(
+            "wordpress",
+            binary,
+            "<?php\n\necho strtoupper(sanitize_title('Hello from WordPress!'));\n",
+        );
     }
 }
