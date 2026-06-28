@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+LITESTAR_SRC="$GEN/litestar"
 SPRING_BOOT_SRC="$GEN/spring-boot"
 PHOENIX_SRC="$GEN/phoenix"
 NEXTJS_SRC="$GEN/nextjs"
@@ -51,6 +52,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
 SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
 PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
 NEXTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nextjs"
@@ -169,6 +171,10 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+litestar_ready() {
+    [[ -f "$LITESTAR_DEST/requirements.txt" ]] &&
+        [[ -f "$LITESTAR_DEST/skeleton.version" ]]
 }
 phoenix_ready() {
     [[ -f "$PHOENIX_DEST/mix.exs" ]] &&
@@ -364,6 +370,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_litestar=false
 needs_spring-boot=false
 needs_phoenix=false
 needs_nextjs=false
@@ -415,6 +422,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! litestar_ready; then
+    needs_litestar=true
 fi
 if force_sync || ! phoenix_ready; then
     needs_phoenix=true
@@ -532,7 +542,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -565,6 +575,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_litestar && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Litestar skeleton." >&2
+    exit 1
+fi
+
 if $needs_phoenix && ! command -v mix >/dev/null 2>&1; then
     echo "Mix is required to prepare the Phoenix skeleton." >&2
     echo "Install Elixir and Phoenix, then run:" >&2
@@ -737,6 +752,27 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_litestar && [[ ! -f "$LITESTAR_SRC/requirements.txt" ]]; then
+    echo "Generating Litestar skeleton..."
+    rm -rf "$LITESTAR_SRC"
+    mkdir -p "$LITESTAR_SRC"
+    (
+        cd "$LITESTAR_SRC"
+        python3 -m pip install litestar "uvicorn[standard]" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        python3 - <<'PY' > requirements.txt
+import sys
+sys.path.insert(0, "site-packages")
+import litestar
+import uvicorn
+print(f"litestar=={litestar.__version__}")
+print(f"uvicorn=={uvicorn.__version__}")
+PY
+    )
+fi
+
 if $needs_phoenix && [[ ! -f "$PHOENIX_SRC/mix.lock" ]]; then
     echo "Generating Phoenix skeleton..."
     rm -rf "$PHOENIX_SRC"
