@@ -1,0 +1,52 @@
+{
+  "id": "dash",
+  "name": "Dash",
+  "category": "framework",
+  "file_extension": "py",
+  "install_guide_url": "https://dash.plotly.com/installation",
+  "presentation": { "accent": "#008de1" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "python_path",
+      "label": "Python binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["python3", "python"] }
+    }
+  ],
+  "run": {
+    "program": "{{python_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "dash",
+    "sync_exclude_dirs": ["vendor", ".venv"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{python_path}}",
+      "args": [
+        "-m",
+        "pip",
+        "install",
+        "-r",
+        "requirements.txt",
+        "--target",
+        "vendor",
+        "--no-cache-dir"
+      ],
+      "vendor_marker": "vendor/dash/__init__.py",
+      "manifest_files": ["requirements.txt"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.py",
+    "template": "python_vendor_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
