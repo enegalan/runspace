@@ -119,7 +119,7 @@ with open(path, "w") as f:
 PY
 
     echo "Refreshing Laminas composer.lock after manifest edits..."
-    (cd "$LAMINAS_SRC" && composer update --lock --no-install --no-interaction)
+    (cd "$LAMINAS_SRC" && composer update --lock --no-install --no-interaction --ignore-platform-reqs)
 
     rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$LAMINAS_SRC/" "$LAMINAS_DEST/"
     echo "$SKELETON_VERSION" > "$LAMINAS_DEST/skeleton.version"
