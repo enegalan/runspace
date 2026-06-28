@@ -78,6 +78,8 @@ Task Progress:
 | Simple interpreter | `nodejs.json`, `python.json`, `php.json`, `ruby.json` |
 | Compiler           | `gcc.json`, `gpp.json`                                |
 | PHP framework      | `laravel.json`, `symfony.json`, `wordpress.json`      |
+| PHP framework      | `laravel.json`, `symfony.json`                        |
+| Go framework       | `buffalo.json` (go mod vendor pattern)                |
 
 ### Step 2: Create the manifest
 
@@ -116,11 +118,25 @@ Minimal script example:
 
 1. Add skeleton entry to `src-tauri/resources/frameworks/manifest.json`.
 2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `wordpress/`-style dirs).
+2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, Go for Buffalo).
 3. Add bootstrap template under `src-tauri/resources/environments/templates/` if existing templates do not fit.
 4. Point `skeleton.bundled_dir` at the generated folder name.
 5. Set `prepare.template` and `prepare.output` (bootstrap file written into workspace).
 
 Framework skeletons are **not** committed to git; CI and release builds run `prepare:frameworks`.
+
+Go module frameworks (`buffalo.json` pattern) vendor dependencies into the skeleton:
+
+```json
+"dependency_install": {
+  "program": "{{go_path}}",
+  "args": ["mod", "vendor"],
+  "vendor_marker": "vendor/modules.txt",
+  "manifest_files": ["go.mod", "go.sum"]
+}
+```
+
+Use `go_mod_bootstrap.tpl` for bootstrap; it runs the user snippet with `-mod=vendor` from the skeleton root.
 
 ### Step 4: Template variables
 
@@ -162,6 +178,14 @@ Registry rejects manifests that violate:
 ```bash
 cargo test --manifest-path src-tauri/Cargo.toml environment::registry
 ```
+
+For `profile: "framework"`, also run skeleton generation and confirm the new skeleton syncs:
+
+```bash
+npm run prepare:frameworks
+```
+
+Expect output like `Synced … skeletons` including the new framework directory under `src-tauri/resources/frameworks/`. If generation fails, fix `prepare-framework-skeletons.sh` / `sync-framework-skeletons.sh` before opening the PR.
 
 Restart `npm run tauri dev` and confirm the environment appears in Settings → Environments via `list_available_environments`.
 
