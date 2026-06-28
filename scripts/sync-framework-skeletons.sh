@@ -9,13 +9,17 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+NANCY_SRC="$GEN/nancy"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude bin/
+    --exclude obj/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +109,50 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$NANCY_SRC/RunspaceNancySandbox.csproj" ]]; then
+    mkdir -p "$NANCY_DEST"
+
+    python3 - <<'PY' "$NANCY_SRC/RunspaceNancySandbox.csproj"
+import xml.etree.ElementTree as ET
+import sys
+
+path = sys.argv[1]
+tree = ET.parse(path)
+root = tree.getroot()
+
+def local_name(tag):
+    return tag.rsplit("}", 1)[-1]
+
+for element in root.iter():
+    if local_name(element.tag) == "AssemblyName":
+        element.text = "RunspaceNancySandbox"
+    if local_name(element.tag) == "RootNamespace":
+        element.text = "RunspaceNancySandbox"
+
+property_group = None
+for element in root:
+    if local_name(element.tag) == "PropertyGroup":
+        property_group = element
+        break
+
+if property_group is not None:
+    description = None
+    for child in property_group:
+        if local_name(child.tag) == "Description":
+            description = child
+            break
+    if description is None:
+        description = ET.SubElement(property_group, "Description")
+    description.text = "Internal Nancy sandbox for Runspace"
+
+tree.write(path, encoding="utf-8", xml_declaration=True)
+PY
+
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$NANCY_SRC/" "$NANCY_DEST/"
+    echo "$SKELETON_VERSION" > "$NANCY_DEST/skeleton.version"
+    synced+=("Nancy")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
