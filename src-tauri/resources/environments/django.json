@@ -1,0 +1,67 @@
+{
+  "id": "django",
+  "name": "Django",
+  "category": "framework",
+  "file_extension": "py",
+  "install_guide_url": "https://docs.djangoproject.com/en/stable/topics/install/",
+  "presentation": { "accent": "#092e20" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "python_path",
+      "label": "Python binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["python3", "python"] }
+    },
+    {
+      "key": "pip_path",
+      "label": "pip binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["pip3", "pip"] }
+    }
+  ],
+  "run": {
+    "program": "{{python_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "django",
+    "sync_exclude_dirs": ["site-packages"],
+    "sync_exclude_files": ["db.sqlite3"],
+    "dependency_install": {
+      "program": "{{pip_path}}",
+      "args": [
+        "install",
+        "-r",
+        "requirements.txt",
+        "--target",
+        "site-packages",
+        "--no-warn-script-location"
+      ],
+      "vendor_marker": "site-packages/django/__init__.py",
+      "manifest_files": ["requirements.txt"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.py",
+    "template": "site_packages_bootstrap.tpl"
+  },
+  "post_install": [
+    {
+      "type": "run",
+      "program": "{{python_path}}",
+      "cwd": "skeleton",
+      "args": ["manage.py", "migrate", "--noinput"]
+    }
+  ],
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": {
+    "args": ["-c", "import django; print(django.get_version())"]
+  }
+}
