@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Django, Play, Flask, Koa, Hono, Fastify, and NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `buffalo/` — copied to `~/.runspace/frameworks/buffalo/` on first use
 - `django/` — copied to `~/.runspace/frameworks/django/` on first use
 - `play/` — copied to `~/.runspace/frameworks/play/` on first use
 - `flask/` — copied to `~/.runspace/frameworks/flask/` on first use
