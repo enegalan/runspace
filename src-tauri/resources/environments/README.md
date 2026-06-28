@@ -35,7 +35,18 @@ Path variables use the same names everywhere. When a bootstrap template is writt
 }
 ```
 
-Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`).
+Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`, `kotlin_gradle_bootstrap.tpl`).
+
+Gradle-based frameworks use `dependency_install` with Gradle tasks and a Kotlin bootstrap that delegates to `gradle runspaceRun`:
+
+```json
+"dependency_install": {
+  "program": "{{gradle_path}}",
+  "args": ["runspaceResolveDeps", "--quiet", "--console=plain"],
+  "vendor_marker": "build/runspace-deps.ready",
+  "manifest_files": ["build.gradle.kts", "settings.gradle.kts", "gradle.properties"]
+}
+```
 
 ## Framework `post_install` steps
 
@@ -55,4 +66,5 @@ Bootstrap templates live in `templates/` (e.g. `php_vendor_bootstrap.tpl`).
 ```
 
 To add a new bundled environment: add a manifest here, skeleton assets under
-`resources/frameworks/` if needed, and optional templates under `templates/`.
+`resources/frameworks/` if needed (see `frameworks/README.md` for Express/NestJS
+generation), and optional templates under `templates/`.

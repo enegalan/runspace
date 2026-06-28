@@ -1,0 +1,50 @@
+{
+  "id": "flutter",
+  "name": "Flutter",
+  "category": "framework",
+  "file_extension": "dart",
+  "install_guide_url": "https://docs.flutter.dev/get-started/install",
+  "presentation": { "accent": "#02569B" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "dart_path",
+      "label": "Dart binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["dart"] }
+    },
+    {
+      "key": "flutter_path",
+      "label": "Flutter binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["flutter"] }
+    }
+  ],
+  "run": {
+    "program": "{{dart_path}}",
+    "args": ["run", "{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "flutter",
+    "sync_exclude_dirs": [".dart_tool", "build"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{flutter_path}}",
+      "args": ["pub", "get"],
+      "vendor_marker": ".dart_tool/package_config.json",
+      "manifest_files": ["pubspec.yaml", "pubspec.lock"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.dart",
+    "template": "dart_pub_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}
