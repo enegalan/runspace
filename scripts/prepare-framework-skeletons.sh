@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+JHIPSTER_SRC="$GEN/jhipster"
 ROCKET_SRC="$GEN/rocket"
 ACTIX_WEB_SRC="$GEN/actix-web"
 BUFFALO_SRC="$GEN/buffalo"
@@ -19,6 +20,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+JHIPSTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/jhipster"
 ROCKET_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rocket"
 ACTIX_WEB_DEST="$REPO_ROOT/src-tauri/resources/frameworks/actix-web"
 BUFFALO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/buffalo"
@@ -35,6 +37,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+JHISTER_VERSION="${RUNSPACE_JHIPSTER_VERSION:-8.8.0}"
 ROCKET_VERSION="${RUNSPACE_ROCKET_VERSION:-0.5.1}"
 ACTIX_WEB_VERSION="${RUNSPACE_ACTIX_WEB_VERSION:-4}"
 BUFFALO_VERSION="${RUNSPACE_BUFFALO_VERSION:-v1.1.4}"
@@ -66,6 +69,10 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+jhipster_ready() {
+    [[ -f "$JHISTER_DEST/pom.xml" ]] &&
+        [[ -f "$JHISTER_DEST/skeleton.version" ]]
 }
 rocket_ready() {
     [[ -f "$ROCKET_DEST/Cargo.toml" ]] &&
@@ -128,6 +135,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_jhipster=false
 needs_rocket=false
 needs_actix-web=false
 needs_buffalo=false
@@ -147,6 +155,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! jhipster_ready; then
+    needs_jhipster=true
 fi
 if force_sync || ! rocket_ready; then
     needs_rocket=true
@@ -183,7 +194,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -216,6 +227,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_jhipster && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the JHipster skeleton." >&2
+    exit 1
+fi
+
 if $needs_rocket && ! command -v cargo >/dev/null 2>&1; then
     echo "Cargo is required to prepare the Rocket skeleton." >&2
     exit 1
@@ -271,6 +287,17 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_jhipster && [[ ! -f "$JHISTER_SRC/pom.xml" ]]; then
+    echo "Generating JHipster skeleton..."
+    rm -rf "$JHISTER_SRC"
+    mkdir -p "$JHISTER_SRC"
+    (
+        cd "$JHISTER_SRC"
+        npx --yes "generator-jhipster@${JHISTER_VERSION}" \
+            --defaults --skip-install --skip-git --skip-client --no-insight --force
+    )
+fi
+
 if $needs_rocket && [[ ! -f "$ROCKET_SRC/Cargo.lock" ]]; then
     echo "Generating Rocket skeleton..."
     rm -rf "$ROCKET_SRC"

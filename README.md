@@ -23,6 +23,7 @@ Each environment you add in the playground needs its own runtime installed and c
 | Laravel | PHP + [Composer](https://getcomposer.org/) |
 | Symfony | PHP + [Composer](https://getcomposer.org/) |
 | Express | [Node.js](https://nodejs.org/en/download) |
+| JHipster | [Java](https://www.oracle.com/java/technologies/downloads/) + [Maven](https://maven.apache.org/download.cgi) |
 | Flask | [Python](https://www.python.org/downloads/) |
 | Koa | [Node.js](https://nodejs.org/en/download) |
 | Hono | [Node.js](https://nodejs.org/en/download) |
@@ -40,6 +41,7 @@ To build or contribute to Runspace from source:
 - Rust stable
 - Xcode Command Line Tools (macOS)
 - [Composer](https://getcomposer.org/) — generates bundled Laravel/Symfony skeletons during build (`npm run prepare:frameworks`)
+- npm — generates bundled Express/JHipster skeletons during build (`npm run prepare:frameworks`)
 - Python with pip — generates the bundled Flask skeleton during build (`npm run prepare:frameworks`)
 - [sbt](https://www.scala-sbt.org/download.html) — generates the bundled Play skeleton during build (`npm run prepare:frameworks`)
 
@@ -69,6 +71,7 @@ Run tests:
 npm test
 ```
 
+Generate Laravel/Symfony/Express/JHipster skeletons manually (first clone or after bumping `manifest.json`):
 Generate framework skeletons manually (first clone or after bumping `manifest.json`):
 
 ```bash
