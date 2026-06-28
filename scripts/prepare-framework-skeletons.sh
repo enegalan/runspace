@@ -6,15 +6,19 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BLAZOR_SRC="$GEN/blazor"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BLAZOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/blazor"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+BLAZOR_TEMPLATE="${RUNSPACE_BLAZOR_TEMPLATE:-blazor}"
+BLAZOR_PROJECT_NAME="${RUNSPACE_BLAZOR_PROJECT_NAME:-RunspaceBlazorSandbox}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +38,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+blazor_ready() {
+    [[ -f "$BLAZOR_DEST/RunspaceBlazorSandbox.csproj" ]] &&
+        [[ -f "$BLAZOR_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_blazor=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! blazor_ready; then
+    needs_blazor=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_blazor; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_blazor && ! command -v dotnet >/dev/null 2>&1; then
+    echo "The .NET SDK is required to prepare the Blazor skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +114,13 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_blazor && [[ ! -f "$BLAZOR_SRC/obj/project.assets.json" ]]; then
+    echo "Generating Blazor skeleton..."
+    rm -rf "$BLAZOR_SRC"
+    dotnet new "$BLAZOR_TEMPLATE" -o "$BLAZOR_SRC" -n "$BLAZOR_PROJECT_NAME" --no-restore
+    (cd "$BLAZOR_SRC" && dotnet restore)
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"

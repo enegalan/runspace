@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+BLAZOR_SRC="$GEN/blazor"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+BLAZOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/blazor"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,33 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$BLAZOR_SRC/RunspaceBlazorSandbox.csproj" ]]; then
+    mkdir -p "$BLAZOR_DEST"
+
+    python3 - <<'PY' "$BLAZOR_SRC/RunspaceBlazorSandbox.csproj"
+import sys
+import xml.etree.ElementTree as ET
+
+path = sys.argv[1]
+ET.register_namespace("", "http://schemas.microsoft.com/developer/msbuild/2003")
+tree = ET.parse(path)
+root = tree.getroot()
+ns = {"ms": "http://schemas.microsoft.com/developer/msbuild/2003"}
+group = root.find("ms:PropertyGroup", ns)
+if group is None:
+    group = ET.SubElement(root, "PropertyGroup")
+description = group.find("ms:Description", ns)
+if description is None:
+    description = ET.SubElement(group, "Description")
+description.text = "Internal Blazor sandbox for Runspace"
+tree.write(path, encoding="utf-8", xml_declaration=True)
+PY
+
+    rsync -a --delete --exclude bin/ --exclude obj/ --exclude .git/ "$BLAZOR_SRC/" "$BLAZOR_DEST/"
+    echo "$SKELETON_VERSION" > "$BLAZOR_DEST/skeleton.version"
+    synced+=("Blazor")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
