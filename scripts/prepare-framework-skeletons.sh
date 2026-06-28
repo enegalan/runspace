@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FASTIFY_SRC="$GEN/fastify"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+FASTIFY_VERSION="${RUNSPACE_FASTIFY_VERSION:-^5.0.0}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+fastify_ready() {
+    [[ -f "$FASTIFY_DEST/package.json" ]] &&
+        [[ -f "$FASTIFY_DEST/package-lock.json" ]] &&
+        [[ -f "$FASTIFY_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_fastify=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! fastify_ready; then
+    needs_fastify=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_fastify; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -64,8 +77,8 @@ if ($needs_laravel || $needs_symfony) && ! command -v composer >/dev/null 2>&1; 
     exit 1
 fi
 
-if $needs_express && ! command -v npm >/dev/null 2>&1; then
-    echo "npm is required to prepare the Express skeleton." >&2
+if ($needs_express || $needs_fastify) && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Express/Fastify skeletons." >&2
     exit 1
 fi
 
@@ -96,6 +109,31 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_fastify; then
+    # Check if we can skip regeneration: package metadata exists and version matches
+    skip_fastify=false
+    if [[ -f "$FASTIFY_SRC/package.json" ]] && [[ -f "$FASTIFY_SRC/package-lock.json" ]]; then
+        installed_version=$(node -p "require('$FASTIFY_SRC/package.json').dependencies?.fastify || ''" 2>/dev/null || echo "")
+        if [[ "$installed_version" == "^${FASTIFY_VERSION#^}" ]] || [[ "$installed_version" == "${FASTIFY_VERSION}" ]]; then
+            skip_fastify=true
+        fi
+    fi
+
+    if ! $skip_fastify; then
+        echo "Generating Fastify skeleton..."
+        rm -rf "$FASTIFY_SRC"
+        mkdir -p "$FASTIFY_SRC"
+        (
+            cd "$FASTIFY_SRC"
+            npm init -y --scope=runspace
+            npm pkg set name="@runspace/fastify-sandbox"
+            npm pkg set description="Internal Fastify sandbox for Runspace"
+            npm pkg set private=true
+            npm install "fastify@${FASTIFY_VERSION}" --save
+        )
+    fi
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
