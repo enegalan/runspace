@@ -177,6 +177,14 @@ Registry rejects manifests that violate:
 cargo test --manifest-path src-tauri/Cargo.toml environment::registry
 ```
 
+For `profile: "framework"`, also run skeleton generation and confirm the new skeleton syncs:
+
+```bash
+npm run prepare:frameworks
+```
+
+Expect output like `Synced … skeletons` including the new framework directory under `src-tauri/resources/frameworks/`. If generation fails, fix `prepare-framework-skeletons.sh` / `sync-framework-skeletons.sh` before opening the PR.
+
 Restart `npm run tauri dev` and confirm the environment appears in Settings → Environments via `list_available_environments`.
 
 For framework environments, smoke-test: install environment, open workspace, run entry file, check terminal cwd and env vars.
