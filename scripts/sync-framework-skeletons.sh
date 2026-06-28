@@ -9,13 +9,16 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SPRING_BOOT_SRC="$GEN/spring-boot"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
     --exclude node_modules/
+    --exclude target/
     --exclude .git/
     --exclude database/database.sqlite
     --exclude bootstrap/cache/*.php
@@ -105,6 +108,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$SPRING_BOOT_SRC/pom.xml" ]]; then
+    mkdir -p "$SPRING_BOOT_DEST"
+    rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$SPRING_BOOT_SRC/" "$SPRING_BOOT_DEST/"
+    echo "$SKELETON_VERSION" > "$SPRING_BOOT_DEST/skeleton.version"
+    synced+=("Spring Boot")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then

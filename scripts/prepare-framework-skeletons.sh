@@ -6,15 +6,20 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+SPRING_BOOT_SRC="$GEN/spring-boot"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+SPRING_BOOT_VERSION="${RUNSPACE_SPRING_BOOT_VERSION:-3.4.5}"
+SPRING_BOOT_JAVA_VERSION="${RUNSPACE_SPRING_BOOT_JAVA_VERSION:-21}"
+SPRING_BOOT_DEPENDENCIES="${RUNSPACE_SPRING_BOOT_DEPENDENCIES:-web}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +39,11 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+spring_boot_ready() {
+    [[ -f "$SPRING_BOOT_DEST/pom.xml" ]] &&
+        [[ -f "$SPRING_BOOT_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +51,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_spring_boot=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +62,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! spring_boot_ready; then
+    needs_spring_boot=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_spring_boot; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +80,11 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_spring_boot && ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to prepare the Spring Boot skeleton." >&2
     exit 1
 fi
 
@@ -96,6 +115,26 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
     )
+fi
+
+if $needs_spring_boot && [[ ! -f "$SPRING_BOOT_SRC/pom.xml" ]]; then
+    echo "Generating Spring Boot skeleton..."
+    rm -rf "$SPRING_BOOT_SRC"
+    mkdir -p "$SPRING_BOOT_SRC"
+    curl -sSfLo "$GEN/spring-boot.zip" \
+        "https://start.spring.io/starter.zip" \
+        -d type=maven-project \
+        -d language=java \
+        -d bootVersion="$SPRING_BOOT_VERSION" \
+        -d groupId=com.runspace \
+        -d artifactId=sandbox \
+        -d name=runspace-sandbox \
+        -d description="Internal Spring Boot sandbox for Runspace" \
+        -d packageName=com.runspace.sandbox \
+        -d javaVersion="$SPRING_BOOT_JAVA_VERSION" \
+        -d dependencies="$SPRING_BOOT_DEPENDENCIES"
+    unzip -q "$GEN/spring-boot.zip" -d "$SPRING_BOOT_SRC"
+    rm -f "$GEN/spring-boot.zip"
 fi
 
 exec "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"
