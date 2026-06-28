@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FASTAPI_SRC="$GEN/fastapi"
 PHALCON_SRC="$GEN/phalcon"
 POEM_SRC="$GEN/poem"
 KTOR_SRC="$GEN/ktor"
@@ -31,6 +32,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
 PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
 POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
 KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
@@ -107,6 +109,10 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+fastapi_ready() {
+    [[ -f "$FASTAPI_DEST/requirements.txt" ]] &&
+        [[ -f "$FASTAPI_DEST/skeleton.version" ]]
 }
 phalcon_ready() {
     [[ -f "$PHALCON_DEST/composer.lock" ]] &&
@@ -218,6 +224,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_fastapi=false
 needs_phalcon=false
 needs_poem=false
 needs_ktor=false
@@ -249,6 +256,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! fastapi_ready; then
+    needs_fastapi=true
 fi
 if force_sync || ! phalcon_ready; then
     needs_phalcon=true
@@ -315,7 +325,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -348,6 +358,11 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
+if $needs_fastapi && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the FastAPI skeleton." >&2
+    exit 1
+fi
+
 if $needs_poem && ! command -v cargo >/dev/null 2>&1; then
     echo "Cargo is required to prepare the Poem skeleton." >&2
     exit 1
@@ -438,6 +453,27 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm install "express@${EXPRESS_VERSION}" --save
     )
 fi
+if $needs_fastapi && [[ ! -f "$FASTAPI_SRC/requirements.txt" ]]; then
+    echo "Generating FastAPI skeleton..."
+    rm -rf "$FASTAPI_SRC"
+    mkdir -p "$FASTAPI_SRC"
+    (
+        cd "$FASTAPI_SRC"
+        python3 -m pip install fastapi "uvicorn[standard]" \
+            --target site-packages \
+            --no-warn-script-location \
+            --disable-pip-version-check
+        python3 - <<'PY' > requirements.txt
+import sys
+sys.path.insert(0, "site-packages")
+import fastapi
+import uvicorn
+print(f"fastapi=={fastapi.__version__}")
+print(f"uvicorn[standard]=={uvicorn.__version__}")
+PY
+    )
+fi
+
 if $needs_phalcon && [[ ! -d "$PHALCON_SRC/vendor" ]]; then
     echo "Generating Phalcon skeleton..."
     rm -rf "$PHALCON_SRC"

@@ -14,6 +14,10 @@
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
     },
+    "fastapi": {
+      "pipPackage": "fastapi",
+      "extraPackages": ["uvicorn[standard]"]
+    },
     "phalcon": {
       "createProject": "phalcon-kit/app",
       "versionConstraint": "1.*"
