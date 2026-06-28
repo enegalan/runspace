@@ -1,0 +1,43 @@
+{
+  "id": "nancy",
+  "name": "Nancy",
+  "category": "framework",
+  "file_extension": "cs",
+  "install_guide_url": "https://github.com/NancyFx/Nancy",
+  "presentation": { "accent": "#9B59B6" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "dotnet_path",
+      "label": ".NET SDK binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["dotnet"] }
+    }
+  ],
+  "run": {
+    "program": "{{dotnet_path}}",
+    "args": ["run", "--file", "{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "nancy",
+    "sync_exclude_dirs": ["bin", "obj"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{dotnet_path}}",
+      "args": ["restore"],
+      "vendor_marker": "obj/project.assets.json",
+      "manifest_files": ["RunspaceNancySandbox.csproj"]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.cs",
+    "template": "dotnet_project_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "--version" }
+}

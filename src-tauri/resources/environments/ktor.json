@@ -1,0 +1,55 @@
+{
+  "id": "ktor",
+  "name": "Ktor",
+  "category": "framework",
+  "file_extension": "kt",
+  "install_guide_url": "https://ktor.io/docs/server.html",
+  "presentation": { "accent": "#087CFA" },
+  "profile": "framework",
+  "config_fields": [
+    {
+      "key": "kotlin_path",
+      "label": "Kotlin binary",
+      "field_type": "file_path",
+      "required": true,
+      "primary": true,
+      "detect": { "commands": ["kotlin"] }
+    },
+    {
+      "key": "gradle_path",
+      "label": "Gradle binary (skeleton install)",
+      "field_type": "file_path",
+      "required": false,
+      "detect": { "commands": ["gradle"] }
+    }
+  ],
+  "run": {
+    "program": "{{kotlin_path}}",
+    "args": ["{{entry_file}}"]
+  },
+  "skeleton": {
+    "bundled_dir": "ktor",
+    "sync_exclude_dirs": [".gradle", "build"],
+    "sync_exclude_files": [],
+    "dependency_install": {
+      "program": "{{gradle_path}}",
+      "args": ["runspaceResolveDeps", "--quiet", "--console=plain"],
+      "vendor_marker": "build/runspace-deps.ready",
+      "manifest_files": [
+        "build.gradle.kts",
+        "settings.gradle.kts",
+        "gradle.properties",
+        "gradle/wrapper/gradle-wrapper.properties"
+      ]
+    }
+  },
+  "prepare": {
+    "output": "_runspace_bootstrap.kts",
+    "template": "kotlin_gradle_bootstrap.tpl"
+  },
+  "terminal_env": {
+    "framework_root": "RUNSPACE_FRAMEWORK_ROOT",
+    "workspace": "RUNSPACE_WORKSPACE"
+  },
+  "version_probe": { "arg": "-version" }
+}
