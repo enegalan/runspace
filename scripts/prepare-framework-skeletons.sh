@@ -6,6 +6,7 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FLASK_SRC="$GEN/flask"
 KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
@@ -13,6 +14,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FLASK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flask"
 KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
 HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
 FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
@@ -23,6 +25,7 @@ LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+FLASK_VERSION="${RUNSPACE_FLASK_VERSION:-3.1.*}"
 KOA_VERSION="${RUNSPACE_KOA_VERSION:-^3.0.0}"
 HONO_VERSION="${RUNSPACE_HONO_VERSION:-^4.0.0}"
 FASTIFY_VERSION="${RUNSPACE_FASTIFY_VERSION:-^5.0.0}"
@@ -44,6 +47,12 @@ express_ready() {
     [[ -f "$EXPRESS_DEST/package.json" ]] &&
         [[ -f "$EXPRESS_DEST/package-lock.json" ]] &&
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
+}
+
+flask_ready() {
+    [[ -f "$FLASK_DEST/requirements.txt" ]] &&
+        [[ -f "$FLASK_DEST/app.py" ]] &&
+        [[ -f "$FLASK_DEST/skeleton.version" ]]
 }
 
 koa_ready() {
@@ -77,6 +86,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_flask=false
 needs_koa=false
 needs_hono=false
 needs_fastify=false
@@ -90,6 +100,9 @@ if force_sync || ! symfony_ready; then
 fi
 if force_sync || ! express_ready; then
     needs_express=true
+fi
+if force_sync || ! flask_ready; then
+    needs_flask=true
 fi
 if force_sync || ! koa_ready; then
     needs_koa=true
@@ -111,7 +124,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -125,6 +138,17 @@ fi
 if ($needs_express || $needs_koa || $needs_hono || $needs_fastify || $needs_nestjs) && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express/Koa/Hono/Fastify/NestJS skeletons." >&2
     exit 1
+fi
+
+if $needs_flask; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_BIN="python3"
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_BIN="python"
+    else
+        echo "python3 or python is required to prepare the Flask skeleton." >&2
+        exit 1
+    fi
 fi
 
 mkdir -p "$GEN"
@@ -153,6 +177,33 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_flask; then
+    echo "Generating Flask skeleton..."
+    rm -rf "$FLASK_SRC"
+    mkdir -p "$FLASK_SRC"
+    "$PYTHON_BIN" -m venv "$FLASK_SRC/.venv"
+    (
+        cd "$FLASK_SRC"
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install "flask==${FLASK_VERSION}"
+        .venv/bin/pip freeze > requirements.txt
+        cat > app.py <<'PY'
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.get("/")
+def index():
+    return "Hello from Runspace Flask sandbox"
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+PY
     )
 fi
 
@@ -186,7 +237,6 @@ if $needs_hono && [[ ! -d "$HONO_SRC/node_modules" ]]; then
 fi
 
 if $needs_fastify; then
-    # Check if we can skip regeneration: package metadata exists and version matches
     skip_fastify=false
     if [[ -f "$FASTIFY_SRC/package.json" ]] && [[ -f "$FASTIFY_SRC/package-lock.json" ]]; then
         installed_version=$(node -p "require('$FASTIFY_SRC/package.json').dependencies?.fastify || ''" 2>/dev/null || echo "")

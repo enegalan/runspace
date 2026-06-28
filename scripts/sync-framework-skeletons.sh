@@ -9,6 +9,7 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+FLASK_SRC="$GEN/flask"
 KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
@@ -16,6 +17,7 @@ NESTJS_SRC="$GEN/nestjs"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+FLASK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flask"
 KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
 HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
 FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
@@ -39,7 +41,6 @@ RSYNC_EXCLUDES=(
 SKELETON_VERSION="${SKELETON_VERSION:-7}"
 synced=()
 
-# Helper function to sync directories
 sync_dir() {
     local src="$1"
     local dest="$2"
@@ -49,11 +50,9 @@ sync_dir() {
     if command -v rsync >/dev/null 2>&1; then
         rsync -a --delete "${excludes[@]}" "$src/" "$dest/"
     else
-        # Fallback to cp when rsync is not available
         rm -rf "$dest"
         mkdir -p "$dest"
         cp -r "$src"/* "$dest/" 2>/dev/null || true
-        # Remove excluded patterns
         for pattern in vendor node_modules .git; do
             rm -rf "$dest/$pattern" 2>/dev/null || true
         done
@@ -134,6 +133,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$FLASK_SRC/requirements.txt" ]]; then
+    mkdir -p "$FLASK_DEST"
+    rsync -a --delete --exclude vendor/ --exclude .venv/ --exclude .git/ "$FLASK_SRC/" "$FLASK_DEST/"
+    echo "$SKELETON_VERSION" > "$FLASK_DEST/skeleton.version"
+    synced+=("Flask")
 fi
 
 if [[ -d "$KOA_SRC/node_modules" ]]; then
