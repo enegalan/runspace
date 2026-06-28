@@ -1,6 +1,6 @@
 # Framework skeletons (generated)
 
-Laravel, Symfony, Express, Dropwizard, Gin, Adonisjs, Vertx, Cakephp, Streamlit, Lumen, Slim, Pyramid, Qwik, Sanic, Dash, Laminas, Tornado, Ionic, Starlette, Codeigniter, Bottle, Phoenix, Nextjs, Nuxt, Rails, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
+Laravel, Symfony, Express, Fiber, Dropwizard, Gin, Adonisjs, Vertx, Cakephp, Streamlit, Lumen, Slim, Pyramid, Qwik, Sanic, Dash, Laminas, Tornado, Ionic, Starlette, Codeigniter, Bottle, Phoenix, Nextjs, Nuxt, Rails, Sinatra, Padrino, Cowboy, Chi, Yii, Meteor, Quarkus, Astro, Axum, Roda, Remix, Sveltekit, Fastapi, Phalcon, Poem, Ktor, Echo, Nancy, Flutter, Expo, Wordpress, Solidstart, Jhipster, Rocket, Buffalo, Django, Play, Flask, Koa, Hono, Fastify, NestJS sandboxes are **not** stored in git. They are generated locally or in CI by:
 
 ```bash
 npm run prepare:frameworks
@@ -11,6 +11,7 @@ Output directories:
 - `laravel/` — copied to `~/.runspace/frameworks/laravel/` on first use
 - `symfony/` — copied to `~/.runspace/frameworks/symfony/` on first use
 - `express/` — copied to `~/.runspace/frameworks/express/` on first use
+- `fiber/` — copied to `~/.runspace/frameworks/fiber/` on first use
 - `dropwizard/` — copied to `~/.runspace/frameworks/dropwizard/` on first use
 - `gin/` — copied to `~/.runspace/frameworks/gin/` on first use
 - `adonisjs/` — copied to `~/.runspace/frameworks/adonisjs/` on first use
