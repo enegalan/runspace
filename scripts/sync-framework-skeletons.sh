@@ -9,9 +9,11 @@ GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+STREAMLIT_SRC="$GEN/streamlit"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -105,6 +107,13 @@ if [[ -d "$EXPRESS_SRC/node_modules" ]]; then
     rsync -a --delete --exclude node_modules/ --exclude .git/ "$EXPRESS_SRC/" "$EXPRESS_DEST/"
     echo "$SKELETON_VERSION" > "$EXPRESS_DEST/skeleton.version"
     synced+=("Express")
+fi
+
+if [[ -f "$STREAMLIT_SRC/requirements.lock" ]]; then
+    mkdir -p "$STREAMLIT_DEST"
+    rsync -a --delete --exclude vendor/ --exclude .venv/ --exclude .git/ "$STREAMLIT_SRC/" "$STREAMLIT_DEST/"
+    echo "$SKELETON_VERSION" > "$STREAMLIT_DEST/skeleton.version"
+    synced+=("Streamlit")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then

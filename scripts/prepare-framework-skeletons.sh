@@ -6,15 +6,18 @@ GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
 EXPRESS_SRC="$GEN/express"
+STREAMLIT_SRC="$GEN/streamlit"
 LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
 SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
 EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
+STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
 SYMFONY_PROJECT="${RUNSPACE_SYMFONY_PROJECT:-symfony/skeleton}"
 SYMFONY_VERSION="${RUNSPACE_SYMFONY_VERSION:-7.4.*}"
 EXPRESS_VERSION="${RUNSPACE_EXPRESS_VERSION:-^5.0.0}"
+STREAMLIT_VERSION="${RUNSPACE_STREAMLIT_VERSION:->=1.42.0,<2}"
 
 laravel_ready() {
     [[ -f "$LARAVEL_DEST/artisan" ]] &&
@@ -34,6 +37,12 @@ express_ready() {
         [[ -f "$EXPRESS_DEST/skeleton.version" ]]
 }
 
+streamlit_ready() {
+    [[ -f "$STREAMLIT_DEST/requirements.txt" ]] &&
+        [[ -f "$STREAMLIT_DEST/requirements.lock" ]] &&
+        [[ -f "$STREAMLIT_DEST/skeleton.version" ]]
+}
+
 force_sync() {
     [[ "${RUNSPACE_FORCE_FRAMEWORK_SYNC:-}" == "1" ]]
 }
@@ -41,6 +50,7 @@ force_sync() {
 needs_laravel=false
 needs_symfony=false
 needs_express=false
+needs_streamlit=false
 
 if force_sync || ! laravel_ready; then
     needs_laravel=true
@@ -51,8 +61,11 @@ fi
 if force_sync || ! express_ready; then
     needs_express=true
 fi
+if force_sync || ! streamlit_ready; then
+    needs_streamlit=true
+fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_streamlit; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -66,6 +79,16 @@ fi
 
 if $needs_express && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the Express skeleton." >&2
+    exit 1
+fi
+
+if $needs_streamlit && ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to prepare the Streamlit skeleton." >&2
+    exit 1
+fi
+
+if $needs_streamlit && ! python3 -m pip --version >/dev/null 2>&1; then
+    echo "pip is required to prepare the Streamlit skeleton." >&2
     exit 1
 fi
 
@@ -95,6 +118,20 @@ if $needs_express && [[ ! -d "$EXPRESS_SRC/node_modules" ]]; then
         npm pkg set description="Internal Express sandbox for Runspace"
         npm pkg set private=true
         npm install "express@${EXPRESS_VERSION}" --save
+    )
+fi
+
+if $needs_streamlit && [[ ! -d "$STREAMLIT_SRC/vendor" ]]; then
+    echo "Generating Streamlit skeleton..."
+    rm -rf "$STREAMLIT_SRC"
+    mkdir -p "$STREAMLIT_SRC"
+    (
+        cd "$STREAMLIT_SRC"
+        printf 'streamlit%s\n' "$STREAMLIT_VERSION" > requirements.txt
+        python3 -m venv .venv
+        .venv/bin/pip install -r requirements.txt
+        .venv/bin/pip freeze > requirements.lock
+        .venv/bin/pip install -r requirements.lock --target vendor
     )
 fi
 

@@ -13,6 +13,10 @@
     "express": {
       "npmPackage": "express",
       "versionConstraint": "^5.0.0"
+    },
+    "streamlit": {
+      "pipPackage": "streamlit",
+      "versionConstraint": ">=1.42.0,<2"
     }
   }
 }
