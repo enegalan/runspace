@@ -1,4 +1,3 @@
-import { hasFileDrag } from "./fileTreeDrag";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
@@ -11,9 +10,6 @@ export const DROP_TARGET_ATTR = "data-drop-dir";
  * @returns `true` if the data transfer has external file drag, `false` otherwise.
  */
 export function hasExternalFileDrag(dataTransfer: DataTransfer): boolean {
-  if (hasFileDrag(dataTransfer.types)) {
-    return false;
-  }
   return Array.from(dataTransfer.types).includes("Files") || dataTransfer.files.length > 0;
 }
 

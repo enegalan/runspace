@@ -26,6 +26,7 @@ import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { AppDialogs } from "../ui/AppDialogs";
 import { EnvironmentInstallDialog } from "../environment/EnvironmentInstallDialog";
+import { FileTreeDragPreview } from "../files/FileTreeDragPreview";
 import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 import { AppLoadingScreen } from "./AppLoadingScreen";
@@ -292,6 +293,7 @@ export function AppShell() {
       <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <AppDialogs />
       <EnvironmentInstallDialog />
+      <FileTreeDragPreview />
     </div>
   );
 }

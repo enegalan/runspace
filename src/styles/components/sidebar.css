@@ -302,6 +302,7 @@
   border-radius: var(--rs-radius-sm);
   margin: 1px var(--rs-space-2);
   transition: background var(--rs-duration-fast) var(--rs-ease);
+  cursor: grab;
 }
 
 .file-tree__row:hover {
@@ -310,6 +311,14 @@
 
 .file-tree--dragging .file-tree__row {
   transition: none;
+}
+
+.file-tree--dragging .file-tree__row--moving {
+  opacity: 0.45;
+}
+
+.file-tree__row--moving {
+  cursor: grabbing;
 }
 
 .file-tree--dragging .file-tree__row:hover {
@@ -347,14 +356,6 @@
 .file-tree__folder--drop-target .file-tree__row {
   background: transparent;
   outline: none;
-}
-
-.file-tree__row[draggable="true"] {
-  cursor: grab;
-}
-
-.file-tree__row[draggable="true"]:active {
-  cursor: grabbing;
 }
 
 .file-tree__chevron {
@@ -429,4 +430,29 @@
   color: var(--rs-text-primary);
   font-size: var(--rs-font-size-sm);
   font-family: inherit;
+}
+
+.file-tree-drag-preview {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+  max-width: 280px;
+  padding: 4px 10px;
+  border: 1px solid var(--rs-border-strong);
+  border-radius: var(--rs-radius-sm);
+  background: var(--rs-bg-overlay);
+  box-shadow: var(--rs-shadow-md);
+  color: var(--rs-text-primary);
+  font-size: var(--rs-font-size-sm);
+  pointer-events: none;
+  transform: translate(12px, 8px);
+  user-select: none;
+}
+
+.file-tree-drag-preview__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

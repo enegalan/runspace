@@ -5,7 +5,9 @@ use std::process::Command;
 
 use super::detect::{detect_missing_binary_paths, resolve_environment_paths};
 use super::manifest::EnvironmentProfile;
-use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition, get_manifest};
+use super::registry::{
+    binary_field_key, default_environment_id, get_catalog, get_definition, get_manifest,
+};
 use super::types::{
     Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore, ResolvedEnvironment,
     ValidationResult,

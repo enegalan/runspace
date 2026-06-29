@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type DragEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
 import { IconChevronDown, IconChevronRight } from "../ui/icons";
 import { FileIcon } from "./FileIcon";
 import type { FileEntry } from "../../core/types/workspace";
@@ -14,14 +22,10 @@ import {
   subscribeFileTreeDropTarget,
 } from "../../core/workspace/fileTreeDropTarget";
 import {
-  clearFileDragData,
   getActiveDragPayload,
-  hasFileDrag,
-  isInvalidMove,
   parentDir,
-  readFileDragData,
-  setFileDragData,
   siblingPath,
+  subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
 import { ContextMenu } from "../ui/ContextMenu";
 import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists";
@@ -33,6 +37,7 @@ interface FileTreeItemProps {
   entry: FileEntry;
   depth: number;
   workspaceId: string;
+  onRowPointerDown: (entry: FileEntry, event: PointerEvent<HTMLDivElement>) => void;
 }
 
 interface MenuState {
@@ -45,16 +50,16 @@ interface MenuState {
  * @param entry - The file entry.
  * @param depth - The depth of the file entry.
  * @param workspaceId - The ID of the workspace.
+ * @param onRowPointerDown - Pointer handler to start an internal move drag.
  * @returns The FileTreeItem component.
  */
-export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
+export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: FileTreeItemProps) {
   const expandedDirs = useWorkspaceStore((state) => state.expandedDirs);
   const filesRevision = useWorkspaceStore((state) => state.filesRevision);
   const toggleDir = useWorkspaceStore((state) => state.toggleDir);
   const listDirectory = useWorkspaceStore((state) => state.listDirectory);
   const deleteFile = useWorkspaceStore((state) => state.deleteFile);
   const renameFile = useWorkspaceStore((state) => state.renameFile);
-  const moveFile = useWorkspaceStore((state) => state.moveFile);
   const openFile = useEditorTabsStore((state) => state.openFile);
   const renameOpenFile = useEditorTabsStore((state) => state.renameOpenFile);
   const removeOpenFile = useEditorTabsStore((state) => state.removeOpenFile);
@@ -64,32 +69,20 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(entry.name);
   const [menu, setMenu] = useState<MenuState | null>(null);
-  const autoExpandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropTargetPath = useSyncExternalStore(
     subscribeFileTreeDropTarget,
     getFileTreeDropTarget,
     getFileTreeDropTarget,
   );
+  const dragSourcePath = useSyncExternalStore(
+    subscribeFileTreeDragActive,
+    () => getActiveDragPayload()?.path ?? null,
+    () => getActiveDragPayload()?.path ?? null,
+  );
 
   const expanded = expandedDirs.has(entry.path);
   const isDropTarget = entry.is_directory && dropTargetPath === entry.path;
-
-  const clearAutoExpandTimer = useCallback(() => {
-    if (autoExpandTimerRef.current !== null) {
-      clearTimeout(autoExpandTimerRef.current);
-      autoExpandTimerRef.current = null;
-    }
-  }, []);
-
-  const scheduleAutoExpand = useCallback(() => {
-    if (!entry.is_directory || expanded || autoExpandTimerRef.current !== null) {
-      return;
-    }
-    autoExpandTimerRef.current = setTimeout(() => {
-      autoExpandTimerRef.current = null;
-      toggleDir(entry.path);
-    }, 400);
-  }, [entry.is_directory, entry.path, expanded, toggleDir]);
+  const isDragSource = dragSourcePath === entry.path;
 
   const loadChildren = useCallback(async () => {
     const files = await listDirectory(entry.path);
@@ -100,10 +93,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     setChildren([]);
     setRenaming(false);
     setRenameValue(entry.name);
-    clearAutoExpandTimer();
-  }, [workspaceId, entry.path, entry.name, clearAutoExpandTimer]);
-
-  useEffect(() => () => clearAutoExpandTimer(), [clearAutoExpandTimer]);
+  }, [workspaceId, entry.path, entry.name]);
 
   useEffect(() => {
     if (entry.is_directory && expanded) {
@@ -119,98 +109,24 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     void openFile(entry.path);
   };
 
-  const handleDragStart = (event: React.DragEvent) => {
-    if ((event.target as HTMLElement).closest(".file-tree__chevron")) {
-      event.preventDefault();
+  const handleFolderDragOver = (event: DragEvent) => {
+    if (!hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
-    setFileDragData(event.dataTransfer, {
-      path: entry.path,
-      isDirectory: entry.is_directory,
-    });
-  };
-
-  const handleDragEnd = () => {
-    clearFileDragData();
-    clearAutoExpandTimer();
-    clearFileTreeDropTarget();
-  };
-
-  const handleFolderDragOver = (event: React.DragEvent, options: { fromRow?: boolean } = {}) => {
-    const external = hasExternalFileDrag(event.dataTransfer);
-    const internal = hasFileDrag(event.dataTransfer.types);
-
-    if (!external && !internal) {
-      return;
-    }
-
-    if (internal) {
-      const payload = getActiveDragPayload();
-      if (!payload || isInvalidMove(payload.path, entry.path)) {
-        event.stopPropagation();
-        return;
-      }
-    }
-
     event.preventDefault();
     event.stopPropagation();
-    event.dataTransfer.dropEffect = external ? "copy" : "move";
+    event.dataTransfer.dropEffect = "copy";
     setFileTreeDropTarget(entry.path);
-
-    if (options.fromRow || !expanded) {
-      scheduleAutoExpand();
-    }
   };
 
-  const handleFolderDragLeave = (event: React.DragEvent) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      clearAutoExpandTimer();
+  const handleFolderDrop = (event: DragEvent) => {
+    if (!hasExternalFileDrag(event.dataTransfer)) {
+      return;
     }
-  };
-
-  const handleFolderDrop = (event: React.DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    clearAutoExpandTimer();
     clearFileTreeDropTarget();
-
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      void importDroppedExternalFiles(event.dataTransfer, entry.path);
-      return;
-    }
-
-    const payload = readFileDragData(event.dataTransfer);
-    clearFileDragData();
-    if (!payload || isInvalidMove(payload.path, entry.path)) {
-      return;
-    }
-
-    void moveFile(payload.path, entry.path);
-  };
-
-  const handleFileDragOver = (event: React.DragEvent) => {
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      return;
-    }
-    if (!hasFileDrag(event.dataTransfer.types)) {
-      return;
-    }
-
-    const containingFolder = (event.currentTarget as HTMLElement).closest(`[${DROP_TARGET_ATTR}]`);
-    if (!containingFolder) {
-      event.stopPropagation();
-      return;
-    }
-
-    const payload = getActiveDragPayload();
-    const targetDir = containingFolder.getAttribute(DROP_TARGET_ATTR) ?? "";
-    if (!payload || isInvalidMove(payload.path, targetDir)) {
-      event.stopPropagation();
-      return;
-    }
-
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
+    void importDroppedExternalFiles(event.dataTransfer, entry.path);
   };
 
   const handleRename = async () => {
@@ -246,7 +162,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
     await deleteFile(entry.path);
   };
 
-  const handleContextMenu = (event: React.MouseEvent) => {
+  const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     setMenu({ x: event.clientX, y: event.clientY });
@@ -290,17 +206,10 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
 
   const row = (
     <div
-      className={`file-tree__row${expanded ? " file-tree__row--expanded" : ""}`}
+      className={`file-tree__row${expanded ? " file-tree__row--expanded" : ""}${isDragSource ? " file-tree__row--drag-source file-tree__row--moving" : ""}`}
       style={{ paddingLeft: `${8 + depth * 14}px` }}
-      draggable={!renaming}
       onContextMenu={handleContextMenu}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={
-        entry.is_directory
-          ? (event) => handleFolderDragOver(event, { fromRow: true })
-          : handleFileDragOver
-      }
+      onPointerDown={renaming ? undefined : (event) => onRowPointerDown(entry, event)}
     >
       {entry.is_directory ? (
         <button
@@ -347,8 +256,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
         <div
           className={`file-tree__folder${isDropTarget ? " file-tree__folder--drop-target" : ""}`}
           {...{ [DROP_TARGET_ATTR]: entry.path }}
-          onDragOver={(event) => handleFolderDragOver(event)}
-          onDragLeave={handleFolderDragLeave}
+          onDragOver={handleFolderDragOver}
           onDrop={handleFolderDrop}
         >
           {row}
@@ -360,6 +268,7 @@ export function FileTreeItem({ entry, depth, workspaceId }: FileTreeItemProps) {
                   entry={child}
                   depth={depth + 1}
                   workspaceId={workspaceId}
+                  onRowPointerDown={onRowPointerDown}
                 />
               ))}
             </div>

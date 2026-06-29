@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { hasExternalFileDrag } from "../../src/core/workspace/externalFileDrop";
-import { FILE_TREE_DRAG_TYPE } from "../../src/core/workspace/fileTreeDrag";
 
 describe("externalFileDrop", () => {
-  it("detects external file drags but not internal tree drags", () => {
+  it("detects external file drags from Files type", () => {
     const external = {
       types: ["Files"],
       files: [],
     } as DataTransfer;
-    const internal = {
-      types: [FILE_TREE_DRAG_TYPE],
-      files: [],
+
+    expect(hasExternalFileDrag(external)).toBe(true);
+  });
+
+  it("detects external file drags from files list when types is empty", () => {
+    const external = {
+      types: [],
+      files: [{ name: "app.js" }],
     } as DataTransfer;
 
     expect(hasExternalFileDrag(external)).toBe(true);
-    expect(hasExternalFileDrag(internal)).toBe(false);
   });
 });
