@@ -57,7 +57,10 @@ export function EditorArea({ onSave }: EditorAreaProps) {
 
   const handleDragLeave = (event: React.DragEvent) => {
     const relatedTarget = event.relatedTarget;
-    if (relatedTarget instanceof Node && !event.currentTarget.contains(relatedTarget)) {
+    if (
+      relatedTarget === null ||
+      (relatedTarget instanceof Node && !event.currentTarget.contains(relatedTarget))
+    ) {
       setEditorDropActive(false);
     }
   };

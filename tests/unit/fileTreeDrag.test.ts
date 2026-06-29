@@ -26,6 +26,7 @@ describe("fileTreeDrag", () => {
     });
     clearFileDragData();
     expect(isFileTreeDragActive()).toBe(false);
+    expect(getActiveDragPayload()).toBeNull();
   });
 
   it("tracks drag preview position", () => {

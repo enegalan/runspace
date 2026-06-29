@@ -44,6 +44,20 @@ describe("fileTreeDropTarget", () => {
     expect(resolveFileTreeDropTargetFromElement(childRow)).toBe("lib/utils");
   });
 
+  it("returns null for pointer move targets without an active drag", () => {
+    const folder = document.createElement("div");
+    folder.className = "file-tree__folder";
+    folder.setAttribute(DROP_TARGET_ATTR, "lib");
+    document.body.appendChild(folder);
+    document.elementFromPoint = vi.fn(() => folder) as typeof document.elementFromPoint;
+
+    expect(resolvePointerMoveTarget(40, 80)).toBeNull();
+
+    setActiveFileTreeMove({ path: "app.js", isDirectory: false });
+    clearFileDragData();
+    expect(resolvePointerMoveTarget(40, 80)).toBeNull();
+  });
+
   it("resolves pointer move targets for active drags", () => {
     const folder = document.createElement("div");
     folder.className = "file-tree__folder";

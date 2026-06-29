@@ -1,18 +1,14 @@
 import { useCallback, useRef } from "react";
 import type { FileEntry } from "../core/types/workspace";
 import {
-  canMoveToRoot,
   clearFileDragData,
   getActiveDragPayload,
-  isInvalidMove,
   setActiveFileTreeMove,
   setFileTreeDragPreview,
   updateFileTreeDragPreviewPosition,
 } from "../core/workspace/fileTreeDrag";
 import {
   clearFileTreeDropTarget,
-  getFileTreeDropTarget,
-  isEditorDropActive,
   resolvePointerMoveTarget,
   setEditorDropActive,
   setFileTreeDropTarget,
@@ -116,6 +112,9 @@ export function useFileTreePointerMove({
       if ((event.target as HTMLElement).closest(".file-tree__chevron")) {
         return;
       }
+      if (sessionRef.current !== null) {
+        return;
+      }
 
       const ownerDocument = event.currentTarget.ownerDocument;
       const startX = event.clientX;
@@ -154,41 +153,40 @@ export function useFileTreePointerMove({
         updateDropTarget(moveEvent.clientX, moveEvent.clientY);
       };
 
+      const cleanupSession = () => {
+        ownerDocument.removeEventListener("pointermove", onPointerMove);
+        ownerDocument.removeEventListener("pointerup", onPointerUp);
+        ownerDocument.removeEventListener("pointercancel", onPointerCancel);
+        sessionRef.current = null;
+        clearAutoExpand();
+        clearFileDragData();
+        clearFileTreeDropTarget();
+        setEditorDropActive(false);
+      };
+
       const onPointerUp = (upEvent: PointerEvent) => {
         if (upEvent.pointerId !== pointerId) {
           return;
         }
 
         const payload = getActiveDragPayload();
-        const overEditor = isEditorDropActive();
+        const releaseElement =
+          typeof document.elementFromPoint === "function"
+            ? document.elementFromPoint(upEvent.clientX, upEvent.clientY)
+            : null;
+        const overEditor = Boolean(releaseElement?.closest(".editor-area"));
 
         if (payload && overEditor && !payload.isDirectory) {
           void openFile(payload.path);
-        } else if (payload && !overEditor) {
-          const targetDir =
-            getFileTreeDropTarget() ?? resolvePointerMoveTarget(upEvent.clientX, upEvent.clientY);
-
+        } else if (payload) {
+          const targetDir = resolvePointerMoveTarget(upEvent.clientX, upEvent.clientY);
           if (targetDir !== null) {
-            const valid =
-              targetDir === ""
-                ? canMoveToRoot(payload.path)
-                : !isInvalidMove(payload.path, targetDir);
-            if (valid) {
-              void moveFile(payload.path, targetDir);
-            }
+            void moveFile(payload.path, targetDir);
           }
         }
 
-        ownerDocument.removeEventListener("pointermove", onPointerMove);
-        ownerDocument.removeEventListener("pointerup", onPointerUp);
-        ownerDocument.removeEventListener("pointercancel", onPointerUp);
-
         const didMove = payload !== null;
-        sessionRef.current = null;
-        clearAutoExpand();
-        clearFileDragData();
-        clearFileTreeDropTarget();
-        setEditorDropActive(false);
+        cleanupSession();
 
         if (didMove) {
           const blockClick = (clickEvent: MouseEvent) => {
@@ -199,9 +197,16 @@ export function useFileTreePointerMove({
         }
       };
 
+      const onPointerCancel = (cancelEvent: PointerEvent) => {
+        if (cancelEvent.pointerId !== pointerId) {
+          return;
+        }
+        cleanupSession();
+      };
+
       ownerDocument.addEventListener("pointermove", onPointerMove);
       ownerDocument.addEventListener("pointerup", onPointerUp);
-      ownerDocument.addEventListener("pointercancel", onPointerUp);
+      ownerDocument.addEventListener("pointercancel", onPointerCancel);
     },
     [clearAutoExpand, moveFile, openFile, updateDropTarget],
   );

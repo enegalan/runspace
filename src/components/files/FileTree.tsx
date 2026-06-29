@@ -90,6 +90,16 @@ export function FileTree() {
     void importDroppedExternalFiles(event.dataTransfer, "");
   };
 
+  const handleTreeDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    const relatedTarget = event.relatedTarget;
+    if (
+      relatedTarget === null ||
+      (relatedTarget instanceof Node && !event.currentTarget.contains(relatedTarget))
+    ) {
+      clearFileTreeDropTarget();
+    }
+  };
+
   const openSidebarMenu = (event: React.MouseEvent) => {
     if (!workspace) {
       return;
@@ -99,7 +109,11 @@ export function FileTree() {
   };
 
   return (
-    <div className={`file-tree${isDragging ? " file-tree--dragging" : ""}`} data-testid="file-tree">
+    <div
+      className={`file-tree${isDragging ? " file-tree--dragging" : ""}`}
+      data-testid="file-tree"
+      onDragLeave={handleTreeDragLeave}
+    >
       <EnvironmentIndicator onOpenPicker={() => setEnvironmentPickerOpen(true)} />
       <EnvironmentPickerDialog
         open={environmentPickerOpen}

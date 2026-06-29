@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useState, useSyncExternalStore, type PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type DragEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
 import { IconChevronDown, IconChevronRight } from "../ui/icons";
 import { FileIcon } from "./FileIcon";
 import type { FileEntry } from "../../core/types/workspace";
@@ -8,6 +16,7 @@ import {
   importDroppedExternalFiles,
 } from "../../core/workspace/externalFileDrop";
 import {
+  clearFileTreeDropTarget,
   getFileTreeDropTarget,
   setFileTreeDropTarget,
   subscribeFileTreeDropTarget,
@@ -100,7 +109,7 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
     void openFile(entry.path);
   };
 
-  const handleFolderDragOver = (event: React.DragEvent) => {
+  const handleFolderDragOver = (event: DragEvent) => {
     if (!hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
@@ -110,12 +119,13 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
     setFileTreeDropTarget(entry.path);
   };
 
-  const handleFolderDrop = (event: React.DragEvent) => {
+  const handleFolderDrop = (event: DragEvent) => {
     if (!hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
+    clearFileTreeDropTarget();
     void importDroppedExternalFiles(event.dataTransfer, entry.path);
   };
 
@@ -152,7 +162,7 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
     await deleteFile(entry.path);
   };
 
-  const handleContextMenu = (event: React.MouseEvent) => {
+  const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     setMenu({ x: event.clientX, y: event.clientY });
