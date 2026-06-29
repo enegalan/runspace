@@ -6,8 +6,10 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 use crate::environment::manifest::{
-    DependencyInstallSpec, EnvironmentManifest, PostInstallStep, SkeletonSpec, StepCwd,
+    DependencyInstallSpec, EnvironmentManifest, EnvironmentProfile, PostInstallStep, SkeletonSpec,
+    StepCwd,
 };
+use crate::environment::registry::get_manifest;
 
 use super::template::{
     resolve_framework_args, resolve_framework_embed_template, resolve_framework_path,
@@ -65,7 +67,32 @@ pub fn framework_terminal_env(
 }
 
 const SKELETON_VERSION_FILE: &str = "skeleton.version";
+const WORKSPACE_ARTIFACT_PREFIX: &str = ".runspace-";
 const FRAMEWORK_COMMAND_TIMEOUT_SECS: u64 = 300;
+
+pub fn cleanup_workspace_artifacts(workspace: &Path, environment_id: &str) {
+    let Some(manifest) = get_manifest(environment_id) else {
+        return;
+    };
+    if manifest.profile != EnvironmentProfile::Framework {
+        return;
+    }
+
+    if let Some(prepare) = manifest.prepare.as_ref() {
+        let _ = remove_path_if_exists(&workspace.join(&prepare.output));
+    }
+
+    let Ok(entries) = fs::read_dir(workspace) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if name.starts_with(WORKSPACE_ARTIFACT_PREFIX) {
+            let _ = remove_path_if_exists(&entry.path());
+        }
+    }
+}
 
 pub struct SkeletonReady {
     pub path: PathBuf,
@@ -691,6 +718,25 @@ mod tests {
         };
 
         assert!(dependency_manifests_differ(&source, &target, &spec));
+
+        let _ = fs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn cleanup_workspace_artifacts_removes_bootstrap_and_runspace_dirs() {
+        let temp =
+            std::env::temp_dir().join(format!("runspace-cleanup-test-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&temp);
+        fs::create_dir_all(&temp).unwrap();
+        fs::write(temp.join("runspace_bootstrap.php"), "<?php").unwrap();
+        fs::create_dir_all(temp.join(".runspace-java-out")).unwrap();
+        fs::write(temp.join("main.php"), "<?php echo 1;").unwrap();
+
+        cleanup_workspace_artifacts(&temp, "laravel");
+
+        assert!(!temp.join("runspace_bootstrap.php").exists());
+        assert!(!temp.join(".runspace-java-out").exists());
+        assert!(temp.join("main.php").exists());
 
         let _ = fs::remove_dir_all(&temp);
     }

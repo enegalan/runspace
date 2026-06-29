@@ -4,13 +4,16 @@ use std::path::PathBuf;
 use tauri::AppHandle;
 
 use crate::engine::compiled::run_compiled;
+use crate::engine::profiles::cleanup_workspace_artifacts;
 use crate::engine::profiles::{
     build_run_command, is_compiled_environment, prepare, require_manifest, PrepareContext,
 };
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
 use crate::error::{lock_err, map_err};
 use crate::services::settings::execution_settings;
-use crate::services::workspace::{ensure_active_workspace, lock_workspace_manager};
+use crate::services::workspace::{
+    ensure_active_workspace, get_active_workspace, lock_workspace_manager, require_active_workspace,
+};
 use crate::state::SharedState;
 
 struct PreparedExecution {
@@ -21,6 +24,12 @@ struct PreparedExecution {
 }
 
 pub fn kill_process(state: &SharedState) -> Result<(), String> {
+    if let (Ok(workspace), Some(info)) = (
+        require_active_workspace(state),
+        get_active_workspace(state).ok().flatten(),
+    ) {
+        cleanup_workspace_artifacts(&workspace.path, &info.runtime_id);
+    }
     map_err(state.execution_engine.kill())
 }
 

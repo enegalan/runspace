@@ -1,3 +1,4 @@
+use crate::engine::profiles::cleanup_workspace_artifacts;
 use crate::error::{lock_err, map_err};
 use crate::state::SharedState;
 use crate::workspace::{FileEntry, SessionData, Workspace, WorkspaceInfo};
@@ -76,6 +77,7 @@ pub fn open_workspace(state: &SharedState, id: &str) -> Result<WorkspaceInfo, St
     let manager = lock_workspace_manager(state)?;
     let workspace = map_err(manager.open_workspace(id))?;
     let info = map_err(manager.workspace_info(&workspace))?;
+    cleanup_workspace_artifacts(&workspace.path, &info.runtime_id);
     set_active_workspace(state, workspace)?;
     Ok(info)
 }
