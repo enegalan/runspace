@@ -253,6 +253,7 @@ export function AppShell() {
             <TerminalPanel
               height={layoutSettings.terminalHeight}
               onHeightChange={handleTerminalHeightChange}
+              onClose={handleToggleTerminal}
               workspaceId={workspace?.id}
               environmentId={selectedId ?? undefined}
               configured={Boolean(selectedEnvironment?.configured)}

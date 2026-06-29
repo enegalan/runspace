@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TerminalPanel } from "../../src/components/terminal/TerminalPanel";
 import { useTerminalStore } from "../../src/stores/terminalStore";
 
@@ -19,11 +19,16 @@ describe("TerminalPanel", () => {
     });
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   it("shows placeholder when environment is not configured", () => {
     render(
       <TerminalPanel
         height={200}
         onHeightChange={() => {}}
+        onClose={() => {}}
         workspaceId="ws-1"
         environmentId="nodejs"
         configured={false}
@@ -41,6 +46,7 @@ describe("TerminalPanel", () => {
       <TerminalPanel
         height={200}
         onHeightChange={() => {}}
+        onClose={() => {}}
         workspaceId="ws-1"
         environmentId="nodejs"
         configured
@@ -58,5 +64,23 @@ describe("TerminalPanel", () => {
     expect(screen.getByTestId("terminal-tab-close-1")).toBeInTheDocument();
     expect(screen.getByTestId("terminal-tab-close-2")).toBeInTheDocument();
     expect(useTerminalStore.getState().getTabsForContext("ws-1", "nodejs")).toHaveLength(2);
+  });
+
+  it("calls onClose when the close button is clicked", () => {
+    const onClose = vi.fn();
+
+    render(
+      <TerminalPanel
+        height={200}
+        onHeightChange={() => {}}
+        onClose={onClose}
+        workspaceId="ws-1"
+        environmentId="nodejs"
+        configured
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("terminal-close-button"));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
