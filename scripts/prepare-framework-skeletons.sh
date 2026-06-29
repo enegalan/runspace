@@ -239,7 +239,7 @@ GORILLA_MUX_VERSION="${RUNSPACE_GORILLA_MUX_VERSION:-v1.8.1}"
 WORDPRESS_VERSION="${RUNSPACE_WORDPRESS_VERSION:-6.*}"
 WORDPRESS_PROJECT="${RUNSPACE_WORDPRESS_PROJECT:-johnpbloch/wordpress}"
 SOLIDSTART_VERSION="${RUNSPACE_SOLIDSTART_VERSION:-^1.3.0}"
-JHISTER_VERSION="${RUNSPACE_JHIPSTER_VERSION:-8.8.0}"
+JHIPSTER_VERSION="${RUNSPACE_JHIPSTER_VERSION:-8.8.0}"
 ROCKET_VERSION="${RUNSPACE_ROCKET_VERSION:-0.5.1}"
 ACTIX_WEB_VERSION="${RUNSPACE_ACTIX_WEB_VERSION:-4}"
 BUFFALO_VERSION="${RUNSPACE_BUFFALO_VERSION:-v1.1.4}"
@@ -551,8 +551,8 @@ solidstart_ready() {
         [[ -f "$SOLIDSTART_DEST/skeleton.version" ]]
 }
 jhipster_ready() {
-    [[ -f "$JHISTER_DEST/pom.xml" ]] &&
-        [[ -f "$JHISTER_DEST/skeleton.version" ]]
+    [[ -f "$JHIPSTER_DEST/pom.xml" ]] &&
+        [[ -f "$JHIPSTER_DEST/skeleton.version" ]]
 }
 rocket_ready() {
     [[ -f "$ROCKET_DEST/Cargo.toml" ]] &&
@@ -646,7 +646,7 @@ needs_starlette=false
 needs_codeigniter=false
 needs_bottle=false
 needs_litestar=false
-needs_spring-boot=false
+needs_spring_boot=false
 needs_phoenix=false
 needs_nextjs=false
 needs_nuxt=false
@@ -654,10 +654,10 @@ needs_rails=false
 needs_sinatra=false
 needs_padrino=false
 needs_cowboy=false
-needs_aspnet-core=false
+needs_aspnet_core=false
 needs_chi=false
 needs_yii=false
-needs_react-native=false
+needs_react_native=false
 needs_meteor=false
 needs_quarkus=false
 needs_astro=false
@@ -670,16 +670,16 @@ needs_phalcon=false
 needs_poem=false
 needs_ktor=false
 needs_echo=false
-needs_minimal-apis=false
+needs_minimal_apis=false
 needs_nancy=false
 needs_flutter=false
 needs_expo=false
-needs_gorilla-mux=false
+needs_gorilla_mux=false
 needs_wordpress=false
 needs_solidstart=false
 needs_jhipster=false
 needs_rocket=false
-needs_actix-web=false
+needs_actix_web=false
 needs_buffalo=false
 needs_django=false
 needs_play=false
@@ -907,7 +907,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_capacitor && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug && ! $needs_iris && ! $needs_quart && ! $needs_blazor && ! $needs_hanami; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix_web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla_mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal_apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react_native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet_core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring_boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_capacitor && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug && ! $needs_iris && ! $needs_quart && ! $needs_blazor && ! $needs_hanami; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -1663,6 +1663,8 @@ if $needs_tornado && [[ ! -d "$TORNADO_SRC/site-packages" ]]; then
         else
             pip install -r requirements.txt --target site-packages --no-warn-script-location
         fi
+    )
+fi
 
 if $needs_ionic && [[ ! -d "$IONIC_SRC/node_modules" ]]; then
     echo "Generating Ionic skeleton..."
@@ -1815,6 +1817,26 @@ if $needs_rails && [[ ! -f "$RAILS_SRC/.bundle/config" ]]; then
         echo "Installing Rails ${RAILS_VERSION}..."
         gem install rails -v "$RAILS_VERSION" --no-document
     fi
+
+    gem exec -v "$RAILS_VERSION" rails new "$RAILS_SRC" \
+        --skip-git \
+        --database=sqlite3 \
+        --skip-test \
+        --skip-system-test \
+        --skip-javascript \
+        --skip-hotwire \
+        --skip-asset-pipeline \
+        --skip-action-mailbox \
+        --skip-action-text \
+        --minimal \
+        --skip-bundle \
+        --force
+    (
+        cd "$RAILS_SRC"
+        bundle config set --local path 'vendor/bundle'
+        bundle install
+    )
+fi
 
 if $needs_sinatra && [[ ! -f "$SINATRA_SRC/.bundle/config" ]]; then
     echo "Generating Sinatra skeleton..."
@@ -2232,13 +2254,13 @@ if $needs_solidstart && [[ ! -d "$SOLIDSTART_SRC/node_modules" ]]; then
     )
 fi
 
-if $needs_jhipster && [[ ! -f "$JHISTER_SRC/pom.xml" ]]; then
+if $needs_jhipster && [[ ! -f "$JHIPSTER_SRC/pom.xml" ]]; then
     echo "Generating JHipster skeleton..."
-    rm -rf "$JHISTER_SRC"
-    mkdir -p "$JHISTER_SRC"
+    rm -rf "$JHIPSTER_SRC"
+    mkdir -p "$JHIPSTER_SRC"
     (
-        cd "$JHISTER_SRC"
-        npx --yes "generator-jhipster@${JHISTER_VERSION}" \
+        cd "$JHIPSTER_SRC"
+        npx --yes "generator-jhipster@${JHIPSTER_VERSION}" \
             --defaults --skip-install --skip-git --skip-client --no-insight --force
     )
 fi
