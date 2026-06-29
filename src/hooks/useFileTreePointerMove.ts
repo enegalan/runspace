@@ -18,7 +18,7 @@ const DRAG_THRESHOLD_PX = 5;
 const AUTO_EXPAND_MS = 400;
 
 interface UseFileTreePointerMoveOptions {
-  moveFile: (sourcePath: string, targetDir: string) => Promise<void>;
+  moveFile: (sourcePath: string, targetDir: string) => Promise<boolean>;
   openFile: (path: string) => Promise<void>;
   expandDir: (path: string) => void;
   expandedDirs: Set<string>;

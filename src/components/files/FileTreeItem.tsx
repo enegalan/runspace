@@ -23,14 +23,18 @@ import {
 } from "../../core/workspace/fileTreeDropTarget";
 import {
   getActiveDragPayload,
+  isInvalidPaste,
   parentDir,
   siblingPath,
   subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
 import { ContextMenu } from "../ui/ContextMenu";
+import { useNewFile } from "../../hooks/useNewFile";
+import { useNewFolder } from "../../hooks/useNewFolder";
 import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists";
 import { useDialogStore } from "../../stores/dialogStore";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
+import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../stores/fileClipboardStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 interface FileTreeItemProps {
@@ -54,6 +58,8 @@ interface MenuState {
  * @returns The FileTreeItem component.
  */
 export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: FileTreeItemProps) {
+  const { createAndOpenFile } = useNewFile();
+  const { createNewFolder } = useNewFolder();
   const expandedDirs = useWorkspaceStore((state) => state.expandedDirs);
   const filesRevision = useWorkspaceStore((state) => state.filesRevision);
   const toggleDir = useWorkspaceStore((state) => state.toggleDir);
@@ -64,6 +70,10 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
   const renameOpenFile = useEditorTabsStore((state) => state.renameOpenFile);
   const removeOpenFile = useEditorTabsStore((state) => state.removeOpenFile);
   const askConfirm = useDialogStore((state) => state.askConfirm);
+  const clipboardEntry = useFileClipboardStore((state) => state.entry);
+  const cutToClipboard = useFileClipboardStore((state) => state.cut);
+  const copyToClipboard = useFileClipboardStore((state) => state.copy);
+  const pasteIntoFolder = useFileClipboardStore((state) => state.pasteInto);
 
   const [children, setChildren] = useState<FileEntry[]>([]);
   const [renaming, setRenaming] = useState(false);
@@ -170,6 +180,9 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
 
   const buildContextMenuItems = () => {
     const items = [];
+    const activeClipboard = clipboardMatchesWorkspace(clipboardEntry, workspaceId)
+      ? clipboardEntry
+      : null;
 
     if (!entry.is_directory) {
       items.push({
@@ -178,12 +191,47 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
         onClick: () => void openFile(entry.path),
       });
     } else {
+      items.push(
+        {
+          id: "new-file",
+          label: "New file",
+          onClick: () => void createAndOpenFile(entry.path),
+        },
+        {
+          id: "new-folder",
+          label: "New folder",
+          onClick: () => void createNewFolder(entry.path),
+        },
+      );
+
+      if (activeClipboard) {
+        items.push({
+          id: "paste",
+          label: "Paste",
+          disabled: isInvalidPaste(activeClipboard.path, entry.path, activeClipboard.mode),
+          onClick: () => void pasteIntoFolder(entry.path),
+        });
+      }
+
       items.push({
         id: "expand",
         label: expanded ? "Collapse" : "Expand",
         onClick: () => toggleDir(entry.path),
       });
     }
+
+    items.push(
+      {
+        id: "cut",
+        label: "Cut",
+        onClick: () => cutToClipboard(entry.path, workspaceId),
+      },
+      {
+        id: "copy",
+        label: "Copy",
+        onClick: () => copyToClipboard(entry.path, workspaceId),
+      },
+    );
 
     items.push({
       id: "rename",

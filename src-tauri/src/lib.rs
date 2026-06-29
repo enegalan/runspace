@@ -12,7 +12,7 @@ mod terminal;
 mod workspace;
 
 use commands::{
-    close_terminal, create_directory, create_workspace, delete_file, delete_workspace,
+    close_terminal, copy_entry, create_directory, create_workspace, delete_file, delete_workspace,
     execute_code, get_active_workspace, get_default_environment_id, get_selected_environment,
     import_external, initialize_workspace, install_environment, kill_process,
     list_available_environments, list_environments, list_files, list_terminal_sessions,
@@ -244,6 +244,7 @@ pub fn run() {
             rename_workspace,
             import_external,
             create_directory,
+            copy_entry,
             read_session,
             write_session,
             update_manifest,

@@ -1,8 +1,13 @@
+import { siblingPath } from "../fileTreeDrag";
 import { workspaceEntryExists } from "../workspaceEntryExists";
+import { singleSegmentNameError } from "./singleSegmentName";
 import { WorkspacePrompt, type PromptProcessResult } from "./WorkspacePrompt";
 
 class FolderNamePrompt extends WorkspacePrompt<string> {
-  constructor(private readonly workspaceId: string) {
+  constructor(
+    private readonly workspaceId: string,
+    private readonly parentDir = "",
+  ) {
     super("New folder name");
   }
 
@@ -11,14 +16,24 @@ class FolderNamePrompt extends WorkspacePrompt<string> {
   }
 
   protected async process(trimmed: string): Promise<PromptProcessResult<string>> {
-    if (await workspaceEntryExists(this.workspaceId, trimmed)) {
+    const nameError = singleSegmentNameError(trimmed);
+    if (nameError) {
       return {
         status: "retry",
-        label: `"${trimmed}" already exists.`,
+        label: nameError,
         initialValue: trimmed,
       };
     }
-    return { status: "done", value: trimmed };
+
+    const path = siblingPath(this.parentDir, trimmed);
+    if (await workspaceEntryExists(this.workspaceId, path)) {
+      return {
+        status: "retry",
+        label: `"${path}" already exists.`,
+        initialValue: trimmed,
+      };
+    }
+    return { status: "done", value: path };
   }
 }
 
@@ -27,6 +42,9 @@ class FolderNamePrompt extends WorkspacePrompt<string> {
  * @param workspaceId - The ID of the workspace.
  * @returns The folder name.
  */
-export async function requireFolderName(workspaceId: string): Promise<string | null> {
-  return new FolderNamePrompt(workspaceId).run();
+export async function requireFolderName(
+  workspaceId: string,
+  parentDir = "",
+): Promise<string | null> {
+  return new FolderNamePrompt(workspaceId, parentDir).run();
 }

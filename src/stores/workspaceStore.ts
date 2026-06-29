@@ -38,7 +38,8 @@ interface WorkspaceStore {
   createFolder: (path: string) => Promise<void>;
   deleteFile: (path: string) => Promise<void>;
   renameFile: (oldPath: string, newPath: string) => Promise<void>;
-  moveFile: (sourcePath: string, targetDir: string) => Promise<void>;
+  moveFile: (sourcePath: string, targetDir: string) => Promise<boolean>;
+  copyEntry: (sourcePath: string, targetDir: string) => Promise<void>;
   importExternalFiles: (sources: string[] | File[], targetDir?: string) => Promise<string[]>;
   toggleDir: (path: string) => void;
   expandDir: (path: string) => void;
@@ -504,6 +505,24 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   moveFile: async (sourcePath, targetDir) => {
     const newPath = movedPath(sourcePath, targetDir);
     if (sourcePath === newPath) {
+      return false;
+    }
+    const workspace = get().workspace;
+    if (!workspace) {
+      return false;
+    }
+    await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
+    if (!(await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
+      return false;
+    }
+    await get().renameFile(sourcePath, newPath);
+    useEditorTabsStore.getState().renameOpenFile(sourcePath, newPath);
+    return true;
+  },
+
+  copyEntry: async (sourcePath, targetDir) => {
+    const newPath = movedPath(sourcePath, targetDir);
+    if (sourcePath === newPath) {
       return;
     }
     const workspace = get().workspace;
@@ -514,8 +533,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     if (!(await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
       return;
     }
-    await get().renameFile(sourcePath, newPath);
-    useEditorTabsStore.getState().renameOpenFile(sourcePath, newPath);
+    await runspaceInvoke("copy_entry", { sourcePath, targetDir });
+    if (targetDir) {
+      get().expandDir(targetDir);
+    }
+    await get().refreshFiles();
   },
 
   importExternalFiles: async (sources, targetDir = "") => {

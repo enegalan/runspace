@@ -166,6 +166,12 @@ pub fn create_directory(state: &SharedState, path: &str) -> Result<(), String> {
     map_err(manager.create_directory(&workspace, path))
 }
 
+pub fn copy_entry(state: &SharedState, source_path: &str, target_dir: &str) -> Result<(), String> {
+    let manager = lock_workspace_manager(state)?;
+    let workspace = require_active_workspace(state)?;
+    map_err(manager.copy_entry(&workspace, source_path, target_dir))
+}
+
 pub fn read_session(state: &SharedState) -> Result<SessionData, String> {
     let manager = lock_workspace_manager(state)?;
     map_err(manager.load_session())

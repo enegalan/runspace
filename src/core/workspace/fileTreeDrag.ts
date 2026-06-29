@@ -154,13 +154,31 @@ export function siblingPath(parentPath: string, name: string): string {
  * @returns `true` if the move is invalid, `false` otherwise.
  */
 export function isInvalidMove(sourcePath: string, targetDir: string): boolean {
+  return isInvalidPaste(sourcePath, targetDir, "cut");
+}
+
+/**
+ * Checks if paste is invalid for the given source path and target directory.
+ * @param sourcePath - The source path to check.
+ * @param targetDir - The target directory to check.
+ * @param mode - Whether the clipboard entry is cut or copied.
+ * @returns `true` if paste is invalid, `false` otherwise.
+ */
+export function isInvalidPaste(
+  sourcePath: string,
+  targetDir: string,
+  mode: "cut" | "copy",
+): boolean {
   if (sourcePath === targetDir) {
     return true;
   }
   if (sourcePath && targetDir.startsWith(`${sourcePath}/`)) {
     return true;
   }
-  return parentDir(sourcePath) === targetDir;
+  if (mode === "cut" && parentDir(sourcePath) === targetDir) {
+    return true;
+  }
+  return false;
 }
 
 /**

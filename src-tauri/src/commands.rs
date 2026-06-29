@@ -247,6 +247,15 @@ pub fn create_directory(state: State<'_, SharedState>, path: String) -> Result<(
 }
 
 #[tauri::command]
+pub fn copy_entry(
+    state: State<'_, SharedState>,
+    source_path: String,
+    target_dir: String,
+) -> Result<(), String> {
+    workspace::copy_entry(state.inner(), &source_path, &target_dir)
+}
+
+#[tauri::command]
 pub fn read_session(state: State<'_, SharedState>) -> Result<SessionData, String> {
     workspace::read_session(state.inner())
 }

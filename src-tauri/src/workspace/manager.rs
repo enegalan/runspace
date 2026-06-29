@@ -417,6 +417,61 @@ impl WorkspaceManager {
         Ok(())
     }
 
+    pub fn copy_entry(
+        &self,
+        workspace: &Workspace,
+        source_path: &str,
+        target_dir: &str,
+    ) -> Result<(), WorkspaceError> {
+        if source_path == MANIFEST_FILENAME {
+            return Err(WorkspaceError::InvalidPath(
+                "Cannot copy workspace manifest".to_string(),
+            ));
+        }
+        Self::resolve_relative_path(target_dir)?;
+
+        let source = Self::resolve_in_workspace(workspace, source_path)?;
+        if !source.exists() {
+            return Err(WorkspaceError::NotFound(source_path.to_string()));
+        }
+
+        let file_name = source
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| WorkspaceError::InvalidPath("Invalid source file name".to_string()))?;
+
+        if source.is_dir()
+            && (target_dir == source_path
+                || (!target_dir.is_empty() && target_dir.starts_with(&format!("{source_path}/"))))
+        {
+            return Err(WorkspaceError::InvalidPath(
+                "Cannot copy a folder into itself".to_string(),
+            ));
+        }
+
+        let relative = if target_dir.is_empty() {
+            file_name.to_string()
+        } else {
+            format!("{target_dir}/{file_name}")
+        };
+
+        let dest = Self::resolve_in_workspace(workspace, &relative)?;
+        if dest.exists() {
+            return Err(WorkspaceError::AlreadyExists(relative));
+        }
+
+        if source.is_dir() {
+            Self::copy_dir_recursive(&source, &dest)?;
+        } else {
+            if let Some(parent) = dest.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::copy(&source, &dest)?;
+        }
+
+        Ok(())
+    }
+
     pub fn import_external(
         &self,
         workspace: &Workspace,

@@ -14,13 +14,13 @@ export function useNewFile() {
   const createFile = useWorkspaceStore((state) => state.createFile);
   const openFile = useEditorTabsStore((state) => state.openFile);
 
-  const createAndOpenFile = useCallback(async () => {
+  const createAndOpenFile = useCallback(async (parentDir = "") => {
     if (!runtimeId || !workspaceId) {
       return;
     }
 
     try {
-      const path = await requireFileName(runtimeId, workspaceId);
+      const path = await requireFileName(runtimeId, workspaceId, parentDir);
       if (!path) {
         return;
       }
