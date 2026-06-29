@@ -94,13 +94,25 @@ pub fn create_workspace(
     Ok(info)
 }
 
-pub fn get_active_workspace(state: &SharedState) -> Result<Option<WorkspaceInfo>, String> {
+pub(crate) fn active_workspace_snapshot(
+    state: &SharedState,
+) -> Result<Option<(Workspace, WorkspaceInfo)>, String> {
     let manager = lock_workspace_manager(state)?;
     let active = lock_active_workspace(state)?;
-    match active.as_ref() {
-        Some(workspace) => Ok(Some(map_err(manager.workspace_info(workspace))?)),
-        None => Ok(None),
+    Ok(match active.as_ref() {
+        Some(workspace) => Some((workspace.clone(), map_err(manager.workspace_info(workspace))?)),
+        None => None,
+    })
+}
+
+pub(crate) fn cleanup_workspace_snapshot(snapshot: Option<(Workspace, WorkspaceInfo)>) {
+    if let Some((workspace, info)) = snapshot {
+        cleanup_workspace_artifacts(&workspace.path, &info.runtime_id);
     }
+}
+
+pub fn get_active_workspace(state: &SharedState) -> Result<Option<WorkspaceInfo>, String> {
+    Ok(active_workspace_snapshot(state)?.map(|(_, info)| info))
 }
 
 pub fn list_files(
