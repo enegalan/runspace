@@ -9,6 +9,7 @@ interface EnvironmentStore {
   available: EnvironmentDefinition[];
   selectedId: EnvironmentId | null;
   defaultEnvironmentId: EnvironmentId | null;
+  installingEnvironment: { id: EnvironmentId; name: string } | null;
   loaded: boolean;
   load: () => Promise<void>;
   select: (id: EnvironmentId) => Promise<void>;
@@ -60,6 +61,7 @@ export const useEnvironmentStore = create<EnvironmentStore>((set, get) => ({
   available: [],
   selectedId: null,
   defaultEnvironmentId: null,
+  installingEnvironment: null,
   loaded: false,
 
   load: async () => {
@@ -77,9 +79,23 @@ export const useEnvironmentStore = create<EnvironmentStore>((set, get) => ({
   },
 
   install: async (id) => {
-    await runspaceInvoke("install_environment", { environmentId: id });
-    const state = await fetchEnvironmentState();
-    set({ ...state, selectedId: state.selectedId ?? id });
+    const { environments, available } = get();
+    const definition =
+      environments.find((env) => env.definition.id === id)?.definition ??
+      available.find((item) => item.id === id);
+
+    const installingEnvironment =
+      definition?.category === "framework" ? { id, name: definition.name } : null;
+
+    set({ installingEnvironment });
+
+    try {
+      await runspaceInvoke("install_environment", { environmentId: id });
+      const state = await fetchEnvironmentState();
+      set({ ...state, selectedId: state.selectedId ?? id });
+    } finally {
+      set({ installingEnvironment: null });
+    }
   },
 
   uninstall: async (id) => {

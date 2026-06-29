@@ -39,7 +39,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.exs",
+    "output": "runspace_bootstrap.exs",
     "template": "mix_bootstrap.tpl"
   },
   "post_install": [

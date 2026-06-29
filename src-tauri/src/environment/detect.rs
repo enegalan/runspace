@@ -58,6 +58,52 @@ pub fn detect_missing_binary_paths(
     detected
 }
 
+pub fn resolve_environment_paths(
+    environment_id: &str,
+    paths: &std::collections::HashMap<String, String>,
+) -> std::collections::HashMap<String, String> {
+    let mut resolved = paths.clone();
+    resolved.extend(detect_missing_binary_paths(environment_id, &resolved));
+
+    let Some(definition) = get_definition(environment_id) else {
+        return resolved;
+    };
+
+    for field in &definition.config_fields {
+        if field.field_type != super::types::ConfigFieldType::FilePath {
+            continue;
+        }
+
+        let already_set = resolved
+            .get(&field.key)
+            .map(|value| !value.trim().is_empty())
+            .unwrap_or(false);
+        if already_set {
+            continue;
+        }
+
+        let Some(default) = field
+            .default_value
+            .as_ref()
+            .map(|value| value.trim())
+            .filter(|value| !value.is_empty())
+        else {
+            continue;
+        };
+
+        if let Ok(path) = which::which(default) {
+            if path.is_file() && is_executable(&path) {
+                resolved.insert(field.key.clone(), path.to_string_lossy().to_string());
+                continue;
+            }
+        }
+
+        resolved.insert(field.key.clone(), default.to_string());
+    }
+
+    resolved
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,5 +121,17 @@ mod tests {
         let paths = std::collections::HashMap::new();
         let detected = detect_missing_binary_paths("unknown", &paths);
         assert!(detected.is_empty());
+    }
+
+    #[test]
+    fn resolve_environment_paths_applies_default_command() {
+        let paths = std::collections::HashMap::new();
+        let resolved = resolve_environment_paths("express", &paths);
+        if which::which("npm").is_ok() {
+            assert!(resolved
+                .get("npm_path")
+                .map(|value| !value.is_empty())
+                .unwrap_or(false));
+        }
     }
 }

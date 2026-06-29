@@ -17,8 +17,8 @@
     }
   ],
   "run": {
-    "program": "{{go_path}}",
-    "args": ["run", "{{entry_file}}"]
+    "program": "/bin/sh",
+    "args": ["{{entry_file}}"]
   },
   "skeleton": {
     "bundled_dir": "chi",
@@ -26,13 +26,13 @@
     "sync_exclude_files": [],
     "dependency_install": {
       "program": "{{go_path}}",
-      "args": ["mod", "vendor"],
-      "vendor_marker": "vendor/github.com/go-chi/chi/v5/chi.go",
+      "args": ["mod", "download"],
+      "vendor_marker": "go.sum",
       "manifest_files": ["go.mod", "go.sum"]
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.go",
+    "output": "runspace_bootstrap.go",
     "template": "go_mod_bootstrap.tpl"
   },
   "terminal_env": {

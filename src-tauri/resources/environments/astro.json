@@ -39,7 +39,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.mjs",
+    "output": "runspace_bootstrap.mjs",
     "template": "node_modules_esm_bootstrap.tpl"
   },
   "terminal_env": {

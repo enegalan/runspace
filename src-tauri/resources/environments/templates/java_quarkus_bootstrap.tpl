@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class _runspace_bootstrap {
+public class runspace_bootstrap {
     public static void main(String[] args) throws Exception {
         String skeletonRoot = '{{skeleton_root}}';
         String entryPath = '{{entry_file}}';

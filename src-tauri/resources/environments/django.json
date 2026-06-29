@@ -46,7 +46,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.py",
+    "output": "runspace_bootstrap.py",
     "template": "site_packages_bootstrap.tpl"
   },
   "post_install": [

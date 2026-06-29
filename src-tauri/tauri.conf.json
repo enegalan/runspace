@@ -41,7 +41,9 @@
       "entitlements": "entitlements.plist"
     },
     "resources": {
-      "resources/environments/": "environments/"
+      "resources/environments/": "environments/",
+      "../scripts/prepare-framework-skeletons.sh": "scripts/prepare-framework-skeletons.sh",
+      "../scripts/sync-framework-skeletons.sh": "scripts/sync-framework-skeletons.sh"
     }
   }
 }

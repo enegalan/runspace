@@ -60,7 +60,7 @@ Gradle-based frameworks use `dependency_install` with Gradle tasks and a Kotlin 
 
 ```json
 "prepare": {
-  "output": "_runspace_bootstrap.php",
+  "output": "runspace_bootstrap.php",
   "template": "php_vendor_bootstrap.tpl"
 }
 ```

@@ -2,6 +2,15 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+framework_dest() {
+    local name="$1"
+    if [[ -n "${RUNSPACE_USER_FRAMEWORKS_DIR:-}" ]]; then
+        echo "$RUNSPACE_USER_FRAMEWORKS_DIR/$name"
+    else
+        echo "$REPO_ROOT/src-tauri/resources/frameworks/$name"
+    fi
+}
+
 GEN="${RUNSPACE_SKELETON_GEN:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
@@ -79,82 +88,82 @@ KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
 NESTJS_SRC="$GEN/nestjs"
-LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
-SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
-EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
-HANAMI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hanami"
-BLAZOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/blazor"
-QUART_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quart"
-IRIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/iris"
-PLUG_DEST="$REPO_ROOT/src-tauri/resources/frameworks/plug"
-MICRONAUT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/micronaut"
-GRAPE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/grape"
-WARP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/warp"
-SALVO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/salvo"
-BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
-FIBER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fiber"
-DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
-GIN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gin"
-ADONISJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/adonisjs"
-VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
-CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
-STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
-LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
-SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
-PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
-QWIK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/qwik"
-SANIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sanic"
-DASH_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dash"
-LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
-TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
-IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
-CAPACITOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/capacitor"
-STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
-CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
-BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
-LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
-SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
-PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
-NEXTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nextjs"
-NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
-RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
-SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
-PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
-COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
-ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
-CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
-YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
-REACT_NATIVE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/react-native"
-METEOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/meteor"
-QUARKUS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quarkus"
-ASTRO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/astro"
-AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
-RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
-REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
-SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
-FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
-PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
-POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
-KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
-ECHO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/echo"
-MINIMAL_APIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/minimal-apis"
-NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
-FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
-EXPO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/expo"
-GORILLA_MUX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gorilla-mux"
-WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
-SOLIDSTART_DEST="$REPO_ROOT/src-tauri/resources/frameworks/solidstart"
-JHIPSTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/jhipster"
-ROCKET_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rocket"
-ACTIX_WEB_DEST="$REPO_ROOT/src-tauri/resources/frameworks/actix-web"
-BUFFALO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/buffalo"
-DJANGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/django"
-PLAY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/play"
-FLASK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flask"
-KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
-HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
-FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
-NESTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nestjs"
+LARAVEL_DEST="$(framework_dest laravel)"
+SYMFONY_DEST="$(framework_dest symfony)"
+EXPRESS_DEST="$(framework_dest express)"
+HANAMI_DEST="$(framework_dest hanami)"
+BLAZOR_DEST="$(framework_dest blazor)"
+QUART_DEST="$(framework_dest quart)"
+IRIS_DEST="$(framework_dest iris)"
+PLUG_DEST="$(framework_dest plug)"
+MICRONAUT_DEST="$(framework_dest micronaut)"
+GRAPE_DEST="$(framework_dest grape)"
+WARP_DEST="$(framework_dest warp)"
+SALVO_DEST="$(framework_dest salvo)"
+BEEGO_DEST="$(framework_dest beego)"
+FIBER_DEST="$(framework_dest fiber)"
+DROPWIZARD_DEST="$(framework_dest dropwizard)"
+GIN_DEST="$(framework_dest gin)"
+ADONISJS_DEST="$(framework_dest adonisjs)"
+VERTX_DEST="$(framework_dest vertx)"
+CAKEPHP_DEST="$(framework_dest cakephp)"
+STREAMLIT_DEST="$(framework_dest streamlit)"
+LUMEN_DEST="$(framework_dest lumen)"
+SLIM_DEST="$(framework_dest slim)"
+PYRAMID_DEST="$(framework_dest pyramid)"
+QWIK_DEST="$(framework_dest qwik)"
+SANIC_DEST="$(framework_dest sanic)"
+DASH_DEST="$(framework_dest dash)"
+LAMINAS_DEST="$(framework_dest laminas)"
+TORNADO_DEST="$(framework_dest tornado)"
+IONIC_DEST="$(framework_dest ionic)"
+CAPACITOR_DEST="$(framework_dest capacitor)"
+STARLETTE_DEST="$(framework_dest starlette)"
+CODEIGNITER_DEST="$(framework_dest codeigniter)"
+BOTTLE_DEST="$(framework_dest bottle)"
+LITESTAR_DEST="$(framework_dest litestar)"
+SPRING_BOOT_DEST="$(framework_dest spring-boot)"
+PHOENIX_DEST="$(framework_dest phoenix)"
+NEXTJS_DEST="$(framework_dest nextjs)"
+NUXT_DEST="$(framework_dest nuxt)"
+RAILS_DEST="$(framework_dest rails)"
+SINATRA_DEST="$(framework_dest sinatra)"
+PADRINO_DEST="$(framework_dest padrino)"
+COWBOY_DEST="$(framework_dest cowboy)"
+ASPNET_CORE_DEST="$(framework_dest aspnet-core)"
+CHI_DEST="$(framework_dest chi)"
+YII_DEST="$(framework_dest yii)"
+REACT_NATIVE_DEST="$(framework_dest react-native)"
+METEOR_DEST="$(framework_dest meteor)"
+QUARKUS_DEST="$(framework_dest quarkus)"
+ASTRO_DEST="$(framework_dest astro)"
+AXUM_DEST="$(framework_dest axum)"
+RODA_DEST="$(framework_dest roda)"
+REMIX_DEST="$(framework_dest remix)"
+SVELTEKIT_DEST="$(framework_dest sveltekit)"
+FASTAPI_DEST="$(framework_dest fastapi)"
+PHALCON_DEST="$(framework_dest phalcon)"
+POEM_DEST="$(framework_dest poem)"
+KTOR_DEST="$(framework_dest ktor)"
+ECHO_DEST="$(framework_dest echo)"
+MINIMAL_APIS_DEST="$(framework_dest minimal-apis)"
+NANCY_DEST="$(framework_dest nancy)"
+FLUTTER_DEST="$(framework_dest flutter)"
+EXPO_DEST="$(framework_dest expo)"
+GORILLA_MUX_DEST="$(framework_dest gorilla-mux)"
+WORDPRESS_DEST="$(framework_dest wordpress)"
+SOLIDSTART_DEST="$(framework_dest solidstart)"
+JHIPSTER_DEST="$(framework_dest jhipster)"
+ROCKET_DEST="$(framework_dest rocket)"
+ACTIX_WEB_DEST="$(framework_dest actix-web)"
+BUFFALO_DEST="$(framework_dest buffalo)"
+DJANGO_DEST="$(framework_dest django)"
+PLAY_DEST="$(framework_dest play)"
+FLASK_DEST="$(framework_dest flask)"
+KOA_DEST="$(framework_dest koa)"
+HONO_DEST="$(framework_dest hono)"
+FASTIFY_DEST="$(framework_dest fastify)"
+NESTJS_DEST="$(framework_dest nestjs)"
 
 LARAVEL_PROJECT="${RUNSPACE_LARAVEL_PROJECT:-laravel/laravel}"
 LARAVEL_VERSION="${RUNSPACE_LARAVEL_VERSION:-12.*}"
@@ -689,6 +698,94 @@ needs_hono=false
 needs_fastify=false
 needs_nestjs=false
 
+if [[ -n "${RUNSPACE_FRAMEWORKS:-}" ]]; then
+    # RUNSPACE_FRAMEWORKS filter
+    for _requested_framework in ${RUNSPACE_FRAMEWORKS//,/ }; do
+        _requested_framework="${_requested_framework// /}"
+        case "$_requested_framework" in
+            actix-web) needs_actix_web=true ;;
+            adonisjs) needs_adonisjs=true ;;
+            aspnet-core) needs_aspnet_core=true ;;
+            astro) needs_astro=true ;;
+            axum) needs_axum=true ;;
+            beego) needs_beego=true ;;
+            blazor) needs_blazor=true ;;
+            bottle) needs_bottle=true ;;
+            buffalo) needs_buffalo=true ;;
+            cakephp) needs_cakephp=true ;;
+            capacitor) needs_capacitor=true ;;
+            chi) needs_chi=true ;;
+            codeigniter) needs_codeigniter=true ;;
+            cowboy) needs_cowboy=true ;;
+            dash) needs_dash=true ;;
+            django) needs_django=true ;;
+            dropwizard) needs_dropwizard=true ;;
+            echo) needs_echo=true ;;
+            expo) needs_expo=true ;;
+            express) needs_express=true ;;
+            fastapi) needs_fastapi=true ;;
+            fastify) needs_fastify=true ;;
+            fiber) needs_fiber=true ;;
+            flask) needs_flask=true ;;
+            flutter) needs_flutter=true ;;
+            gin) needs_gin=true ;;
+            gorilla-mux) needs_gorilla_mux=true ;;
+            grape) needs_grape=true ;;
+            hanami) needs_hanami=true ;;
+            hono) needs_hono=true ;;
+            ionic) needs_ionic=true ;;
+            iris) needs_iris=true ;;
+            jhipster) needs_jhipster=true ;;
+            koa) needs_koa=true ;;
+            ktor) needs_ktor=true ;;
+            laminas) needs_laminas=true ;;
+            laravel) needs_laravel=true ;;
+            litestar) needs_litestar=true ;;
+            lumen) needs_lumen=true ;;
+            meteor) needs_meteor=true ;;
+            micronaut) needs_micronaut=true ;;
+            minimal-apis) needs_minimal_apis=true ;;
+            nancy) needs_nancy=true ;;
+            nestjs) needs_nestjs=true ;;
+            nextjs) needs_nextjs=true ;;
+            nuxt) needs_nuxt=true ;;
+            padrino) needs_padrino=true ;;
+            phalcon) needs_phalcon=true ;;
+            phoenix) needs_phoenix=true ;;
+            play) needs_play=true ;;
+            plug) needs_plug=true ;;
+            poem) needs_poem=true ;;
+            pyramid) needs_pyramid=true ;;
+            quarkus) needs_quarkus=true ;;
+            quart) needs_quart=true ;;
+            qwik) needs_qwik=true ;;
+            rails) needs_rails=true ;;
+            react-native) needs_react_native=true ;;
+            remix) needs_remix=true ;;
+            rocket) needs_rocket=true ;;
+            roda) needs_roda=true ;;
+            salvo) needs_salvo=true ;;
+            sanic) needs_sanic=true ;;
+            sinatra) needs_sinatra=true ;;
+            slim) needs_slim=true ;;
+            solidstart) needs_solidstart=true ;;
+            spring-boot) needs_spring_boot=true ;;
+            starlette) needs_starlette=true ;;
+            streamlit) needs_streamlit=true ;;
+            sveltekit) needs_sveltekit=true ;;
+            symfony) needs_symfony=true ;;
+            tornado) needs_tornado=true ;;
+            vertx) needs_vertx=true ;;
+            warp) needs_warp=true ;;
+            wordpress) needs_wordpress=true ;;
+            yii) needs_yii=true ;;
+            *)
+                echo "Unknown framework skeleton: $_requested_framework" >&2
+                exit 1
+                ;;
+        esac
+    done
+else
 if force_sync || ! laravel_ready; then
     needs_laravel=true
 fi
@@ -907,6 +1004,8 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
+fi
+
 if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix_web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla_mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal_apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react_native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet_core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring_boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_capacitor && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug && ! $needs_iris && ! $needs_quart && ! $needs_blazor && ! $needs_hanami; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
@@ -940,15 +1039,57 @@ if $needs_play && ! command -v sbt >/dev/null 2>&1; then
     echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
-if $needs_hanami && ! command -v hanami >/dev/null 2>&1; then
-    echo "Installing Hanami for skeleton generation..."
-    gem install hanami bundler --no-document
-    export PATH="$(ruby -e 'print Gem.bindir'):${PATH}"
+if $needs_hanami || $needs_grape || $needs_rails || $needs_sinatra || $needs_padrino || $needs_roda; then
+    if ! command -v ruby >/dev/null 2>&1; then
+        echo "Ruby is required to prepare Ruby framework skeletons." >&2
+        echo "Install Ruby >= 3.2, then run:" >&2
+        echo "  npm run prepare:frameworks" >&2
+        exit 1
+    fi
+    export PATH="$(dirname "$(command -v ruby)"):$(ruby -e 'print Gem.bindir'):$PATH"
+    ruby_gems=()
+    if ($needs_hanami || $needs_grape || $needs_sinatra || $needs_roda || $needs_rails) && ! gem list -i "^bundler$" >/dev/null 2>&1; then
+        ruby_gems+=("bundler")
+    fi
+    if $needs_hanami && ! gem list -i "^hanami$" >/dev/null 2>&1; then
+        ruby_gems+=("hanami")
+    fi
+    if $needs_rails && ! gem list -i "^rails$" >/dev/null 2>&1; then
+        ruby_gems+=("rails")
+    fi
+    if $needs_padrino && ! gem list -i "^padrino$" >/dev/null 2>&1; then
+        ruby_gems+=("padrino")
+    fi
+    if ((${#ruby_gems[@]} > 0)); then
+        ruby_gem_install_flags=""
+        if ! ruby -e 'exit File.writable?(Gem.default_dir) ? 0 : 1' 2>/dev/null; then
+            ruby_gem_install_flags=" --user-install"
+        fi
+        echo "Ruby gems are required to prepare Ruby framework skeletons." >&2
+        echo "Using Ruby $(ruby -e 'print RUBY_VERSION') at $(command -v ruby)." >&2
+        echo "Do not use sudo gem install; it targets a different Ruby. Run:" >&2
+        echo "  $(command -v gem) install ${ruby_gems[*]}${ruby_gem_install_flags}" >&2
+        echo "  npm run prepare:frameworks" >&2
+        exit 1
+    fi
 fi
 
-if $needs_blazor && ! command -v dotnet >/dev/null 2>&1; then
-    echo "The .NET SDK is required to prepare the Blazor skeleton." >&2
-    exit 1
+if $needs_blazor || $needs_nancy; then
+    if ! command -v dotnet >/dev/null 2>&1; then
+        for dotnet_dir in /usr/local/share/dotnet /usr/local/share/dotnet/x64 "$HOME/.dotnet"; do
+            if [[ -x "$dotnet_dir/dotnet" ]]; then
+                export PATH="$dotnet_dir:$PATH"
+                break
+            fi
+        done
+    fi
+    if ! command -v dotnet >/dev/null 2>&1; then
+        echo "The .NET SDK is required to prepare .NET framework skeletons." >&2
+        echo "Install the SDK, then add it to PATH:" >&2
+        echo "  export PATH=\"/usr/local/share/dotnet:\$PATH\"" >&2
+        echo "  npm run prepare:frameworks" >&2
+        exit 1
+    fi
 fi
 
 if $needs_quart && ! command -v python3 >/dev/null 2>&1; then
@@ -970,14 +1111,6 @@ fi
 
 if $needs_micronaut && ! command -v curl >/dev/null 2>&1; then
     echo "curl is required to prepare the Micronaut skeleton." >&2
-    exit 1
-fi
-
-if $needs_grape && ! command -v bundle >/dev/null 2>&1; then
-    echo "Bundler is required to prepare the Grape skeleton." >&2
-    echo "Install Ruby and Bundler, then run:" >&2
-    echo "  gem install bundler" >&2
-    echo "  npm run prepare:frameworks" >&2
     exit 1
 fi
 
@@ -1081,27 +1214,6 @@ if $needs_nuxt && ! command -v npm >/dev/null 2>&1; then
     exit 1
 fi
 
-if $needs_rails && ! command -v rails >/dev/null 2>&1; then
-    echo "Rails is required to prepare the Rails skeleton." >&2
-    echo "Install Ruby, Bundler, and Rails, then run:" >&2
-    echo "  gem install rails bundler" >&2
-    echo "  npm run prepare:frameworks" >&2
-    exit 1
-fi
-
-if $needs_sinatra && ! command -v bundle >/dev/null 2>&1; then
-    echo "Bundler is required to prepare the Sinatra skeleton." >&2
-    echo "Install Ruby and Bundler, then run:" >&2
-    echo "  gem install bundler" >&2
-    echo "  npm run prepare:frameworks" >&2
-    exit 1
-fi
-
-if $needs_padrino && ! command -v ruby >/dev/null 2>&1; then
-    echo "Ruby is required to prepare the Padrino skeleton." >&2
-    exit 1
-fi
-
 if $needs_cowboy && ! command -v rebar3 >/dev/null 2>&1; then
     echo "rebar3 is required to prepare the Cowboy skeleton." >&2
     exit 1
@@ -1127,14 +1239,6 @@ if $needs_axum && ! command -v cargo >/dev/null 2>&1; then
     exit 1
 fi
 
-if $needs_roda && ! command -v bundle >/dev/null 2>&1; then
-    echo "Bundler is required to prepare the Roda skeleton." >&2
-    echo "Install Ruby and Bundler, then run:" >&2
-    echo "  gem install bundler" >&2
-    echo "  npm run prepare:frameworks" >&2
-    exit 1
-fi
-
 if $needs_sveltekit && ! command -v npm >/dev/null 2>&1; then
     echo "npm is required to prepare the SvelteKit skeleton." >&2
     exit 1
@@ -1157,11 +1261,6 @@ fi
 
 if $needs_echo && ! command -v go >/dev/null 2>&1; then
     echo "Go is required to prepare the Echo skeleton." >&2
-    exit 1
-fi
-
-if $needs_nancy && ! command -v dotnet >/dev/null 2>&1; then
-    echo "The .NET SDK is required to prepare the Nancy skeleton." >&2
     exit 1
 fi
 
@@ -2538,4 +2637,7 @@ NESTJS_MAIN
     )
 fi
 
+if [[ -n "${RUNSPACE_USER_FRAMEWORKS_DIR:-}" ]]; then
+    export RUNSPACE_USER_FRAMEWORKS_DIR
+fi
 exec bash "$REPO_ROOT/scripts/sync-framework-skeletons.sh" "$GEN"

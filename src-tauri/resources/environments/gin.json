@@ -17,8 +17,8 @@
     }
   ],
   "run": {
-    "program": "{{go_path}}",
-    "args": ["run", "{{entry_file}}"]
+    "program": "/bin/sh",
+    "args": ["{{entry_file}}"]
   },
   "skeleton": {
     "bundled_dir": "gin",
@@ -32,7 +32,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.go",
+    "output": "runspace_bootstrap.go",
     "template": "go_mod_bootstrap.tpl"
   },
   "terminal_env": {

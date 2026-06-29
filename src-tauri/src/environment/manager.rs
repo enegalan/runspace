@@ -3,8 +3,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use super::detect::detect_missing_binary_paths;
-use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition};
+use super::detect::{detect_missing_binary_paths, resolve_environment_paths};
+use super::manifest::EnvironmentProfile;
+use super::registry::{binary_field_key, default_environment_id, get_catalog, get_definition, get_manifest};
 use super::types::{
     Environment, EnvironmentDefinition, EnvironmentError, EnvironmentsStore, ResolvedEnvironment,
     ValidationResult,
@@ -66,18 +67,43 @@ impl EnvironmentManager {
         if self.is_installed(id) {
             return Ok(());
         }
-        self.store.installed_ids.push(id.to_string());
+
         self.store.configs.entry(id.to_string()).or_default();
+        {
+            let config = self.store.configs.get_mut(id).expect("config entry");
+            config.paths = resolve_environment_paths(id, &config.paths);
+        }
+
+        if let Some(manifest) = get_manifest(id) {
+            if manifest.profile == EnvironmentProfile::Framework {
+                let paths = self
+                    .store
+                    .configs
+                    .get(id)
+                    .map(|config| config.paths.clone())
+                    .unwrap_or_default();
+                crate::engine::profiles::setup_framework_skeleton(id, manifest, &paths)
+                    .map_err(|error| EnvironmentError::SetupFailed(error.to_string()))?;
+            }
+        }
+
+        self.store.installed_ids.push(id.to_string());
         if self.get_selected().is_none() {
             self.store.selected_environment_id = id.to_string();
         }
-        self.autodetect_for_environment(id)?;
         self.save()
     }
 
     pub fn uninstall(&mut self, id: &str) -> Result<(), EnvironmentError> {
         if !self.is_installed(id) {
             return Err(EnvironmentError::NotInstalled(id.to_string()));
+        }
+
+        if let Some(manifest) = get_manifest(id) {
+            if manifest.profile == EnvironmentProfile::Framework {
+                crate::engine::profiles::remove_skeleton(id)
+                    .map_err(|error| EnvironmentError::SetupFailed(error.to_string()))?;
+            }
         }
 
         self.store

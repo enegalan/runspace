@@ -46,7 +46,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.java",
+    "output": "runspace_bootstrap.java",
     "template": "java_maven_bootstrap.tpl"
   },
   "terminal_env": {

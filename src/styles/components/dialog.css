@@ -58,6 +58,31 @@
   animation: settings-fade-in var(--rs-duration-normal) var(--rs-ease);
 }
 
+.app-dialog__backdrop--blocking {
+  cursor: default;
+}
+
+.environment-install-dialog__panel {
+  width: min(440px, calc(100vw - var(--rs-space-8)));
+}
+
+.environment-install-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-4);
+}
+
+.environment-install-dialog__message {
+  margin: 0;
+  color: var(--rs-text-muted);
+  font-size: var(--rs-font-size-sm);
+  line-height: 1.5;
+}
+
+.environment-install-dialog__bar {
+  width: 100%;
+}
+
 .app-dialog__panel {
   position: relative;
   width: min(400px, calc(100vw - var(--rs-space-8)));

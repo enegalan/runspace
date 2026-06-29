@@ -25,6 +25,7 @@ import { EditorArea } from "./EditorArea";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { AppDialogs } from "../ui/AppDialogs";
+import { EnvironmentInstallDialog } from "../environment/EnvironmentInstallDialog";
 import { TerminalPanel } from "../terminal/TerminalPanel";
 import { WelcomeScreen } from "../welcome/WelcomeScreen";
 import { AppLoadingScreen } from "./AppLoadingScreen";
@@ -186,6 +187,7 @@ export function AppShell() {
         )}
         <AppLoadingScreen />
         <AppDialogs />
+        <EnvironmentInstallDialog />
       </div>
     );
   }
@@ -198,6 +200,7 @@ export function AppShell() {
       >
         <WelcomeScreen />
         <AppDialogs />
+        <EnvironmentInstallDialog />
       </div>
     );
   }
@@ -288,6 +291,7 @@ export function AppShell() {
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <AppDialogs />
+      <EnvironmentInstallDialog />
     </div>
   );
 }

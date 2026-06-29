@@ -20,8 +20,8 @@
   "scripts": {
     "dev": "vite",
     "prepare:frameworks": "bash scripts/prepare-framework-skeletons.sh",
-    "dev:prepare": "npm run prepare:frameworks && cargo build --manifest-path src-tauri/Cargo.toml",
-    "build": "npm run prepare:frameworks && tsc && vite build",
+    "dev:prepare": "cargo build --manifest-path src-tauri/Cargo.toml",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src tests vite.config.ts vitest.config.ts",
     "lint:fix": "eslint src tests vite.config.ts vitest.config.ts --fix",

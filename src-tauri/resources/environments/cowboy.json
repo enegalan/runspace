@@ -43,7 +43,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.erl",
+    "output": "runspace_bootstrap.erl",
     "template": "rebar_build_bootstrap.tpl"
   },
   "terminal_env": {

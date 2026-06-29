@@ -39,7 +39,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.js",
+    "output": "runspace_bootstrap.js",
     "template": "node_modules_bootstrap.tpl"
   },
   "terminal_env": {

@@ -32,6 +32,8 @@ pub struct ConfigField {
     pub primary: bool,
     #[serde(default)]
     pub detect: Option<DetectConfig>,
+    #[serde(default, rename = "default")]
+    pub default_value: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,6 +102,7 @@ pub enum EnvironmentError {
     ValidationFailed(String),
     Io(std::io::Error),
     NotInstalled(String),
+    SetupFailed(String),
 }
 
 impl std::fmt::Display for EnvironmentError {
@@ -118,6 +121,7 @@ impl std::fmt::Display for EnvironmentError {
             EnvironmentError::NotInstalled(id) => {
                 write!(f, "Environment is not installed: {id}")
             }
+            EnvironmentError::SetupFailed(msg) => write!(f, "{msg}"),
         }
     }
 }

@@ -36,6 +36,7 @@ describe("environmentStore", () => {
       available: [],
       selectedId: null,
       defaultEnvironmentId: null,
+      installingEnvironment: null,
       loaded: false,
     });
     vi.mocked(runspaceInvoke).mockReset();

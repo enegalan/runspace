@@ -39,7 +39,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.php",
+    "output": "runspace_bootstrap.php",
     "template": "php_vendor_bootstrap.tpl"
   },
   "post_install": [

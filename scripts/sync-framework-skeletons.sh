@@ -5,6 +5,15 @@ set -euo pipefail
 # Prefer: npm run prepare:frameworks (generates + syncs automatically).
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+framework_dest() {
+    local name="$1"
+    if [[ -n "${RUNSPACE_USER_FRAMEWORKS_DIR:-}" ]]; then
+        echo "$RUNSPACE_USER_FRAMEWORKS_DIR/$name"
+    else
+        echo "$REPO_ROOT/src-tauri/resources/frameworks/$name"
+    fi
+}
+
 GEN="${1:-/tmp/runspace-skeleton-gen}"
 LARAVEL_SRC="$GEN/laravel"
 SYMFONY_SRC="$GEN/symfony"
@@ -82,82 +91,82 @@ KOA_SRC="$GEN/koa"
 HONO_SRC="$GEN/hono"
 FASTIFY_SRC="$GEN/fastify"
 NESTJS_SRC="$GEN/nestjs"
-LARAVEL_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laravel"
-SYMFONY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/symfony"
-LUMEN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/lumen"
-EXPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/express"
-HANAMI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hanami"
-BLAZOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/blazor"
-QUART_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quart"
-IRIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/iris"
-PLUG_DEST="$REPO_ROOT/src-tauri/resources/frameworks/plug"
-MICRONAUT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/micronaut"
-GRAPE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/grape"
-WARP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/warp"
-SALVO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/salvo"
-BEEGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/beego"
-FIBER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fiber"
-DROPWIZARD_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dropwizard"
-GIN_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gin"
-ADONISJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/adonisjs"
-VERTX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/vertx"
-CAKEPHP_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cakephp"
-STREAMLIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/streamlit"
-SLIM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/slim"
-PYRAMID_DEST="$REPO_ROOT/src-tauri/resources/frameworks/pyramid"
-QWIK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/qwik"
-SANIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sanic"
-DASH_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dash"
-LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
-TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
-IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
-CAPACITOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/capacitor"
-STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
-CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
-BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
-LITESTAR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/litestar"
-SPRING_BOOT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/spring-boot"
-PHOENIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phoenix"
-NEXTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nextjs"
-NUXT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nuxt"
-RAILS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rails"
-SINATRA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sinatra"
-PADRINO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/padrino"
-COWBOY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/cowboy"
-ASPNET_CORE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/aspnet-core"
-CHI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/chi"
-YII_DEST="$REPO_ROOT/src-tauri/resources/frameworks/yii"
-REACT_NATIVE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/react-native"
-METEOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/meteor"
-QUARKUS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/quarkus"
-ASTRO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/astro"
-AXUM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/axum"
-RODA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/roda"
-REMIX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/remix"
-SVELTEKIT_DEST="$REPO_ROOT/src-tauri/resources/frameworks/sveltekit"
-FASTAPI_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastapi"
-PHALCON_DEST="$REPO_ROOT/src-tauri/resources/frameworks/phalcon"
-POEM_DEST="$REPO_ROOT/src-tauri/resources/frameworks/poem"
-KTOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ktor"
-ECHO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/echo"
-MINIMAL_APIS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/minimal-apis"
-NANCY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nancy"
-FLUTTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flutter"
-EXPO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/expo"
-GORILLA_MUX_DEST="$REPO_ROOT/src-tauri/resources/frameworks/gorilla-mux"
-WORDPRESS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/wordpress"
-SOLIDSTART_DEST="$REPO_ROOT/src-tauri/resources/frameworks/solidstart"
-JHIPSTER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/jhipster"
-ROCKET_DEST="$REPO_ROOT/src-tauri/resources/frameworks/rocket"
-ACTIX_WEB_DEST="$REPO_ROOT/src-tauri/resources/frameworks/actix-web"
-BUFFALO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/buffalo"
-DJANGO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/django"
-PLAY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/play"
-FLASK_DEST="$REPO_ROOT/src-tauri/resources/frameworks/flask"
-KOA_DEST="$REPO_ROOT/src-tauri/resources/frameworks/koa"
-HONO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/hono"
-FASTIFY_DEST="$REPO_ROOT/src-tauri/resources/frameworks/fastify"
-NESTJS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/nestjs"
+LARAVEL_DEST="$(framework_dest laravel)"
+SYMFONY_DEST="$(framework_dest symfony)"
+LUMEN_DEST="$(framework_dest lumen)"
+EXPRESS_DEST="$(framework_dest express)"
+HANAMI_DEST="$(framework_dest hanami)"
+BLAZOR_DEST="$(framework_dest blazor)"
+QUART_DEST="$(framework_dest quart)"
+IRIS_DEST="$(framework_dest iris)"
+PLUG_DEST="$(framework_dest plug)"
+MICRONAUT_DEST="$(framework_dest micronaut)"
+GRAPE_DEST="$(framework_dest grape)"
+WARP_DEST="$(framework_dest warp)"
+SALVO_DEST="$(framework_dest salvo)"
+BEEGO_DEST="$(framework_dest beego)"
+FIBER_DEST="$(framework_dest fiber)"
+DROPWIZARD_DEST="$(framework_dest dropwizard)"
+GIN_DEST="$(framework_dest gin)"
+ADONISJS_DEST="$(framework_dest adonisjs)"
+VERTX_DEST="$(framework_dest vertx)"
+CAKEPHP_DEST="$(framework_dest cakephp)"
+STREAMLIT_DEST="$(framework_dest streamlit)"
+SLIM_DEST="$(framework_dest slim)"
+PYRAMID_DEST="$(framework_dest pyramid)"
+QWIK_DEST="$(framework_dest qwik)"
+SANIC_DEST="$(framework_dest sanic)"
+DASH_DEST="$(framework_dest dash)"
+LAMINAS_DEST="$(framework_dest laminas)"
+TORNADO_DEST="$(framework_dest tornado)"
+IONIC_DEST="$(framework_dest ionic)"
+CAPACITOR_DEST="$(framework_dest capacitor)"
+STARLETTE_DEST="$(framework_dest starlette)"
+CODEIGNITER_DEST="$(framework_dest codeigniter)"
+BOTTLE_DEST="$(framework_dest bottle)"
+LITESTAR_DEST="$(framework_dest litestar)"
+SPRING_BOOT_DEST="$(framework_dest spring-boot)"
+PHOENIX_DEST="$(framework_dest phoenix)"
+NEXTJS_DEST="$(framework_dest nextjs)"
+NUXT_DEST="$(framework_dest nuxt)"
+RAILS_DEST="$(framework_dest rails)"
+SINATRA_DEST="$(framework_dest sinatra)"
+PADRINO_DEST="$(framework_dest padrino)"
+COWBOY_DEST="$(framework_dest cowboy)"
+ASPNET_CORE_DEST="$(framework_dest aspnet-core)"
+CHI_DEST="$(framework_dest chi)"
+YII_DEST="$(framework_dest yii)"
+REACT_NATIVE_DEST="$(framework_dest react-native)"
+METEOR_DEST="$(framework_dest meteor)"
+QUARKUS_DEST="$(framework_dest quarkus)"
+ASTRO_DEST="$(framework_dest astro)"
+AXUM_DEST="$(framework_dest axum)"
+RODA_DEST="$(framework_dest roda)"
+REMIX_DEST="$(framework_dest remix)"
+SVELTEKIT_DEST="$(framework_dest sveltekit)"
+FASTAPI_DEST="$(framework_dest fastapi)"
+PHALCON_DEST="$(framework_dest phalcon)"
+POEM_DEST="$(framework_dest poem)"
+KTOR_DEST="$(framework_dest ktor)"
+ECHO_DEST="$(framework_dest echo)"
+MINIMAL_APIS_DEST="$(framework_dest minimal-apis)"
+NANCY_DEST="$(framework_dest nancy)"
+FLUTTER_DEST="$(framework_dest flutter)"
+EXPO_DEST="$(framework_dest expo)"
+GORILLA_MUX_DEST="$(framework_dest gorilla-mux)"
+WORDPRESS_DEST="$(framework_dest wordpress)"
+SOLIDSTART_DEST="$(framework_dest solidstart)"
+JHIPSTER_DEST="$(framework_dest jhipster)"
+ROCKET_DEST="$(framework_dest rocket)"
+ACTIX_WEB_DEST="$(framework_dest actix-web)"
+BUFFALO_DEST="$(framework_dest buffalo)"
+DJANGO_DEST="$(framework_dest django)"
+PLAY_DEST="$(framework_dest play)"
+FLASK_DEST="$(framework_dest flask)"
+KOA_DEST="$(framework_dest koa)"
+HONO_DEST="$(framework_dest hono)"
+FASTIFY_DEST="$(framework_dest fastify)"
+NESTJS_DEST="$(framework_dest nestjs)"
 
 RSYNC_EXCLUDES=(
     --exclude vendor/
@@ -199,6 +208,108 @@ sync_dir() {
         done
     fi
 }
+
+sync_prepared_skeleton() {
+    local label="$1"
+    local src="$2"
+    local dest="$3"
+
+    if [[ -f "$dest/skeleton.version" ]]; then
+        return 0
+    fi
+    if [[ ! -d "$src" ]]; then
+        return 0
+    fi
+
+    if [[ -f "$src/package.json" && -f "$src/package-lock.json" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude node_modules/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/go.sum" && -s "$src/go.sum" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude vendor/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -d "$src/vendor" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/requirements.txt" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude .venv/ --exclude site-packages/ --exclude __pycache__/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/Cargo.toml" && -f "$src/Cargo.lock" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude target/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/pom.xml" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude target/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/build.gradle.kts" || -f "$src/build.gradle" || -f "$src/build.sbt" ]]; then
+        mkdir -p "$dest"
+        sync_dir "$src" "$dest" "${RSYNC_EXCLUDES[@]}"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/mix.exs" && -f "$src/mix.lock" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude _build/ --exclude deps/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/Gemfile.lock" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude vendor/bundle/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if compgen -G "$src/*.csproj" >/dev/null || [[ -f "$src/RunspaceBlazorSandbox.csproj" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude bin/ --exclude obj/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+
+    if [[ -f "$src/rebar.config" ]]; then
+        mkdir -p "$dest"
+        rsync -a --delete --exclude _build/ --exclude .git/ "$src/" "$dest/"
+        echo "$SKELETON_VERSION" > "$dest/skeleton.version"
+        synced+=("$label")
+        return 0
+    fi
+}
+
 
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
     mkdir -p "$LARAVEL_DEST"
@@ -1868,9 +1979,11 @@ if [[ -d "$CAPACITOR_SRC/node_modules" ]]; then
     synced+=("Capacitor")
 fi
 
-if [[ ${#synced[@]} -eq 0 ]]; then
-    echo "No framework skeletons found to sync in $GEN." >&2
-    exit 1
+if [[ -f "$CHI_SRC/go.sum" ]]; then
+    mkdir -p "$CHI_DEST"
+    rsync -a --delete --exclude vendor/ --exclude .git/ "$CHI_SRC/" "$CHI_DEST/"
+    echo "$SKELETON_VERSION" > "$CHI_DEST/skeleton.version"
+    synced+=("Chi")
 fi
 
 if [[ -d "$LARAVEL_SRC/vendor" ]]; then
@@ -2171,6 +2284,85 @@ if [[ -d "$NESTJS_SRC/node_modules" ]]; then
     echo "$SKELETON_VERSION" > "$NESTJS_DEST/skeleton.version"
     synced+=("NestJS")
 fi
+
+
+# Sync any prepared skeleton not handled by a dedicated block above.
+sync_prepared_skeleton "Laravel" "$LARAVEL_SRC" "$LARAVEL_DEST"
+sync_prepared_skeleton "Symfony" "$SYMFONY_SRC" "$SYMFONY_DEST"
+sync_prepared_skeleton "Lumen" "$LUMEN_SRC" "$LUMEN_DEST"
+sync_prepared_skeleton "Express" "$EXPRESS_SRC" "$EXPRESS_DEST"
+sync_prepared_skeleton "Hanami" "$HANAMI_SRC" "$HANAMI_DEST"
+sync_prepared_skeleton "Blazor" "$BLAZOR_SRC" "$BLAZOR_DEST"
+sync_prepared_skeleton "Quart" "$QUART_SRC" "$QUART_DEST"
+sync_prepared_skeleton "Iris" "$IRIS_SRC" "$IRIS_DEST"
+sync_prepared_skeleton "Plug" "$PLUG_SRC" "$PLUG_DEST"
+sync_prepared_skeleton "Micronaut" "$MICRONAUT_SRC" "$MICRONAUT_DEST"
+sync_prepared_skeleton "Grape" "$GRAPE_SRC" "$GRAPE_DEST"
+sync_prepared_skeleton "Warp" "$WARP_SRC" "$WARP_DEST"
+sync_prepared_skeleton "Salvo" "$SALVO_SRC" "$SALVO_DEST"
+sync_prepared_skeleton "Beego" "$BEEGO_SRC" "$BEEGO_DEST"
+sync_prepared_skeleton "Fiber" "$FIBER_SRC" "$FIBER_DEST"
+sync_prepared_skeleton "Dropwizard" "$DROPWIZARD_SRC" "$DROPWIZARD_DEST"
+sync_prepared_skeleton "Gin" "$GIN_SRC" "$GIN_DEST"
+sync_prepared_skeleton "Adonisjs" "$ADONISJS_SRC" "$ADONISJS_DEST"
+sync_prepared_skeleton "Vertx" "$VERTX_SRC" "$VERTX_DEST"
+sync_prepared_skeleton "CakePHP" "$CAKEPHP_SRC" "$CAKEPHP_DEST"
+sync_prepared_skeleton "Streamlit" "$STREAMLIT_SRC" "$STREAMLIT_DEST"
+sync_prepared_skeleton "Slim" "$SLIM_SRC" "$SLIM_DEST"
+sync_prepared_skeleton "Pyramid" "$PYRAMID_SRC" "$PYRAMID_DEST"
+sync_prepared_skeleton "Qwik" "$QWIK_SRC" "$QWIK_DEST"
+sync_prepared_skeleton "Sanic" "$SANIC_SRC" "$SANIC_DEST"
+sync_prepared_skeleton "Dash" "$DASH_SRC" "$DASH_DEST"
+sync_prepared_skeleton "Laminas" "$LAMINAS_SRC" "$LAMINAS_DEST"
+sync_prepared_skeleton "Tornado" "$TORNADO_SRC" "$TORNADO_DEST"
+sync_prepared_skeleton "Ionic" "$IONIC_SRC" "$IONIC_DEST"
+sync_prepared_skeleton "Capacitor" "$CAPACITOR_SRC" "$CAPACITOR_DEST"
+sync_prepared_skeleton "Starlette" "$STARLETTE_SRC" "$STARLETTE_DEST"
+sync_prepared_skeleton "CodeIgniter" "$CODEIGNITER_SRC" "$CODEIGNITER_DEST"
+sync_prepared_skeleton "Bottle" "$BOTTLE_SRC" "$BOTTLE_DEST"
+sync_prepared_skeleton "Litestar" "$LITESTAR_SRC" "$LITESTAR_DEST"
+sync_prepared_skeleton "Spring Boot" "$SPRING_BOOT_SRC" "$SPRING_BOOT_DEST"
+sync_prepared_skeleton "Phoenix" "$PHOENIX_SRC" "$PHOENIX_DEST"
+sync_prepared_skeleton "Next.js" "$NEXTJS_SRC" "$NEXTJS_DEST"
+sync_prepared_skeleton "Nuxt" "$NUXT_SRC" "$NUXT_DEST"
+sync_prepared_skeleton "Rails" "$RAILS_SRC" "$RAILS_DEST"
+sync_prepared_skeleton "Sinatra" "$SINATRA_SRC" "$SINATRA_DEST"
+sync_prepared_skeleton "Padrino" "$PADRINO_SRC" "$PADRINO_DEST"
+sync_prepared_skeleton "Cowboy" "$COWBOY_SRC" "$COWBOY_DEST"
+sync_prepared_skeleton "ASP.NET Core" "$ASPNET_CORE_SRC" "$ASPNET_CORE_DEST"
+sync_prepared_skeleton "Chi" "$CHI_SRC" "$CHI_DEST"
+sync_prepared_skeleton "Yii" "$YII_SRC" "$YII_DEST"
+sync_prepared_skeleton "React Native" "$REACT_NATIVE_SRC" "$REACT_NATIVE_DEST"
+sync_prepared_skeleton "Meteor" "$METEOR_SRC" "$METEOR_DEST"
+sync_prepared_skeleton "Quarkus" "$QUARKUS_SRC" "$QUARKUS_DEST"
+sync_prepared_skeleton "Astro" "$ASTRO_SRC" "$ASTRO_DEST"
+sync_prepared_skeleton "Axum" "$AXUM_SRC" "$AXUM_DEST"
+sync_prepared_skeleton "Roda" "$RODA_SRC" "$RODA_DEST"
+sync_prepared_skeleton "Remix" "$REMIX_SRC" "$REMIX_DEST"
+sync_prepared_skeleton "SvelteKit" "$SVELTEKIT_SRC" "$SVELTEKIT_DEST"
+sync_prepared_skeleton "FastAPI" "$FASTAPI_SRC" "$FASTAPI_DEST"
+sync_prepared_skeleton "Phalcon" "$PHALCON_SRC" "$PHALCON_DEST"
+sync_prepared_skeleton "Poem" "$POEM_SRC" "$POEM_DEST"
+sync_prepared_skeleton "Ktor" "$KTOR_SRC" "$KTOR_DEST"
+sync_prepared_skeleton "Echo" "$ECHO_SRC" "$ECHO_DEST"
+sync_prepared_skeleton "Minimal APIs" "$MINIMAL_APIS_SRC" "$MINIMAL_APIS_DEST"
+sync_prepared_skeleton "Nancy" "$NANCY_SRC" "$NANCY_DEST"
+sync_prepared_skeleton "Flutter" "$FLUTTER_SRC" "$FLUTTER_DEST"
+sync_prepared_skeleton "Expo" "$EXPO_SRC" "$EXPO_DEST"
+sync_prepared_skeleton "Gorilla Mux" "$GORILLA_MUX_SRC" "$GORILLA_MUX_DEST"
+sync_prepared_skeleton "WordPress" "$WORDPRESS_SRC" "$WORDPRESS_DEST"
+sync_prepared_skeleton "SolidStart" "$SOLIDSTART_SRC" "$SOLIDSTART_DEST"
+sync_prepared_skeleton "JHipster" "$JHIPSTER_SRC" "$JHIPSTER_DEST"
+sync_prepared_skeleton "Rocket" "$ROCKET_SRC" "$ROCKET_DEST"
+sync_prepared_skeleton "Actix Web" "$ACTIX_WEB_SRC" "$ACTIX_WEB_DEST"
+sync_prepared_skeleton "Buffalo" "$BUFFALO_SRC" "$BUFFALO_DEST"
+sync_prepared_skeleton "Django" "$DJANGO_SRC" "$DJANGO_DEST"
+sync_prepared_skeleton "Play" "$PLAY_SRC" "$PLAY_DEST"
+sync_prepared_skeleton "Flask" "$FLASK_SRC" "$FLASK_DEST"
+sync_prepared_skeleton "Koa" "$KOA_SRC" "$KOA_DEST"
+sync_prepared_skeleton "Hono" "$HONO_SRC" "$HONO_DEST"
+sync_prepared_skeleton "Fastify" "$FASTIFY_SRC" "$FASTIFY_DEST"
+sync_prepared_skeleton "NestJS" "$NESTJS_SRC" "$NESTJS_DEST"
 
 if [[ ${#synced[@]} -eq 0 ]]; then
     echo "No framework skeletons found to sync in $GEN." >&2

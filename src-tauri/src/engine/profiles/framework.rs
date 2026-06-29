@@ -131,6 +131,33 @@ fn ensure_framework_ready_with_workspace(
     Ok(ready.path)
 }
 
+pub fn remove_skeleton(environment_id: &str) -> Result<(), FrameworkSkeletonError> {
+    let path = skeleton_home(environment_id)?;
+    if path.exists() {
+        fs::remove_dir_all(&path).map_err(FrameworkSkeletonError::Io)?;
+    }
+    Ok(())
+}
+
+pub fn setup_framework_skeleton(
+    environment_id: &str,
+    manifest: &EnvironmentManifest,
+    extra_paths: &HashMap<String, String>,
+) -> Result<(), FrameworkSkeletonError> {
+    let skeleton = manifest
+        .skeleton
+        .as_ref()
+        .ok_or_else(|| FrameworkSkeletonError::Copy("Missing skeleton spec".to_string()))?;
+
+    let target = skeleton_home(environment_id)?;
+    if !target.join(SKELETON_VERSION_FILE).is_file() {
+        generate_skeleton_template(&skeleton.bundled_dir)?;
+    }
+
+    ensure_skeleton(environment_id, skeleton, extra_paths)?;
+    Ok(())
+}
+
 pub fn skeleton_home(environment_id: &str) -> Result<PathBuf, FrameworkSkeletonError> {
     let home = std::env::var("HOME").map_err(|_| {
         FrameworkSkeletonError::Copy("Could not resolve home directory".to_string())
@@ -146,6 +173,74 @@ fn bundled_skeleton_source(bundled_dir: &str) -> PathBuf {
         .join("resources")
         .join("frameworks")
         .join(bundled_dir)
+}
+
+fn resolve_packaged_scripts_dir() -> Option<PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let exe_dir = exe.parent()?;
+
+    for candidate in [
+        exe_dir.join("resources").join("scripts"),
+        exe_dir.join("../Resources/scripts"),
+        exe_dir.join("../Resources/resources/scripts"),
+    ] {
+        if candidate.is_dir() {
+            return Some(candidate);
+        }
+    }
+
+    None
+}
+
+fn prepare_script_path() -> Result<PathBuf, FrameworkSkeletonError> {
+    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../scripts/prepare-framework-skeletons.sh");
+    if dev.is_file() {
+        return dev.canonicalize().map_err(FrameworkSkeletonError::Io);
+    }
+
+    if let Some(dir) = resolve_packaged_scripts_dir() {
+        let script = dir.join("prepare-framework-skeletons.sh");
+        if script.is_file() {
+            return Ok(script);
+        }
+    }
+
+    Err(FrameworkSkeletonError::Copy(
+        "prepare-framework-skeletons.sh not found".to_string(),
+    ))
+}
+
+fn generate_skeleton_template(bundled_dir: &str) -> Result<(), FrameworkSkeletonError> {
+    let script = prepare_script_path()?;
+    let home = std::env::var("HOME").map_err(|_| {
+        FrameworkSkeletonError::Copy("Could not resolve home directory".to_string())
+    })?;
+    let user_frameworks = PathBuf::from(&home).join(".runspace").join("frameworks");
+
+    let output = Command::new("bash")
+        .arg(&script)
+        .env("RUNSPACE_FRAMEWORKS", bundled_dir)
+        .env("RUNSPACE_FORCE_FRAMEWORK_SYNC", "1")
+        .env("RUNSPACE_SKIP_RESOURCE_SYNC", "1")
+        .env("RUNSPACE_USER_FRAMEWORKS_DIR", &user_frameworks)
+        .output()
+        .map_err(|error| {
+            FrameworkSkeletonError::CommandFailed(format!(
+                "Failed to run skeleton prepare script: {error}"
+            ))
+        })?;
+
+    if output.status.success() {
+        return Ok(());
+    }
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    eprintln!("Skeleton prepare script failed for {bundled_dir}: {stderr}{stdout}");
+    Err(FrameworkSkeletonError::CommandFailed(format!(
+        "Skeleton prepare script failed for {bundled_dir}: {stderr}{stdout}"
+    )))
 }
 
 fn bundled_template_source(template: &str) -> PathBuf {
@@ -177,11 +272,11 @@ fn ensure_skeleton(
 ) -> Result<SkeletonReady, FrameworkSkeletonError> {
     let target = skeleton_home(environment_id)?;
     let source = bundled_skeleton_source(&skeleton.bundled_dir);
+    let source_available = source.is_dir();
 
-    if !source.is_dir() {
+    if !source_available && !target.join(SKELETON_VERSION_FILE).is_file() {
         return Err(FrameworkSkeletonError::Copy(format!(
-            "Bundled skeleton not found: {}",
-            source.display()
+            "Framework skeleton is not prepared for {environment_id}"
         )));
     }
 
@@ -204,21 +299,28 @@ fn ensure_skeleton(
     let mut needs_dependency_install = false;
     let mut skeleton_changed = false;
 
-    if !target.exists() {
-        copy_dir_recursive(&source, &target)?;
-        needs_dependency_install = dependency.is_some();
-        skeleton_changed = true;
-    } else if !skeleton_is_current(&source, &target) {
-        sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
-        needs_dependency_install = dependency.is_some();
-        skeleton_changed = true;
-    } else if dependency.is_some_and(|spec| dependency_manifests_differ(&source, &target, spec)) {
-        sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
-        if let Some(parent) = vendor_marker.parent() {
-            remove_path_if_exists(parent)?;
+    if source_available {
+        if !target.exists() {
+            copy_dir_recursive(&source, &target)?;
+            needs_dependency_install = dependency.is_some();
+            skeleton_changed = true;
+        } else if !skeleton_is_current(&source, &target) {
+            sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
+            needs_dependency_install = dependency.is_some();
+            skeleton_changed = true;
+        } else if dependency.is_some_and(|spec| dependency_manifests_differ(&source, &target, spec))
+        {
+            sync_bundled_skeleton(&source, &target, &excluded_dirs, &excluded_files)?;
+            if let Some(parent) = vendor_marker.parent() {
+                remove_path_if_exists(parent)?;
+            }
+            needs_dependency_install = true;
+            skeleton_changed = true;
         }
-        needs_dependency_install = true;
-        skeleton_changed = true;
+    } else if !target.exists() {
+        return Err(FrameworkSkeletonError::Copy(format!(
+            "Framework skeleton is not prepared for {environment_id}"
+        )));
     }
 
     if dependency.is_some() && vendor_marker.is_file() && !needs_dependency_install {
@@ -265,14 +367,7 @@ fn run_dependency_install(
     source: &Path,
 ) -> Result<(), FrameworkSkeletonError> {
     let context = framework_template_context(extra_paths, target, target, target);
-    let program = resolve_framework_path(&spec.program, &context);
-    let program_text = program.to_string_lossy().to_string();
-
-    if !program.is_file() {
-        return Err(FrameworkSkeletonError::DependencyInstallerMissing(
-            program_text,
-        ));
-    }
+    let program = resolve_installer_program(&resolve_framework_path(&spec.program, &context))?;
 
     let args = resolve_framework_args(&spec.args, &context);
     let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
@@ -282,6 +377,24 @@ fn run_dependency_install(
             "Dependency install failed for {}: {error}",
             source.display()
         ))
+    })
+}
+
+fn resolve_installer_program(program: &Path) -> Result<PathBuf, FrameworkSkeletonError> {
+    let program_text = program.to_string_lossy();
+
+    if program_text.contains("{{") {
+        return Err(FrameworkSkeletonError::DependencyInstallerMissing(
+            program_text.into_owned(),
+        ));
+    }
+
+    if program.is_file() {
+        return Ok(program.to_path_buf());
+    }
+
+    which::which(program).map_err(|_| {
+        FrameworkSkeletonError::DependencyInstallerMissing(program_text.into_owned())
     })
 }
 
@@ -584,6 +697,33 @@ mod tests {
     }
 
     #[test]
+    fn remove_skeleton_deletes_framework_directory() {
+        let temp = std::env::temp_dir().join(format!(
+            "runspace-skeleton-remove-test-{}",
+            std::process::id()
+        ));
+        let home = temp.join("home");
+        let framework_dir = home.join(".runspace/frameworks/laravel");
+        let _ = fs::remove_dir_all(&temp);
+        fs::create_dir_all(&framework_dir).unwrap();
+        fs::write(framework_dir.join("marker.txt"), "x").unwrap();
+
+        let previous_home = std::env::var("HOME").ok();
+        std::env::set_var("HOME", &home);
+
+        remove_skeleton("laravel").unwrap();
+        assert!(!framework_dir.exists());
+
+        if let Some(value) = previous_home {
+            std::env::set_var("HOME", value);
+        } else {
+            std::env::remove_var("HOME");
+        }
+
+        let _ = fs::remove_dir_all(&temp);
+    }
+
+    #[test]
     fn sync_bundled_skeleton_copies_files_without_excluded_dirs() {
         let temp = std::env::temp_dir().join(format!(
             "runspace-skeleton-sync-test-{}",
@@ -604,6 +744,61 @@ mod tests {
         assert!(target.join("bootstrap.txt").is_file());
         assert!(target.join(SKELETON_VERSION_FILE).is_file());
         assert!(!target.join("vendor/marker.txt").is_file());
+
+        let _ = fs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn go_mod_bootstrap_template_runs() {
+        let go_path = which::which("go").ok();
+        if go_path.is_none() {
+            return;
+        }
+        let go_path = go_path.unwrap();
+
+        let temp = std::env::temp_dir().join(format!(
+            "runspace-go-bootstrap-test-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&temp);
+
+        let skeleton = temp.join("skeleton");
+        let workspace = temp.join("workspace");
+        fs::create_dir_all(&skeleton).unwrap();
+        fs::create_dir_all(&workspace).unwrap();
+        fs::write(
+            skeleton.join("go.mod"),
+            "module runspace-chi-test\n\ngo 1.22\n",
+        )
+        .unwrap();
+        fs::write(
+            workspace.join("main.go"),
+            "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"ok\") }\n",
+        )
+        .unwrap();
+
+        let entry = workspace.join("main.go");
+        let paths = HashMap::from([(
+            "go_path".to_string(),
+            go_path.to_string_lossy().into_owned(),
+        )]);
+        let context = framework_template_context(&paths, &skeleton, &workspace, &entry);
+
+        let raw = fs::read_to_string(bundled_template_source("go_mod_bootstrap.tpl")).unwrap();
+        let bootstrap = resolve_framework_embed_template(&raw, &context);
+        let bootstrap_path = workspace.join("runspace_bootstrap.go");
+        fs::write(&bootstrap_path, bootstrap).unwrap();
+
+        let output = Command::new("/bin/sh")
+            .arg(&bootstrap_path)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "go_mod_bootstrap.tpl must run via sh: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "ok");
 
         let _ = fs::remove_dir_all(&temp);
     }

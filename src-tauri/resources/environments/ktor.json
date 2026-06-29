@@ -44,7 +44,7 @@
     }
   },
   "prepare": {
-    "output": "_runspace_bootstrap.kts",
+    "output": "runspace_bootstrap.kts",
     "template": "kotlin_gradle_bootstrap.tpl"
   },
   "terminal_env": {
