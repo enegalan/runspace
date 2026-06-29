@@ -24,9 +24,9 @@ struct PreparedExecution {
 }
 
 pub fn kill_process(state: &SharedState) -> Result<(), String> {
-    let snapshot = active_workspace_snapshot(state).ok().flatten();
+    let snapshot = active_workspace_snapshot(state);
     map_err(state.execution_engine.kill())?;
-    cleanup_workspace_snapshot(snapshot);
+    cleanup_workspace_snapshot(snapshot?);
     Ok(())
 }
 
