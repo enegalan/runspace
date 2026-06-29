@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  FILE_TREE_DRAG_TYPE,
   canMoveToRoot,
   clearFileDragData,
   getActiveDragPayload,
-  hasFileDrag,
+  getFileTreeDragPreview,
+  isFileTreeDragActive,
   isInvalidMove,
   movedPath,
-  readFileDragData,
-  setFileDragData,
+  setActiveFileTreeMove,
+  setFileTreeDragPreview,
+  updateFileTreeDragPreviewPosition,
 } from "../../src/core/workspace/fileTreeDrag";
 
 describe("fileTreeDrag", () => {
@@ -16,54 +17,35 @@ describe("fileTreeDrag", () => {
     clearFileDragData();
   });
 
-  it("round-trips drag payload", () => {
-    const dataTransfer = {
-      _data: {} as Record<string, string>,
-      effectAllowed: "",
-      setData(type: string, value: string) {
-        this._data[type] = value;
-      },
-      getData(type: string) {
-        return this._data[type] ?? "";
-      },
-    } as DataTransfer;
-
-    setFileDragData(dataTransfer, { path: "src/app.js", isDirectory: false });
-    expect(readFileDragData(dataTransfer)).toEqual({
+  it("tracks pointer move payload", () => {
+    setActiveFileTreeMove({ path: "src/app.js", isDirectory: false });
+    expect(isFileTreeDragActive()).toBe(true);
+    expect(getActiveDragPayload()).toEqual({
       path: "src/app.js",
       isDirectory: false,
     });
-    expect(dataTransfer._data[FILE_TREE_DRAG_TYPE]).toBeTruthy();
+    clearFileDragData();
+    expect(isFileTreeDragActive()).toBe(false);
   });
 
-  it("tracks active payload for dragover", () => {
-    const dataTransfer = {
-      _data: {} as Record<string, string>,
-      types: [] as string[],
-      effectAllowed: "",
-      setData(type: string, value: string) {
-        this._data[type] = value;
-        if (!this.types.includes(type)) {
-          this.types.push(type);
-        }
-      },
-      getData(type: string) {
-        return this._data[type] ?? "";
-      },
-    } as DataTransfer;
-
-    setFileDragData(dataTransfer, { path: "lib/utils.js", isDirectory: false });
-    expect(hasFileDrag(dataTransfer.types)).toBe(true);
-    expect(getActiveDragPayload()).toEqual({
-      path: "lib/utils.js",
+  it("tracks drag preview position", () => {
+    setFileTreeDragPreview({
+      label: "app.js",
+      path: "src/app.js",
       isDirectory: false,
+      x: 10,
+      y: 20,
     });
-    expect(readFileDragData(dataTransfer)).toEqual({
-      path: "lib/utils.js",
+    updateFileTreeDragPreviewPosition(40, 50);
+    expect(getFileTreeDragPreview()).toEqual({
+      label: "app.js",
+      path: "src/app.js",
       isDirectory: false,
+      x: 40,
+      y: 50,
     });
     clearFileDragData();
-    expect(getActiveDragPayload()).toBeNull();
+    expect(getFileTreeDragPreview()).toBeNull();
   });
 
   it("detects invalid moves", () => {

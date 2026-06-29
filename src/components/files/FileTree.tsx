@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
@@ -7,21 +7,17 @@ import {
 import {
   clearFileTreeDropTarget,
   getFileTreeDropTarget,
+  setFileTreeDropTarget,
   subscribeFileTreeDropTarget,
-  updateFileTreeDropTargetFromDrag,
 } from "../../core/workspace/fileTreeDropTarget";
 import {
-  canMoveToRoot,
-  clearFileDragData,
-  getActiveDragPayload,
-  hasFileDrag,
   isFileTreeDragActive,
-  readFileDragData,
-  setFileTreeDragActive,
   subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
+import { useFileTreePointerMove } from "../../hooks/useFileTreePointerMove";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
+import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
@@ -37,15 +33,25 @@ interface SidebarMenuState {
 
 /**
  * This component is used to display the file tree.
+ * @returns The FileTree component.
  */
 export function FileTree() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const workspaceId = workspace?.id ?? "";
   const rootFiles = useWorkspaceStore((state) => state.rootFiles);
+  const expandedDirs = useWorkspaceStore((state) => state.expandedDirs);
   const refreshFiles = useWorkspaceStore((state) => state.refreshFiles);
   const moveFile = useWorkspaceStore((state) => state.moveFile);
+  const expandDir = useWorkspaceStore((state) => state.expandDir);
+  const openFile = useEditorTabsStore((state) => state.openFile);
   const { createAndOpenFile } = useNewFile();
   const { createNewFolder } = useNewFolder();
+  const { onRowPointerDown } = useFileTreePointerMove({
+    moveFile,
+    openFile,
+    expandDir,
+    expandedDirs,
+  });
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
   const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
@@ -61,81 +67,27 @@ export function FileTree() {
     isFileTreeDragActive,
   );
 
-  useEffect(() => {
-    const onDragEnd = () => {
-      setFileTreeDragActive(false);
-      clearFileTreeDropTarget();
-    };
-    window.addEventListener("dragend", onDragEnd);
-    return () => {
-      window.removeEventListener("dragend", onDragEnd);
-    };
-  }, []);
-
-  const handleTreeDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    if (hasExternalFileDrag(event.dataTransfer) || hasFileDrag(event.dataTransfer.types)) {
-      setFileTreeDragActive(true);
-    }
-  };
-
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     return target === event.currentTarget || target.classList.contains("file-tree__empty");
   };
 
   const handleBodyDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isDirectBodyTarget(event) || !workspace) {
-      return;
-    }
-
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "copy";
-      return;
-    }
-
-    if (!hasFileDrag(event.dataTransfer.types)) {
-      return;
-    }
-    const payload = getActiveDragPayload();
-    if (!payload || !canMoveToRoot(payload.path)) {
+    if (!isDirectBodyTarget(event) || !workspace || !hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  };
-
-  const handleTreeDragOverCapture = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!workspace) {
-      return;
-    }
-    updateFileTreeDropTargetFromDrag(event);
-  };
-
-  const handleTreeDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      clearFileTreeDropTarget();
-    }
+    event.dataTransfer.dropEffect = "copy";
+    setFileTreeDropTarget("");
   };
 
   const handleBodyDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!isDirectBodyTarget(event)) {
+    if (!isDirectBodyTarget(event) || !hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
     clearFileTreeDropTarget();
-
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      void importDroppedExternalFiles(event.dataTransfer, "");
-      return;
-    }
-
-    const payload = readFileDragData(event.dataTransfer);
-    clearFileDragData();
-    if (!payload || !canMoveToRoot(payload.path)) {
-      return;
-    }
-    void moveFile(payload.path, "");
+    void importDroppedExternalFiles(event.dataTransfer, "");
   };
 
   const openSidebarMenu = (event: React.MouseEvent) => {
@@ -147,13 +99,7 @@ export function FileTree() {
   };
 
   return (
-    <div
-      className={`file-tree${isDragging ? " file-tree--dragging" : ""}`}
-      data-testid="file-tree"
-      onDragEnter={handleTreeDragEnter}
-      onDragOverCapture={handleTreeDragOverCapture}
-      onDragLeave={handleTreeDragLeave}
-    >
+    <div className={`file-tree${isDragging ? " file-tree--dragging" : ""}`} data-testid="file-tree">
       <EnvironmentIndicator onOpenPicker={() => setEnvironmentPickerOpen(true)} />
       <EnvironmentPickerDialog
         open={environmentPickerOpen}
@@ -218,6 +164,7 @@ export function FileTree() {
               entry={entry}
               depth={0}
               workspaceId={workspaceId}
+              onRowPointerDown={onRowPointerDown}
             />
           ))
         )}

@@ -193,8 +193,8 @@ fn resolve_packaged_scripts_dir() -> Option<PathBuf> {
 }
 
 fn prepare_script_path() -> Result<PathBuf, FrameworkSkeletonError> {
-    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../scripts/prepare-framework-skeletons.sh");
+    let dev =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../scripts/prepare-framework-skeletons.sh");
     if dev.is_file() {
         return dev.canonicalize().map_err(FrameworkSkeletonError::Io);
     }
@@ -393,9 +393,8 @@ fn resolve_installer_program(program: &Path) -> Result<PathBuf, FrameworkSkeleto
         return Ok(program.to_path_buf());
     }
 
-    which::which(program).map_err(|_| {
-        FrameworkSkeletonError::DependencyInstallerMissing(program_text.into_owned())
-    })
+    which::which(program)
+        .map_err(|_| FrameworkSkeletonError::DependencyInstallerMissing(program_text.into_owned()))
 }
 
 fn run_post_install(
@@ -756,10 +755,8 @@ mod tests {
         }
         let go_path = go_path.unwrap();
 
-        let temp = std::env::temp_dir().join(format!(
-            "runspace-go-bootstrap-test-{}",
-            std::process::id()
-        ));
+        let temp =
+            std::env::temp_dir().join(format!("runspace-go-bootstrap-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&temp);
 
         let skeleton = temp.join("skeleton");

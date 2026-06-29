@@ -1,21 +1,29 @@
 import { createListenerSet } from "../sync/listenerSet";
 import { basename } from "../path/basename";
 
-export const FILE_TREE_DRAG_TYPE = "application/x-runspace-file-path";
-
 interface FileTreeDragPayload {
   path: string;
   isDirectory: boolean;
 }
 
-let activeDragPayload: FileTreeDragPayload | null = null;
+export interface FileTreeDragPreviewState {
+  label: string;
+  path: string;
+  isDirectory: boolean;
+  x: number;
+  y: number;
+}
 
+let activeDragPayload: FileTreeDragPayload | null = null;
 let fileTreeDragActive = false;
 const dragActiveListeners = createListenerSet();
 
+let preview: FileTreeDragPreviewState | null = null;
+const previewListeners = createListenerSet();
+
 /**
- * Checks if the file tree drag is active.
- * @returns `true` if the file tree drag is active, `false` otherwise.
+ * Checks if the file tree is dragging.
+ * @returns `true` if the file tree is dragging, `false` otherwise.
  */
 export function isFileTreeDragActive(): boolean {
   return fileTreeDragActive;
@@ -23,7 +31,7 @@ export function isFileTreeDragActive(): boolean {
 
 /**
  * Sets the file tree drag active.
- * @param active - Whether the file tree drag is active.
+ * @param active - The active state to set.
  */
 export function setFileTreeDragActive(active: boolean): void {
   if (fileTreeDragActive === active) {
@@ -36,31 +44,28 @@ export function setFileTreeDragActive(active: boolean): void {
 /**
  * Subscribes to the file tree drag active.
  * @param listener - The listener to subscribe to.
- * @returns The function to unsubscribe from the file tree drag active.
+ * @returns The function to unsubscribe from the listener.
  */
 export function subscribeFileTreeDragActive(listener: () => void): () => void {
   return dragActiveListeners.subscribe(listener);
 }
 
 /**
- * Sets the file drag data.
- * @param dataTransfer - The data transfer to set the file drag data on.
- * @param payload - The payload to set the file drag data on.
+ * Sets the active file tree move.
+ * @param payload - The payload to set.
  */
-export function setFileDragData(dataTransfer: DataTransfer, payload: FileTreeDragPayload): void {
+export function setActiveFileTreeMove(payload: FileTreeDragPayload): void {
   activeDragPayload = payload;
   setFileTreeDragActive(true);
-  dataTransfer.setData(FILE_TREE_DRAG_TYPE, JSON.stringify(payload));
-  dataTransfer.setData("text/plain", payload.path);
-  dataTransfer.effectAllowed = payload.isDirectory ? "move" : "all";
 }
 
 /**
- * Clears the file drag data.
+ * Clears the file tree drag data.
  */
 export function clearFileDragData(): void {
   activeDragPayload = null;
   setFileTreeDragActive(false);
+  clearFileTreeDragPreview();
 }
 
 /**
@@ -72,51 +77,61 @@ export function getActiveDragPayload(): FileTreeDragPayload | null {
 }
 
 /**
- * Checks if the data transfer has file drag.
- * @param types - The types of the data transfer.
- * @returns `true` if the data transfer has file drag, `false` otherwise.
+ * Gets the file tree drag preview.
+ * @returns The file tree drag preview.
  */
-export function hasFileDrag(types: DataTransfer["types"]): boolean {
-  return Array.from(types).includes(FILE_TREE_DRAG_TYPE);
+export function getFileTreeDragPreview(): FileTreeDragPreviewState | null {
+  return preview;
 }
 
 /**
- * Reads the file drag data.
- * @param dataTransfer - The data transfer to read the file drag data from.
- * @returns The file drag data.
+ * Subscribes to the file tree drag preview.
+ * @param listener - The listener to subscribe to.
+ * @returns The function to unsubscribe from the listener.
  */
-export function readFileDragData(dataTransfer: DataTransfer): FileTreeDragPayload | null {
-  const raw = dataTransfer.getData(FILE_TREE_DRAG_TYPE);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw) as FileTreeDragPayload;
-      if (typeof parsed.path === "string") {
-        return {
-          path: parsed.path,
-          isDirectory: Boolean(parsed.isDirectory),
-        };
-      }
-    } catch {
-      // fall through
-    }
-  }
-
-  if (activeDragPayload) {
-    return activeDragPayload;
-  }
-
-  const plain = dataTransfer.getData("text/plain");
-  if (plain) {
-    return { path: plain, isDirectory: false };
-  }
-
-  return null;
+export function subscribeFileTreeDragPreview(listener: () => void): () => void {
+  return previewListeners.subscribe(listener);
 }
 
 /**
- * Gets the parent directory of the given source path.
+ * Sets the file tree drag preview.
+ * @param state - The state to set.
+ */
+export function setFileTreeDragPreview(
+  state: Pick<FileTreeDragPreviewState, "label" | "path" | "isDirectory" | "x" | "y">,
+): void {
+  preview = state;
+  previewListeners.notify();
+}
+
+/**
+ * Updates the file tree drag preview position.
+ * @param x - The x position to update.
+ * @param y - The y position to update.
+ */
+export function updateFileTreeDragPreviewPosition(x: number, y: number): void {
+  if (!preview || (preview.x === x && preview.y === y)) {
+    return;
+  }
+  preview = { ...preview, x, y };
+  previewListeners.notify();
+}
+
+/**
+ * Clears the file tree drag preview.
+ */
+export function clearFileTreeDragPreview(): void {
+  if (preview === null) {
+    return;
+  }
+  preview = null;
+  previewListeners.notify();
+}
+
+/**
+ * Gets the parent directory of a source path.
  * @param sourcePath - The source path to get the parent directory of.
- * @returns The parent directory of the given source path.
+ * @returns The parent directory of the source path.
  */
 export function parentDir(sourcePath: string): string {
   return sourcePath.includes("/") ? sourcePath.slice(0, sourcePath.lastIndexOf("/")) : "";

@@ -1,18 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DROP_TARGET_ATTR } from "../../src/core/workspace/externalFileDrop";
 import {
-  FILE_TREE_DRAG_TYPE,
   clearFileDragData,
   isFileTreeDragActive,
-  setFileDragData,
+  setActiveFileTreeMove,
 } from "../../src/core/workspace/fileTreeDrag";
 import {
   clearNativeDropHover,
   getFileTreeDropTarget,
   isEditorDropActive,
+  resolveDropTargetFromPoint,
   resolveFileTreeDropTargetFromElement,
-  setFileTreeDropTarget,
-  updateFileTreeDropTargetFromDrag,
+  resolvePointerMoveTarget,
   updateNativeDropHover,
 } from "../../src/core/workspace/fileTreeDropTarget";
 
@@ -22,7 +21,7 @@ describe("fileTreeDropTarget", () => {
     clearNativeDropHover();
   });
 
-  it("resolves the folder row from the drag event target", () => {
+  it("resolves the folder row from the element", () => {
     const parent = document.createElement("div");
     parent.className = "file-tree__folder";
     parent.setAttribute(DROP_TARGET_ATTR, "lib");
@@ -45,25 +44,16 @@ describe("fileTreeDropTarget", () => {
     expect(resolveFileTreeDropTargetFromElement(childRow)).toBe("lib/utils");
   });
 
-  it("clears the drop target when the pointer leaves a valid folder", () => {
-    setFileTreeDropTarget("lib/utils");
-    const dataTransfer = {
-      types: [FILE_TREE_DRAG_TYPE],
-      files: [],
-      effectAllowed: "",
-      setData() {},
-      getData() {
-        return "";
-      },
-    } as DataTransfer;
-    setFileDragData(dataTransfer, { path: "lib/utils/app.js", isDirectory: false });
+  it("resolves pointer move targets for active drags", () => {
+    const folder = document.createElement("div");
+    folder.className = "file-tree__folder";
+    folder.setAttribute(DROP_TARGET_ATTR, "lib");
+    document.body.appendChild(folder);
+    document.elementFromPoint = vi.fn(() => folder) as typeof document.elementFromPoint;
+    setActiveFileTreeMove({ path: "app.js", isDirectory: false });
 
-    updateFileTreeDropTargetFromDrag({
-      target: document.createElement("span"),
-      dataTransfer,
-    });
-
-    expect(getFileTreeDropTarget()).toBeNull();
+    expect(resolveDropTargetFromPoint(40, 80)).toBe("lib");
+    expect(resolvePointerMoveTarget(40, 80)).toBe("lib");
   });
 
   it("highlights drop targets during a native OS drag", () => {

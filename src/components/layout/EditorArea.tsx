@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useSyncExternalStore } from "react";
 import {
-  DROP_TARGET_ATTR,
   hasExternalFileDrag,
   importDroppedExternalFiles,
 } from "../../core/workspace/externalFileDrop";
@@ -9,12 +8,6 @@ import {
   setEditorDropActive,
   subscribeEditorDropActive,
 } from "../../core/workspace/fileTreeDropTarget";
-import {
-  clearFileDragData,
-  getActiveDragPayload,
-  hasFileDrag,
-  readFileDragData,
-} from "../../core/workspace/fileTreeDrag";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useEnvironmentStore } from "../../stores/environmentStore";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
@@ -27,11 +20,6 @@ interface EditorAreaProps {
   onSave: (autoRun?: boolean) => void;
 }
 
-/**
- * The EditorArea component.
- * @param onSave - The function to call when the editor is saved.
- * @returns The EditorArea component.
- */
 export function EditorArea({ onSave }: EditorAreaProps) {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
@@ -40,7 +28,6 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   const activeFile = useEditorTabsStore(
     (state) => state.openFiles.find((file) => file.path === state.activePath) ?? null,
   );
-  const openFile = useEditorTabsStore((state) => state.openFile);
   const updateContent = useEditorTabsStore((state) => state.updateContent);
   const { createAndOpenFile } = useNewFile();
   const dropTarget = useSyncExternalStore(
@@ -59,23 +46,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   );
 
   const handleDragOver = (event: React.DragEvent) => {
-    if (!workspace) {
-      return;
-    }
-
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "copy";
-      setEditorDropActive(true);
-      return;
-    }
-
-    if (!hasFileDrag(event.dataTransfer.types)) {
-      return;
-    }
-    const payload = getActiveDragPayload();
-    if (!payload || payload.isDirectory) {
+    if (!workspace || !hasExternalFileDrag(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
@@ -85,37 +56,28 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   };
 
   const handleDragLeave = (event: React.DragEvent) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget instanceof Node && !event.currentTarget.contains(relatedTarget)) {
       setEditorDropActive(false);
     }
   };
 
   const handleDrop = (event: React.DragEvent) => {
+    if (!hasExternalFileDrag(event.dataTransfer)) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     setEditorDropActive(false);
-
-    if (hasExternalFileDrag(event.dataTransfer)) {
-      void importDroppedExternalFiles(event.dataTransfer, "", { openFile: true });
-      return;
-    }
-
-    const payload = readFileDragData(event.dataTransfer);
-    clearFileDragData();
-    if (!payload || payload.isDirectory) {
-      return;
-    }
-    void openFile(payload.path);
+    void importDroppedExternalFiles(event.dataTransfer, "", { openFile: true });
   };
 
   const editorClassName = `editor-area${dropTarget ? " editor-area--drop-target" : ""}`;
   const dropHandlers = workspace
     ? {
         onDragOver: handleDragOver,
-        onDragOverCapture: handleDragOver,
         onDragLeave: handleDragLeave,
         onDrop: handleDrop,
-        onDropCapture: handleDrop,
       }
     : {};
 
@@ -169,12 +131,7 @@ export function EditorArea({ onSave }: EditorAreaProps) {
   }
 
   return (
-    <main
-      className={editorClassName}
-      data-testid="editor-area"
-      {...{ [DROP_TARGET_ATTR]: "" }}
-      {...dropHandlers}
-    >
+    <main className={editorClassName} data-testid="editor-area" {...dropHandlers}>
       <div className="editor-area__body">{body}</div>
     </main>
   );

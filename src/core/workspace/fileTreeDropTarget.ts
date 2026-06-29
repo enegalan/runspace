@@ -1,9 +1,8 @@
 import { createListenerSet } from "../sync/listenerSet";
-import { DROP_TARGET_ATTR, hasExternalFileDrag } from "./externalFileDrop";
+import { DROP_TARGET_ATTR } from "./externalFileDrop";
 import {
   canMoveToRoot,
   getActiveDragPayload,
-  hasFileDrag,
   isInvalidMove,
   setFileTreeDragActive,
 } from "./fileTreeDrag";
@@ -98,6 +97,9 @@ export function resolveFileTreeDropTargetFromElement(element: Element | null): s
  * @returns The file tree drop target path, or null when not over a target.
  */
 export function resolveDropTargetFromPoint(x: number, y: number): string | null {
+  if (typeof document.elementFromPoint !== "function") {
+    return null;
+  }
   return resolveFileTreeDropTargetFromElement(document.elementFromPoint(x, y));
 }
 
@@ -109,7 +111,9 @@ export function resolveDropTargetFromPoint(x: number, y: number): string | null 
 export function updateNativeDropHover(x: number, y: number): void {
   setFileTreeDragActive(true);
 
-  const element = document.elementFromPoint(x, y);
+  const element =
+    typeof document.elementFromPoint === "function" ? document.elementFromPoint(x, y) : null;
+
   if (element?.closest(".editor-area")) {
     setEditorDropActive(true);
     clearFileTreeDropTarget();
@@ -135,43 +139,32 @@ export function clearNativeDropHover(): void {
 }
 
 /**
- * Updates the file tree drop target from a drag event.
- * @param event - The drag event.
+ * Resolves the pointer move target.
+ * @param clientX - The horizontal coordinate.
+ * @param clientY - The vertical coordinate.
+ * @returns The pointer move target, or null when not over a target.
  */
-export function updateFileTreeDropTargetFromDrag(event: {
-  target: EventTarget | null;
-  dataTransfer: DataTransfer;
-}): void {
-  const external = hasExternalFileDrag(event.dataTransfer);
-  const internal = hasFileDrag(event.dataTransfer.types);
-  if (!external && !internal) {
-    return;
+export function resolvePointerMoveTarget(clientX: number, clientY: number): string | null {
+  const element =
+    typeof document.elementFromPoint === "function"
+      ? document.elementFromPoint(clientX, clientY)
+      : null;
+
+  if (element?.closest(".editor-area")) {
+    return null;
   }
 
-  const target = resolveFileTreeDropTargetFromElement(
-    event.target instanceof Element ? event.target : null,
-  );
-  if (target === null) {
-    clearFileTreeDropTarget();
-    return;
+  const targetDir = resolveFileTreeDropTargetFromElement(element);
+  if (targetDir === null) {
+    return null;
   }
 
-  if (internal) {
-    const payload = getActiveDragPayload();
-    if (!payload) {
-      clearFileTreeDropTarget();
-      return;
-    }
-    if (target === "") {
-      if (!canMoveToRoot(payload.path)) {
-        clearFileTreeDropTarget();
-        return;
-      }
-    } else if (isInvalidMove(payload.path, target)) {
-      clearFileTreeDropTarget();
-      return;
-    }
+  const payload = getActiveDragPayload();
+  if (!payload) {
+    return null;
   }
-
-  setFileTreeDropTarget(target);
+  if (targetDir === "") {
+    return canMoveToRoot(payload.path) ? targetDir : null;
+  }
+  return isInvalidMove(payload.path, targetDir) ? null : targetDir;
 }
