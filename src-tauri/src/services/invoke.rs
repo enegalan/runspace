@@ -11,7 +11,7 @@ use crate::services::environment::{
 use crate::services::execution::{kill_process, start_execution};
 use crate::services::settings::{read_settings, update_settings};
 use crate::services::workspace::{
-    create_directory, create_workspace, delete_file, delete_workspace, get_active_workspace,
+    copy_entry, create_directory, create_workspace, delete_file, delete_workspace, get_active_workspace,
     import_external, initialize_workspace, list_files, list_workspaces, open_workspace, read_file,
     read_session, rename_file, rename_workspace, update_manifest, write_file, write_session,
 };
@@ -187,6 +187,14 @@ pub async fn dispatch_invoke(
         }
         "create_directory" => {
             create_directory(state, &str_arg(&args, "path")?)?;
+            Ok(Value::Null)
+        }
+        "copy_entry" => {
+            copy_entry(
+                state,
+                &str_arg(&args, "sourcePath")?,
+                &str_arg(&args, "targetDir")?,
+            )?;
             Ok(Value::Null)
         }
         "import_external" => {

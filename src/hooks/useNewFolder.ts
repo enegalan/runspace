@@ -10,12 +10,12 @@ export function useNewFolder() {
   const workspace = useWorkspaceStore((state) => state.workspace);
   const createFolder = useWorkspaceStore((state) => state.createFolder);
 
-  const createNewFolder = useCallback(async () => {
+  const createNewFolder = useCallback(async (parentDir = "") => {
     if (!workspace) {
       return;
     }
 
-    const path = await requireFolderName(workspace.id);
+    const path = await requireFolderName(workspace.id, parentDir);
     if (!path) {
       return;
     }

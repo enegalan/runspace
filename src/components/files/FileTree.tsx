@@ -12,12 +12,14 @@ import {
 } from "../../core/workspace/fileTreeDropTarget";
 import {
   isFileTreeDragActive,
+  isInvalidPaste,
   subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
 import { useFileTreePointerMove } from "../../hooks/useFileTreePointerMove";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
+import { useFileClipboardStore } from "../../stores/fileClipboardStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
@@ -46,6 +48,8 @@ export function FileTree() {
   const openFile = useEditorTabsStore((state) => state.openFile);
   const { createAndOpenFile } = useNewFile();
   const { createNewFolder } = useNewFolder();
+  const clipboardEntry = useFileClipboardStore((state) => state.entry);
+  const pasteIntoFolder = useFileClipboardStore((state) => state.pasteInto);
   const { onRowPointerDown } = useFileTreePointerMove({
     moveFile,
     openFile,
@@ -199,6 +203,16 @@ export function FileTree() {
               label: "New folder",
               onClick: () => void createNewFolder(),
             },
+            ...(clipboardEntry
+              ? [
+                  {
+                    id: "paste",
+                    label: "Paste",
+                    disabled: isInvalidPaste(clipboardEntry.path, "", clipboardEntry.mode),
+                    onClick: () => void pasteIntoFolder(""),
+                  },
+                ]
+              : []),
           ]}
           onClose={() => setSidebarMenu(null)}
         />
