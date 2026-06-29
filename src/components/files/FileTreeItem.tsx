@@ -34,7 +34,7 @@ import { useNewFolder } from "../../hooks/useNewFolder";
 import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists";
 import { useDialogStore } from "../../stores/dialogStore";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
-import { useFileClipboardStore } from "../../stores/fileClipboardStore";
+import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../stores/fileClipboardStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 interface FileTreeItemProps {
@@ -180,6 +180,9 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
 
   const buildContextMenuItems = () => {
     const items = [];
+    const activeClipboard = clipboardMatchesWorkspace(clipboardEntry, workspaceId)
+      ? clipboardEntry
+      : null;
 
     if (!entry.is_directory) {
       items.push({
@@ -199,23 +202,13 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
           label: "New folder",
           onClick: () => void createNewFolder(entry.path),
         },
-        {
-          id: "cut",
-          label: "Cut",
-          onClick: () => cutToClipboard(entry.path),
-        },
-        {
-          id: "copy",
-          label: "Copy",
-          onClick: () => copyToClipboard(entry.path),
-        },
       );
 
-      if (clipboardEntry) {
+      if (activeClipboard) {
         items.push({
           id: "paste",
           label: "Paste",
-          disabled: isInvalidPaste(clipboardEntry.path, entry.path, clipboardEntry.mode),
+          disabled: isInvalidPaste(activeClipboard.path, entry.path, activeClipboard.mode),
           onClick: () => void pasteIntoFolder(entry.path),
         });
       }
@@ -226,6 +219,19 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
         onClick: () => toggleDir(entry.path),
       });
     }
+
+    items.push(
+      {
+        id: "cut",
+        label: "Cut",
+        onClick: () => cutToClipboard(entry.path, workspaceId),
+      },
+      {
+        id: "copy",
+        label: "Copy",
+        onClick: () => copyToClipboard(entry.path, workspaceId),
+      },
+    );
 
     items.push({
       id: "rename",

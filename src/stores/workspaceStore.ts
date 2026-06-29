@@ -38,7 +38,7 @@ interface WorkspaceStore {
   createFolder: (path: string) => Promise<void>;
   deleteFile: (path: string) => Promise<void>;
   renameFile: (oldPath: string, newPath: string) => Promise<void>;
-  moveFile: (sourcePath: string, targetDir: string) => Promise<void>;
+  moveFile: (sourcePath: string, targetDir: string) => Promise<boolean>;
   copyEntry: (sourcePath: string, targetDir: string) => Promise<void>;
   importExternalFiles: (sources: string[] | File[], targetDir?: string) => Promise<string[]>;
   toggleDir: (path: string) => void;
@@ -505,22 +505,26 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   moveFile: async (sourcePath, targetDir) => {
     const newPath = movedPath(sourcePath, targetDir);
     if (sourcePath === newPath) {
-      return;
+      return false;
     }
     const workspace = get().workspace;
     if (!workspace) {
-      return;
+      return false;
     }
     await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
     if (!(await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
-      return;
+      return false;
     }
     await get().renameFile(sourcePath, newPath);
     useEditorTabsStore.getState().renameOpenFile(sourcePath, newPath);
+    return true;
   },
 
   copyEntry: async (sourcePath, targetDir) => {
     const newPath = movedPath(sourcePath, targetDir);
+    if (sourcePath === newPath) {
+      return;
+    }
     const workspace = get().workspace;
     if (!workspace) {
       return;

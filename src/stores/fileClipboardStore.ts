@@ -7,29 +7,46 @@ export type FileClipboardMode = "cut" | "copy";
 export interface FileClipboardEntry {
   path: string;
   mode: FileClipboardMode;
+  workspaceId: string;
 }
 
 interface FileClipboardStore {
   entry: FileClipboardEntry | null;
-  cut: (path: string) => void;
-  copy: (path: string) => void;
+  cut: (path: string, workspaceId: string) => void;
+  copy: (path: string, workspaceId: string) => void;
   pasteInto: (targetDir: string) => Promise<void>;
+}
+
+export function clipboardMatchesWorkspace(
+  entry: FileClipboardEntry | null,
+  workspaceId: string,
+): entry is FileClipboardEntry {
+  return entry !== null && entry.workspaceId === workspaceId;
 }
 
 export const useFileClipboardStore = create<FileClipboardStore>((set, get) => ({
   entry: null,
-  cut: (path) => set({ entry: { path, mode: "cut" } }),
-  copy: (path) => set({ entry: { path, mode: "copy" } }),
+  cut: (path, workspaceId) => set({ entry: { path, mode: "cut", workspaceId } }),
+  copy: (path, workspaceId) => set({ entry: { path, mode: "copy", workspaceId } }),
   pasteInto: async (targetDir) => {
     const entry = get().entry;
-    if (!entry || isInvalidPaste(entry.path, targetDir, entry.mode)) {
+    const workspace = useWorkspaceStore.getState().workspace;
+    if (!entry || !workspace || entry.workspaceId !== workspace.id) {
+      if (entry && workspace && entry.workspaceId !== workspace.id) {
+        set({ entry: null });
+      }
+      return;
+    }
+    if (isInvalidPaste(entry.path, targetDir, entry.mode)) {
       return;
     }
 
     const { moveFile, copyEntry } = useWorkspaceStore.getState();
     if (entry.mode === "cut") {
-      await moveFile(entry.path, targetDir);
-      set({ entry: null });
+      const moved = await moveFile(entry.path, targetDir);
+      if (moved) {
+        set({ entry: null });
+      }
       return;
     }
 

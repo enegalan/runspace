@@ -19,7 +19,7 @@ import { useFileTreePointerMove } from "../../hooks/useFileTreePointerMove";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
-import { useFileClipboardStore } from "../../stores/fileClipboardStore";
+import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../stores/fileClipboardStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
@@ -203,7 +203,7 @@ export function FileTree() {
               label: "New folder",
               onClick: () => void createNewFolder(),
             },
-            ...(clipboardEntry
+            ...(clipboardEntry && clipboardMatchesWorkspace(clipboardEntry, workspaceId)
               ? [
                   {
                     id: "paste",

@@ -1,6 +1,7 @@
 import { siblingPath } from "../fileTreeDrag";
 import { getFileExtension, normalizeFileName } from "../fileExtension";
 import { workspaceEntryExists } from "../workspaceEntryExists";
+import { singleSegmentNameError } from "./singleSegmentName";
 import { WorkspacePrompt, type PromptProcessResult } from "./WorkspacePrompt";
 
 class FileNamePrompt extends WorkspacePrompt<string> {
@@ -25,6 +26,15 @@ class FileNamePrompt extends WorkspacePrompt<string> {
   }
 
   protected async process(trimmed: string): Promise<PromptProcessResult<string>> {
+    const nameError = singleSegmentNameError(trimmed);
+    if (nameError) {
+      return {
+        status: "retry",
+        label: nameError,
+        initialValue: trimmed,
+      };
+    }
+
     const path = siblingPath(this.parentDir, normalizeFileName(trimmed, this.environmentId));
     if (await workspaceEntryExists(this.workspaceId, path)) {
       return {
