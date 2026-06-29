@@ -13,6 +13,7 @@ import { TerminalTabView } from "./TerminalTabView";
 interface TerminalPanelProps {
   height: number;
   onHeightChange: (height: number) => void;
+  onClose: () => void;
   workspaceId?: string;
   environmentId?: string;
   configured: boolean;
@@ -32,6 +33,7 @@ interface TerminalPanelProps {
 export function TerminalPanel({
   height,
   onHeightChange,
+  onClose,
   workspaceId,
   environmentId,
   configured,
@@ -221,6 +223,13 @@ export function TerminalPanel({
               data-testid="terminal-kill-button"
             >
               <IconTrash size={16} />
+            </IconButton>
+            <IconButton
+              label="Close terminal"
+              onClick={onClose}
+              data-testid="terminal-close-button"
+            >
+              <IconClose size={16} />
             </IconButton>
           </div>
         </div>
