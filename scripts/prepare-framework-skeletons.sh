@@ -32,6 +32,7 @@ DASH_SRC="$GEN/dash"
 LAMINAS_SRC="$GEN/laminas"
 TORNADO_SRC="$GEN/tornado"
 IONIC_SRC="$GEN/ionic"
+CAPACITOR_SRC="$GEN/capacitor"
 STARLETTE_SRC="$GEN/starlette"
 CODEIGNITER_SRC="$GEN/codeigniter"
 BOTTLE_SRC="$GEN/bottle"
@@ -107,6 +108,7 @@ DASH_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dash"
 LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
 TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
 IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
+CAPACITOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/capacitor"
 STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
 CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
 BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
@@ -194,6 +196,7 @@ LAMINAS_PROJECT="${RUNSPACE_LAMINAS_PROJECT:-laminas/laminas-mvc-skeleton}"
 LAMINAS_VERSION="${RUNSPACE_LAMINAS_VERSION:-2.4.*}"
 TORNADO_VERSION="${RUNSPACE_TORNADO_VERSION:-6.4.2}"
 IONIC_VERSION="${RUNSPACE_IONIC_VERSION:-^8.0.0}"
+CAPACITOR_VERSION="${RUNSPACE_CAPACITOR_VERSION:-^8.0.0}"
 STARLETTE_VERSION="${RUNSPACE_STARLETTE_VERSION:-0.49.*}"
 CODEIGNITER_PROJECT="${RUNSPACE_CODEIGNITER_PROJECT:-codeigniter4/appstarter}"
 CODEIGNITER_VERSION="${RUNSPACE_CODEIGNITER_VERSION:-4.*}"
@@ -394,6 +397,11 @@ ionic_ready() {
     [[ -f "$IONIC_DEST/package.json" ]] &&
         [[ -f "$IONIC_DEST/package-lock.json" ]] &&
         [[ -f "$IONIC_DEST/skeleton.version" ]]
+}
+capacitor_ready() {
+    [[ -f "$CAPACITOR_DEST/package.json" ]] &&
+        [[ -f "$CAPACITOR_DEST/package-lock.json" ]] &&
+        [[ -f "$CAPACITOR_DEST/skeleton.version" ]]
 }
 starlette_ready() {
     [[ -f "$STARLETTE_DEST/requirements.txt" ]] &&
@@ -633,6 +641,7 @@ needs_dash=false
 needs_laminas=false
 needs_tornado=false
 needs_ionic=false
+needs_capacitor=false
 needs_starlette=false
 needs_codeigniter=false
 needs_bottle=false
@@ -767,6 +776,9 @@ fi
 if force_sync || ! ionic_ready; then
     needs_ionic=true
 fi
+if force_sync || ! capacitor_ready; then
+    needs_capacitor=true
+fi
 if force_sync || ! starlette_ready; then
     needs_starlette=true
 fi
@@ -895,7 +907,7 @@ if force_sync || ! nestjs_ready; then
     needs_nestjs=true
 fi
 
-if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug && ! $needs_iris && ! $needs_quart && ! $needs_blazor && ! $needs_hanami; then
+if ! $needs_laravel && ! $needs_symfony && ! $needs_express && ! $needs_django && ! $needs_play && ! $needs_flask && ! $needs_koa && ! $needs_hono && ! $needs_fastify && ! $needs_nestjs && ! $needs_buffalo && ! $needs_actix-web && ! $needs_rocket && ! $needs_jhipster && ! $needs_solidstart && ! $needs_wordpress && ! $needs_gorilla-mux && ! $needs_expo && ! $needs_flutter && ! $needs_nancy && ! $needs_minimal-apis && ! $needs_echo && ! $needs_ktor && ! $needs_poem && ! $needs_phalcon && ! $needs_fastapi && ! $needs_sveltekit && ! $needs_remix && ! $needs_roda && ! $needs_axum && ! $needs_astro && ! $needs_quarkus && ! $needs_meteor && ! $needs_react-native && ! $needs_yii && ! $needs_chi && ! $needs_aspnet-core && ! $needs_cowboy && ! $needs_padrino && ! $needs_sinatra && ! $needs_rails && ! $needs_nuxt && ! $needs_nextjs && ! $needs_phoenix && ! $needs_spring-boot && ! $needs_litestar && ! $needs_bottle && ! $needs_codeigniter && ! $needs_starlette && ! $needs_ionic && ! $needs_capacitor && ! $needs_tornado && ! $needs_laminas && ! $needs_dash && ! $needs_sanic && ! $needs_qwik && ! $needs_pyramid && ! $needs_slim && ! $needs_lumen && ! $needs_streamlit && ! $needs_cakephp && ! $needs_vertx && ! $needs_adonisjs && ! $needs_gin && ! $needs_dropwizard && ! $needs_fiber && ! $needs_beego && ! $needs_salvo && ! $needs_warp && ! $needs_grape && ! $needs_micronaut && ! $needs_plug && ! $needs_iris && ! $needs_quart && ! $needs_blazor && ! $needs_hanami; then
     echo "Framework skeletons already present; skipping generation."
     exit 0
 fi
@@ -1031,8 +1043,8 @@ if $needs_tornado && ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev
     exit 1
 fi
 
-if $needs_ionic && ! command -v npm >/dev/null 2>&1; then
-    echo "npm is required to prepare the Ionic skeleton." >&2
+if ($needs_ionic || $needs_capacitor) && ! command -v npm >/dev/null 2>&1; then
+    echo "npm is required to prepare the Ionic/Capacitor skeleton." >&2
     exit 1
 fi
 
@@ -1663,6 +1675,20 @@ if $needs_ionic && [[ ! -d "$IONIC_SRC/node_modules" ]]; then
         npm pkg set description="Internal Ionic sandbox for Runspace"
         npm pkg set private=true
         npm install "@ionic/core@${IONIC_VERSION}" --save
+    )
+fi
+
+if $needs_capacitor && [[ ! -d "$CAPACITOR_SRC/node_modules" ]]; then
+    echo "Generating Capacitor skeleton..."
+    rm -rf "$CAPACITOR_SRC"
+    mkdir -p "$CAPACITOR_SRC"
+    (
+        cd "$CAPACITOR_SRC"
+        npm init -y --scope=runspace
+        npm pkg set name="@runspace/capacitor-sandbox"
+        npm pkg set description="Internal Capacitor sandbox for Runspace"
+        npm pkg set private=true
+        npm install "@capacitor/core@${CAPACITOR_VERSION}" ts-node typescript --save
     )
 fi
 

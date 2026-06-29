@@ -124,6 +124,10 @@
       "npmPackage": "@ionic/core",
       "versionConstraint": "^8.0.0"
     },
+    "capacitor": {
+      "npmPackage": "@capacitor/core",
+      "versionConstraint": "^8.0.0"
+    },
     "starlette": {
       "pipPackage": "starlette",
       "versionConstraint": "0.49.*"

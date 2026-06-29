@@ -35,6 +35,7 @@ DASH_SRC="$GEN/dash"
 LAMINAS_SRC="$GEN/laminas"
 TORNADO_SRC="$GEN/tornado"
 IONIC_SRC="$GEN/ionic"
+CAPACITOR_SRC="$GEN/capacitor"
 STARLETTE_SRC="$GEN/starlette"
 CODEIGNITER_SRC="$GEN/codeigniter"
 BOTTLE_SRC="$GEN/bottle"
@@ -110,6 +111,7 @@ DASH_DEST="$REPO_ROOT/src-tauri/resources/frameworks/dash"
 LAMINAS_DEST="$REPO_ROOT/src-tauri/resources/frameworks/laminas"
 TORNADO_DEST="$REPO_ROOT/src-tauri/resources/frameworks/tornado"
 IONIC_DEST="$REPO_ROOT/src-tauri/resources/frameworks/ionic"
+CAPACITOR_DEST="$REPO_ROOT/src-tauri/resources/frameworks/capacitor"
 STARLETTE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/starlette"
 CODEIGNITER_DEST="$REPO_ROOT/src-tauri/resources/frameworks/codeigniter"
 BOTTLE_DEST="$REPO_ROOT/src-tauri/resources/frameworks/bottle"
@@ -1857,6 +1859,13 @@ if [[ -f "$ECHO_SRC/go.sum" ]]; then
     rsync -a --delete --exclude .git/ "$ECHO_SRC/" "$ECHO_DEST/"
     echo "$SKELETON_VERSION" > "$ECHO_DEST/skeleton.version"
     synced+=("Echo")
+fi
+
+if [[ -d "$CAPACITOR_SRC/node_modules" ]]; then
+    mkdir -p "$CAPACITOR_DEST"
+    rsync -a --delete --exclude node_modules/ --exclude .git/ "$CAPACITOR_SRC/" "$CAPACITOR_DEST/"
+    echo "$SKELETON_VERSION" > "$CAPACITOR_DEST/skeleton.version"
+    synced+=("Capacitor")
 fi
 
 if [[ ${#synced[@]} -eq 0 ]]; then
