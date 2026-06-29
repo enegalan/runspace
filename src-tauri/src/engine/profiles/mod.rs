@@ -9,7 +9,8 @@ use crate::environment::manifest::{EnvironmentManifest, EnvironmentProfile};
 use crate::environment::registry::get_manifest;
 
 pub use framework::{
-    framework_terminal_env, remove_skeleton, setup_framework_skeleton, FrameworkSkeletonError,
+    cleanup_workspace_artifacts, framework_terminal_env, remove_skeleton, setup_framework_skeleton,
+    FrameworkSkeletonError,
 };
 
 pub struct PrepareContext<'a> {

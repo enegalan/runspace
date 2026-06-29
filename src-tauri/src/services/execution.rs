@@ -10,7 +10,10 @@ use crate::engine::profiles::{
 use crate::engine::{ExecutionEmitter, ExecutionRequest};
 use crate::error::{lock_err, map_err};
 use crate::services::settings::execution_settings;
-use crate::services::workspace::{ensure_active_workspace, lock_workspace_manager};
+use crate::services::workspace::{
+    active_workspace_snapshot, cleanup_workspace_snapshot, ensure_active_workspace,
+    lock_workspace_manager,
+};
 use crate::state::SharedState;
 
 struct PreparedExecution {
@@ -21,7 +24,10 @@ struct PreparedExecution {
 }
 
 pub fn kill_process(state: &SharedState) -> Result<(), String> {
-    map_err(state.execution_engine.kill())
+    let snapshot = active_workspace_snapshot(state);
+    map_err(state.execution_engine.kill())?;
+    cleanup_workspace_snapshot(snapshot?);
+    Ok(())
 }
 
 pub fn start_execution(

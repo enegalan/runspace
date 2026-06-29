@@ -1,3 +1,4 @@
+use crate::engine::profiles::cleanup_workspace_artifacts;
 use crate::error::{lock_err, map_err};
 use crate::state::SharedState;
 use crate::workspace::{FileEntry, SessionData, Workspace, WorkspaceInfo};
@@ -76,6 +77,7 @@ pub fn open_workspace(state: &SharedState, id: &str) -> Result<WorkspaceInfo, St
     let manager = lock_workspace_manager(state)?;
     let workspace = map_err(manager.open_workspace(id))?;
     let info = map_err(manager.workspace_info(&workspace))?;
+    cleanup_workspace_artifacts(&workspace.path, &info.runtime_id);
     set_active_workspace(state, workspace)?;
     Ok(info)
 }
@@ -92,13 +94,25 @@ pub fn create_workspace(
     Ok(info)
 }
 
-pub fn get_active_workspace(state: &SharedState) -> Result<Option<WorkspaceInfo>, String> {
+pub(crate) fn active_workspace_snapshot(
+    state: &SharedState,
+) -> Result<Option<(Workspace, WorkspaceInfo)>, String> {
     let manager = lock_workspace_manager(state)?;
     let active = lock_active_workspace(state)?;
-    match active.as_ref() {
-        Some(workspace) => Ok(Some(map_err(manager.workspace_info(workspace))?)),
-        None => Ok(None),
+    Ok(match active.as_ref() {
+        Some(workspace) => Some((workspace.clone(), map_err(manager.workspace_info(workspace))?)),
+        None => None,
+    })
+}
+
+pub(crate) fn cleanup_workspace_snapshot(snapshot: Option<(Workspace, WorkspaceInfo)>) {
+    if let Some((workspace, info)) = snapshot {
+        cleanup_workspace_artifacts(&workspace.path, &info.runtime_id);
     }
+}
+
+pub fn get_active_workspace(state: &SharedState) -> Result<Option<WorkspaceInfo>, String> {
+    Ok(active_workspace_snapshot(state)?.map(|(_, info)| info))
 }
 
 pub fn list_files(
