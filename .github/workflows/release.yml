@@ -37,6 +37,7 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "27"
+          elixir-version: "1.17"
           rebar3-version: "3.24"
       - uses: gradle/actions/setup-gradle@v4
         with:
