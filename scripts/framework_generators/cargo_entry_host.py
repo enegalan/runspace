@@ -5,6 +5,9 @@ from typing import Any
 
 from framework_generators._lib import *
 
+# cookie 0.16.x fails to build against time >= 0.3.48 (rwf2/cookie-rs#251).
+TIME_PIN = "=0.3.47"
+
 
 def generate(fw_id: str, src: Path, cfg: dict[str, Any]) -> None:
     if (src / "Cargo.lock").is_file():
@@ -24,6 +27,7 @@ def generate(fw_id: str, src: Path, cfg: dict[str, Any]) -> None:
         publish = false
         [dependencies]
         {crate} = "{version}"
+        time = "{TIME_PIN}"
         tokio = {{ version = "1", features = ["macros", "rt-multi-thread", "net"] }}
         [[bin]]
         name = "runspace-entry"
