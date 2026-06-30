@@ -28,7 +28,9 @@ tasks.register("runspaceResolveDeps") {
     group = "runspace"
     dependsOn("compileKotlin")
     doLast {
-        layout.buildDirectory.file("runspace-deps.ready").get().asFile.writeText("ok\n")
+        val marker = layout.buildDirectory.file("runspace-deps.ready").get().asFile
+        marker.parentFile.mkdirs()
+        marker.writeText("ok\n")
     }
 }
 

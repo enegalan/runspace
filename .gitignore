@@ -13,3 +13,6 @@ dist-ssr
 
 # Generated framework skeleton dirs (registry lives in framework-registry/)
 /src-tauri/resources/frameworks/*/
+
+# Generated skeleton dirs
+.gradle/
