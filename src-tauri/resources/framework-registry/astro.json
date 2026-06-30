@@ -1,0 +1,8 @@
+{
+  "npmPackage": "astro",
+  "versionConstraint": "^5.0.0",
+  "npmPkgSet": {
+    "type": "module"
+  },
+  "generator": "npm"
+}

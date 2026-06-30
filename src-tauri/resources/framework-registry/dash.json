@@ -1,0 +1,6 @@
+{
+  "pipPackage": "dash",
+  "versionConstraint": "4.3.*",
+  "appTemplate": "pip/dash.py",
+  "generator": "venv"
+}

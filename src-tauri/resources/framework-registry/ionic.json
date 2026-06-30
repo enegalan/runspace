@@ -1,0 +1,5 @@
+{
+  "npmPackage": "@ionic/core",
+  "versionConstraint": "^8.0.0",
+  "generator": "npm"
+}

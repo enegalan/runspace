@@ -1,0 +1,11 @@
+{
+  "versionConstraint": "v1.1.4",
+  "generator": "go",
+  "generateFiles": {
+    "main.go": "buffalo/main.go",
+    "actions/app.go": "buffalo/actions_app.go",
+    "actions/home.go": "buffalo/actions_home.go"
+  },
+  "goModule": "github.com/runspace/buffalo-sandbox",
+  "goPackage": "github.com/gobuffalo/buffalo"
+}

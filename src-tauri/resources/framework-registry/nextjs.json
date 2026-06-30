@@ -1,0 +1,9 @@
+{
+  "npmInstall": [
+    "next@{versionConstraint}",
+    "react",
+    "react-dom"
+  ],
+  "versionConstraint": "^15.0.0",
+  "generator": "npm"
+}

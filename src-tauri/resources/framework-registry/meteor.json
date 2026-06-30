@@ -1,0 +1,5 @@
+{
+  "npmPackage": "meteor",
+  "versionConstraint": "^3.4.0",
+  "generator": "npm"
+}

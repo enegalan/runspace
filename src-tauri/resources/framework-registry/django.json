@@ -1,0 +1,6 @@
+{
+  "pipPackage": "django",
+  "versionConstraint": "~=4.2.0",
+  "projectName": "runspace_project",
+  "generator": "django"
+}

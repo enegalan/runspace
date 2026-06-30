@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "prepare:frameworks": "bash scripts/prepare-framework-skeletons.sh",
+    "prepare:frameworks": "python3 scripts/prepare_frameworks.py",
     "dev:prepare": "cargo build --manifest-path src-tauri/Cargo.toml",
     "build": "tsc && vite build",
     "preview": "vite preview",

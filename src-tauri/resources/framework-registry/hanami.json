@@ -1,0 +1,5 @@
+{
+  "hanamiVersion": "2.2.*",
+  "database": "sqlite",
+  "generator": "hanami"
+}

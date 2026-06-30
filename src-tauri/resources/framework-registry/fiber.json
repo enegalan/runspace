@@ -1,0 +1,5 @@
+{
+  "goModule": "github.com/gofiber/fiber/v2",
+  "versionConstraint": "v2.52.9",
+  "generator": "go"
+}

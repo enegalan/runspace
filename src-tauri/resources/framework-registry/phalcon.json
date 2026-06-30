@@ -1,0 +1,6 @@
+{
+  "createProject": "phalcon-kit/app",
+  "versionConstraint": "1.*",
+  "composerFlags": "--ignore-platform-reqs",
+  "generator": "composer"
+}

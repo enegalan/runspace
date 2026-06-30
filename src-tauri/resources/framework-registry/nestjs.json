@@ -1,0 +1,16 @@
+{
+  "npmInstall": [
+    "@nestjs/core@{versionConstraint}",
+    "@nestjs/common@{versionConstraint}",
+    "@nestjs/platform-express@{versionConstraint}",
+    "reflect-metadata",
+    "rxjs",
+    "ts-node",
+    "typescript"
+  ],
+  "versionConstraint": "^11.0.0",
+  "generateFiles": {
+    "src/main.ts": "npm/nestjs-main.ts"
+  },
+  "generator": "npm"
+}

@@ -1,0 +1,6 @@
+{
+  "pipPackage": "sanic",
+  "versionConstraint": "24.12.*",
+  "appTemplate": "pip/sanic.py",
+  "generator": "venv"
+}

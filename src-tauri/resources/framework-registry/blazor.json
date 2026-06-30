@@ -1,0 +1,5 @@
+{
+  "dotnetTemplate": "blazor",
+  "projectName": "RunspaceBlazorSandbox",
+  "generator": "dotnet"
+}

@@ -1,0 +1,6 @@
+{
+  "pipPackage": "flask",
+  "versionConstraint": "3.1.*",
+  "generator": "venv",
+  "appTemplate": "pip/flask-app.py"
+}

@@ -1,0 +1,5 @@
+{
+  "createProject": "laravel/lumen",
+  "versionConstraint": "10.*",
+  "generator": "composer"
+}

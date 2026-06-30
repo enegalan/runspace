@@ -1,0 +1,5 @@
+{
+  "createProject": "johnpbloch/wordpress",
+  "versionConstraint": "6.*",
+  "generator": "composer-wordpress"
+}

@@ -1,0 +1,5 @@
+{
+  "gemPackage": "grape",
+  "versionConstraint": "~> 2.2",
+  "generator": "ruby"
+}

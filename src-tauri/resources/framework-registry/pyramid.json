@@ -1,0 +1,10 @@
+{
+  "pipPackage": "pyramid",
+  "versionConstraint": "2.0.*",
+  "pipInstall": [
+    "pyramid~={versionConstraint}",
+    "waitress"
+  ],
+  "appTemplate": "pip/pyramid.py",
+  "generator": "venv"
+}

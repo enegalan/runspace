@@ -1,0 +1,8 @@
+{
+  "archetypeVersion": "4.0.16",
+  "groupId": "com.runspace",
+  "artifactId": "sandbox",
+  "packageName": "com.runspace.sandbox",
+  "name": "RunspaceSandbox",
+  "generator": "dropwizard"
+}

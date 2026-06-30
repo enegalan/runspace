@@ -77,21 +77,11 @@ Task Progress:
 |--------------------|-------------------------------------------------------|
 | Simple interpreter | `nodejs.json`, `python.json`, `php.json`, `ruby.json` |
 | Compiler           | `gcc.json`, `gpp.json`                                |
-| PHP framework      | `laravel.json`, `symfony.json`, `cakephp.json`        |
-| PHP framework      | `laravel.json`, `lumen.json`, `symfony.json`          |
-| PHP framework      | `laravel.json`, `symfony.json`, `slim.json`         |
-| PHP framework      | `laravel.json`, `symfony.json`, `laminas.json`        |
-| PHP framework      | `laravel.json`, `symfony.json`, `wordpress.json`      |
-| PHP framework      | `laravel.json`, `symfony.json`                        |
-| Go framework       | `iris.json` (go mod + vendor bootstrap)               |
-| JVM Maven framework | `vertx.json` (copy `java_maven_bootstrap.tpl`)       |
-| Node.js framework  | `express.json`                                        |
-| Python framework   | `streamlit.json`                                      |
-| Go framework       | `chi.json` (go mod + vendor bootstrap)                |
+| PHP framework      | `laravel.json`, `symfony.json`, `slim.json`           |
+| Go framework       | `chi.json`, `buffalo.json` (go mod vendor)            |
 | Node.js framework  | `express.json`, `react-native.json`                   |
-| JVM framework      | `ktor.json` (Gradle dependency install + Kotlin bootstrap) |
-| Go framework       | `gorilla-mux.json`                                    |
-| Go framework       | `buffalo.json` (go mod vendor pattern)                |
+| Python framework   | `flask.json` (`venv`), `fastapi.json` (`site-packages`) |
+| JVM framework      | `ktor.json`, `vertx.json`                             |
 
 ### Step 2: Create the manifest
 
@@ -128,45 +118,17 @@ Minimal script example:
 
 ### Step 3: Framework extras (only if `profile: "framework"`)
 
-1. Add skeleton entry to `src-tauri/resources/frameworks/manifest.json`.
-2. Run `npm run prepare:frameworks` (requires Composer for PHP; generates `laravel/`, `symfony/`, `express/`, `vertx/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `cakephp/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, pip for Streamlit; generates `laravel/`, `symfony/`, `express/`, `streamlit/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `lumen/`, `symfony/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `slim/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `laminas/`-style dirs).
-   - PHP: `createProject` + `versionConstraint`
-   - Node: `npmPackage` + `versionConstraint`
-   - Go: `goModule` + `goPackage` + `versionConstraint`
-2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Node, Go for Go modules).
-   - Go: `goModule` + `versionConstraint`
-2. Run `npm run prepare:frameworks` (requires Composer for PHP frameworks; npm for Express/React Native).
-2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, Gradle for Ktor; generates `laravel/`, `symfony/`, `express/`, `ktor/` dirs).
-2. Run `npm run prepare:frameworks` (requires Composer; generates `laravel/`, `symfony/`, `wordpress/`-style dirs).
-2. Run `npm run prepare:frameworks` (requires Composer for PHP, npm for Express, Go for Buffalo).
-3. Add bootstrap template under `src-tauri/resources/environments/templates/` if existing templates do not fit.
-   - PHP: `php_vendor_bootstrap.tpl`
-   - Node: `node_modules_bootstrap.tpl`
-   - Go: `go_mod_bootstrap.tpl` (`go mod vendor` install, `-mod=vendor` bootstrap run)
-   - Go: `go_mod_bootstrap.tpl` (`GOMOD` + `GOFLAGS=-mod=vendor`, `go mod vendor` install)
+1. Add `src-tauri/resources/framework-registry/<id>.json` (copy the closest entry).
+2. Run `npm run prepare:frameworks`.
+3. Add bootstrap template under `src-tauri/resources/environments/templates/` if needed.
 4. Point `skeleton.bundled_dir` at the generated folder name.
-5. Set `prepare.template` and `prepare.output` (bootstrap file written into workspace).
+5. Set `prepare.template` and `prepare.output`.
 
-Framework skeletons are **not** committed to git; CI and release builds run `prepare:frameworks`.
+Scripts: `prepare_frameworks.py` (`npm run prepare:frameworks`). Each registry entry needs `"generator"`. See `framework-registry/README.md`.
 
-**Go module frameworks** (`go_mod_bootstrap.tpl`): skeleton is a `go mod init` + `go get` sandbox. Use `dependency_install` with `go mod download`, `vendor_marker: "go.sum"`, and `manifest_files: ["go.mod", "go.sum"]`. Register in `frameworks/manifest.json` with `goModule` and `versionConstraint`.
-Go module frameworks (`buffalo.json` pattern) vendor dependencies into the skeleton:
+Framework skeletons are **not** committed to git; CI runs `prepare:frameworks`.
 
-```json
-"dependency_install": {
-  "program": "{{go_path}}",
-  "args": ["mod", "vendor"],
-  "vendor_marker": "vendor/modules.txt",
-  "manifest_files": ["go.mod", "go.sum"]
-}
-```
-
-Use `go_mod_bootstrap.tpl` for bootstrap; it runs the user snippet with `-mod=vendor` from the skeleton root.
+**Go module frameworks** — `go_mod_bootstrap.tpl`, `dependency_install` with `go mod download` or `go mod vendor`. Register in `framework-registry/<id>.json` with `"generator": "go"`.
 
 ### Step 4: Template variables
 
@@ -215,7 +177,7 @@ For `profile: "framework"`, also run skeleton generation and confirm the new ske
 npm run prepare:frameworks
 ```
 
-Expect output like `Synced … skeletons` including the new framework directory under `src-tauri/resources/frameworks/`. If generation fails, fix `prepare-framework-skeletons.sh` / `sync-framework-skeletons.sh` before opening the PR.
+Expect output like `Synced … skeletons`. New generator: add `scripts/framework_generators/<name>.py`. Compare registry entries in `framework-registry/`.
 
 Restart `npm run tauri dev` and confirm the environment appears in Settings → Environments via `list_available_environments`.
 
@@ -235,4 +197,4 @@ For framework environments, smoke-test: install environment, open workspace, run
 - Manifest schema (Rust): `src-tauri/src/environment/manifest.rs`
 - Registry validation: `src-tauri/src/environment/registry.rs`
 - Bundled docs: `src-tauri/resources/environments/README.md`
-- Framework skeletons: `src-tauri/resources/frameworks/README.md`
+- Framework registry: `src-tauri/resources/framework-registry/README.md`

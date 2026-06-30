@@ -1,0 +1,6 @@
+{
+  "goModule": "github.com/go-chi/chi/v5",
+  "versionConstraint": "v5.2.1",
+  "goVendor": true,
+  "generator": "go"
+}

@@ -100,7 +100,10 @@ pub(crate) fn active_workspace_snapshot(
     let manager = lock_workspace_manager(state)?;
     let active = lock_active_workspace(state)?;
     Ok(match active.as_ref() {
-        Some(workspace) => Some((workspace.clone(), map_err(manager.workspace_info(workspace))?)),
+        Some(workspace) => Some((
+            workspace.clone(),
+            map_err(manager.workspace_info(workspace))?,
+        )),
         None => None,
     })
 }

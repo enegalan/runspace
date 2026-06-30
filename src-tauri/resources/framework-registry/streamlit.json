@@ -1,0 +1,5 @@
+{
+  "pipPackage": "streamlit",
+  "versionConstraint": ">=1.42.0,<2",
+  "generator": "venv-vendor"
+}

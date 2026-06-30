@@ -1,0 +1,7 @@
+{
+  "pipPackage": "fastapi",
+  "extraPackages": [
+    "uvicorn[standard]"
+  ],
+  "generator": "site-packages"
+}

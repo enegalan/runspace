@@ -1,0 +1,5 @@
+{
+  "gem": "roda",
+  "versionConstraint": "~> 3.87",
+  "generator": "ruby"
+}

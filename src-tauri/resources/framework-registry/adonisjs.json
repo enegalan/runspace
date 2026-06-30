@@ -1,0 +1,5 @@
+{
+  "npmPackage": "@adonisjs/core",
+  "versionConstraint": "^6.0.0",
+  "generator": "npm"
+}

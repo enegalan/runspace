@@ -1,0 +1,19 @@
+{
+  "createProject": "cakephp/app",
+  "versionConstraint": "5.3.*",
+  "sync": {
+    "regex": [
+      {
+        "file": "config/app_local.php",
+        "pattern": "'debug' => filter_var\\(env\\('DEBUG', true\\), FILTER_VALIDATE_BOOLEAN\\),",
+        "replace": "'debug' => filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN),"
+      },
+      {
+        "file": "config/app_local.php",
+        "pattern": "'url' => env\\('DATABASE_URL', null\\),",
+        "replace": "'url' => env('DATABASE_URL', 'sqlite:///' . ROOT . DS . 'tmp' . DS . 'runspace.db'),"
+      }
+    ]
+  },
+  "generator": "composer"
+}

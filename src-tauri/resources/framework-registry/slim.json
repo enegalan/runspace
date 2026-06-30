@@ -1,0 +1,5 @@
+{
+  "createProject": "slim/slim-skeleton",
+  "versionConstraint": "4.*",
+  "generator": "composer"
+}

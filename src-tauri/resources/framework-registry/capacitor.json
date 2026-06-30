@@ -1,0 +1,9 @@
+{
+  "npmPackage": "@capacitor/core",
+  "versionConstraint": "^8.0.0",
+  "extraNpmPackages": [
+    "ts-node",
+    "typescript"
+  ],
+  "generator": "npm"
+}

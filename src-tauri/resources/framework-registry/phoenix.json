@@ -1,0 +1,5 @@
+{
+  "phoenixVersion": "1.8.*",
+  "database": "sqlite3",
+  "generator": "phoenix"
+}
