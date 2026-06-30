@@ -29,7 +29,7 @@ jobs:
           bundler: default
           bundler-cache: false
       - run: gem install hanami -v '~> 2.2.0'
-      - run: gem install padrino -v '>= 0.15.0', '< 0.16' --no-document
+      - run: gem install padrino -v '~> 0.15.0' --no-document
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "27"
