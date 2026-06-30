@@ -24,20 +24,25 @@ jobs:
         with:
           dotnet-version: "10.0.x"
       - uses: ruby/setup-ruby@v1
+        with:
           ruby-version: "3.3"
           bundler: default
-      - run: gem install hanami
           bundler-cache: false
+      - run: gem install hanami
       - run: gem install padrino --no-document
       - uses: erlef/setup-beam@v1
+        with:
           otp-version: "27"
           rebar3-version: "3.24"
       - uses: gradle/actions/setup-gradle@v4
+        with:
           gradle-version: "8.12"
       - uses: subosito/flutter-action@v2
+        with:
           channel: stable
           cache: true
       - uses: actions/setup-go@v5
+        with:
           go-version: "1.25"
           cache: false
       - uses: sbt/setup-sbt@v1
