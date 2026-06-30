@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../src/stores/fileClipboardStore";
+import {
+  useFileClipboardStore,
+  clipboardMatchesWorkspace,
+} from "../../src/stores/fileClipboardStore";
 import { useWorkspaceStore } from "../../src/stores/workspaceStore";
 
 vi.mock("../../src/stores/workspaceStore", () => ({
