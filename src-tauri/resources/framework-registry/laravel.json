@@ -1,0 +1,5 @@
+{
+  "createProject": "laravel/laravel",
+  "versionConstraint": "12.*",
+  "generator": "composer"
+}

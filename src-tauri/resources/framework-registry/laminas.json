@@ -1,0 +1,7 @@
+{
+  "createProject": "laminas/laminas-mvc-skeleton",
+  "versionConstraint": "2.4.*",
+  "stability": "dev",
+  "composerFlags": "--ignore-platform-reqs",
+  "generator": "composer"
+}

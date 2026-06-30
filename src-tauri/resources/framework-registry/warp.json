@@ -1,0 +1,8 @@
+{
+  "cargoCrate": "warp",
+  "versionConstraint": "0.3",
+  "cargoExtras": [
+    "tokio --features full"
+  ],
+  "generator": "cargo"
+}

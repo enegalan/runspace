@@ -1,0 +1,6 @@
+{
+  "createTool": "sv",
+  "template": "minimal",
+  "types": "ts",
+  "generator": "sveltekit"
+}

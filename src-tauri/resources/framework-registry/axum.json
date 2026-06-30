@@ -1,0 +1,5 @@
+{
+  "cargoPackage": "axum",
+  "versionConstraint": "0.8",
+  "generator": "cargo-entry-host"
+}

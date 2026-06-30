@@ -1,0 +1,12 @@
+{
+  "dotnetTemplate": "web",
+  "projectName": "RunspaceAspNetSandbox",
+  "scriptingPackage": "Microsoft.CodeAnalysis.CSharp.Scripting",
+  "sync": {
+    "files": {
+      "RunspaceEntryHost.cs": "aspnet-core/RunspaceEntryHost.cs",
+      "Program.cs": "aspnet-core/Program.cs"
+    }
+  },
+  "generator": "dotnet"
+}

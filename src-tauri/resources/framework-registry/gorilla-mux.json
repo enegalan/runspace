@@ -1,0 +1,5 @@
+{
+  "goModule": "github.com/gorilla/mux",
+  "versionConstraint": "v1.8.1",
+  "generator": "go"
+}

@@ -1,0 +1,5 @@
+{
+  "cargoPackage": "salvo",
+  "versionConstraint": "0.93",
+  "generator": "cargo-entry-host"
+}

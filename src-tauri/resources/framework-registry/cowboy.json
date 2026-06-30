@@ -1,0 +1,5 @@
+{
+  "rebarPackage": "cowboy",
+  "versionConstraint": "2.13.0",
+  "generator": "rebar"
+}

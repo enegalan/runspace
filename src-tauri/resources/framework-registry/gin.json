@@ -1,0 +1,6 @@
+{
+  "goModule": "runspace/gin-sandbox",
+  "goPackage": "github.com/gin-gonic/gin",
+  "versionConstraint": "v1.10.0",
+  "generator": "go"
+}

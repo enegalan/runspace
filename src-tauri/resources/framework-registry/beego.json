@@ -1,0 +1,6 @@
+{
+  "goModule": "github.com/beego/beego/v2",
+  "versionConstraint": "v2.3.8",
+  "goVendor": true,
+  "generator": "go"
+}

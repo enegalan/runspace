@@ -1,0 +1,5 @@
+{
+  "vertxVersion": "5.0.1",
+  "javaVersion": "21",
+  "generator": "vertx"
+}

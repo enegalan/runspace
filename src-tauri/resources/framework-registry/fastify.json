@@ -1,0 +1,5 @@
+{
+  "npmPackage": "fastify",
+  "versionConstraint": "^5.0.0",
+  "generator": "npm"
+}

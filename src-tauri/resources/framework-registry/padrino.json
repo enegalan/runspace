@@ -1,0 +1,19 @@
+{
+  "gemPackage": "padrino",
+  "versionConstraint": ">= 0.15.0",
+  "sync": {
+    "regex": [
+      {
+        "file": "Gemfile",
+        "pattern": "^source .*",
+        "replace": "source 'https://rubygems.org'"
+      }
+    ],
+    "prependIfMissing": {
+      "file": "Gemfile",
+      "marker": "runspace_padrino_sandbox",
+      "text": "# Internal Padrino sandbox for Runspace\n"
+    }
+  },
+  "generator": "ruby"
+}

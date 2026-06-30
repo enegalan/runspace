@@ -1,0 +1,6 @@
+{
+  "pipPackage": "starlette",
+  "versionConstraint": "0.49.*",
+  "appTemplate": "pip/starlette.py",
+  "generator": "venv"
+}

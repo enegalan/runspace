@@ -1,0 +1,5 @@
+{
+  "npmPackage": "@solidjs/start",
+  "versionConstraint": "^1.3.0",
+  "generator": "npm"
+}

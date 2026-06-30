@@ -1,0 +1,6 @@
+{
+  "pipPackage": "quart",
+  "versionConstraint": "0.20.*",
+  "appTemplate": "pip/quart.py",
+  "generator": "venv"
+}

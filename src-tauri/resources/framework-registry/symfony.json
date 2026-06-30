@@ -1,0 +1,22 @@
+{
+  "createProject": "symfony/skeleton",
+  "versionConstraint": "7.4.*",
+  "extraPackages": [
+    "webapp"
+  ],
+  "sync": {
+    "regex": [
+      {
+        "file": ".env",
+        "pattern": "^APP_SECRET=.*$",
+        "replace": "APP_SECRET=runspace-symfony-sandbox-secret-not-for-production"
+      },
+      {
+        "file": ".env",
+        "pattern": "^DATABASE_URL=.*$",
+        "replace": "DATABASE_URL=\"sqlite:///%kernel.project_dir%/var/data.db\""
+      }
+    ]
+  },
+  "generator": "composer"
+}

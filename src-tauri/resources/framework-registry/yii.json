@@ -1,0 +1,19 @@
+{
+  "createProject": "yiisoft/yii2-app-basic",
+  "versionConstraint": "2.0.*",
+  "sync": {
+    "regex": [
+      {
+        "file": "config/db.php",
+        "pattern": "'dsn' => 'mysql:host=localhost;dbname=yii2basic',",
+        "replace": "'dsn' => 'sqlite:' . dirname(__DIR__) . '/runtime/runspace.db',"
+      },
+      {
+        "file": "config/db.php",
+        "pattern": "'username' => 'root',",
+        "replace": "'username' => '',"
+      }
+    ]
+  },
+  "generator": "composer"
+}

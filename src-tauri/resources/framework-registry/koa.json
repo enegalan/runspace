@@ -1,0 +1,5 @@
+{
+  "npmPackage": "koa",
+  "versionConstraint": "^3.0.0",
+  "generator": "npm"
+}

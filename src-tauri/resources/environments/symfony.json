@@ -29,8 +29,8 @@
   },
   "skeleton": {
     "bundled_dir": "symfony",
-    "sync_exclude_dirs": ["vendor"],
-    "sync_exclude_files": [],
+    "sync_exclude_dirs": ["vendor", "var/cache", "var/log"],
+    "sync_exclude_files": ["var/data*.db"],
     "dependency_install": {
       "program": "{{composer_path}}",
       "args": ["install", "--no-interaction", "--prefer-dist", "--no-scripts"],

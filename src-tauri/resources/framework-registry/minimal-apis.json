@@ -1,0 +1,5 @@
+{
+  "dotnetTemplate": "web",
+  "projectName": "RunspaceMinimalApisSandbox",
+  "generator": "dotnet"
+}

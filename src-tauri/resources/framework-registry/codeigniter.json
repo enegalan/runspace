@@ -1,0 +1,34 @@
+{
+  "createProject": "codeigniter4/appstarter",
+  "versionConstraint": "4.*",
+  "sync": {
+    "regex": [
+      {
+        "file": ".env",
+        "pattern": "^#?\\s*database\\.default\\.hostname\\s*=.*$",
+        "replace": "# database.default.hostname = localhost"
+      },
+      {
+        "file": ".env",
+        "pattern": "^#?\\s*database\\.default\\.database\\s*=.*$",
+        "replace": "database.default.database = writable/database.db"
+      },
+      {
+        "file": ".env",
+        "pattern": "^#?\\s*database\\.default\\.username\\s*=.*$",
+        "replace": "# database.default.username = root"
+      },
+      {
+        "file": ".env",
+        "pattern": "^#?\\s*database\\.default\\.password\\s*=.*$",
+        "replace": "# database.default.password = root"
+      },
+      {
+        "file": ".env",
+        "pattern": "^#?\\s*database\\.default\\.DBDriver\\s*=.*$",
+        "replace": "database.default.DBDriver = SQLite3"
+      }
+    ]
+  },
+  "generator": "composer"
+}

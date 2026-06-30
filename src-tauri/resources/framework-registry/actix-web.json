@@ -1,0 +1,5 @@
+{
+  "cargoPackage": "actix-web",
+  "versionConstraint": "4",
+  "generator": "cargo-entry-host"
+}

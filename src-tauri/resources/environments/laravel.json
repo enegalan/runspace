@@ -29,8 +29,8 @@
   },
   "skeleton": {
     "bundled_dir": "laravel",
-    "sync_exclude_dirs": ["vendor"],
-    "sync_exclude_files": ["database/database.sqlite"],
+    "sync_exclude_dirs": ["vendor", "storage/logs", "storage/framework/cache", "storage/framework/sessions", "storage/framework/views"],
+    "sync_exclude_files": ["database/database.sqlite", "bootstrap/cache/*.php"],
     "dependency_install": {
       "program": "{{composer_path}}",
       "args": ["install", "--no-interaction", "--prefer-dist", "--no-scripts"],

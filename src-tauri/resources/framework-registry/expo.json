@@ -1,0 +1,5 @@
+{
+  "npmPackage": "expo",
+  "versionConstraint": "^52.0.0",
+  "generator": "npm"
+}

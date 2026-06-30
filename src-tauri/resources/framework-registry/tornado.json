@@ -1,0 +1,5 @@
+{
+  "pipPackage": "tornado",
+  "versionConstraint": "==6.4.2",
+  "generator": "site-packages"
+}

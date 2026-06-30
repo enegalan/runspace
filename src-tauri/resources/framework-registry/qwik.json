@@ -1,0 +1,5 @@
+{
+  "npmPackage": "@builder.io/qwik",
+  "versionConstraint": "^1.20.0",
+  "generator": "npm"
+}

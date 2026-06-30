@@ -29,7 +29,7 @@
   },
   "skeleton": {
     "bundled_dir": "bottle",
-    "sync_exclude_dirs": ["site-packages"],
+    "sync_exclude_dirs": ["site-packages", "__pycache__"],
     "sync_exclude_files": [],
     "dependency_install": {
       "program": "{{pip_path}}",

@@ -1,0 +1,5 @@
+{
+  "plugVersion": "~> 1.16",
+  "serverVersion": "~> 1.6",
+  "generator": "plug"
+}

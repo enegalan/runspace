@@ -1,0 +1,6 @@
+{
+  "goModule": "runspace/iris-sandbox",
+  "goPackage": "github.com/kataras/iris/v12",
+  "versionConstraint": "v12.2.11",
+  "generator": "go"
+}

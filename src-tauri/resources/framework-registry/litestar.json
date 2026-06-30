@@ -1,0 +1,7 @@
+{
+  "pipPackage": "litestar",
+  "extraPackages": [
+    "uvicorn[standard]"
+  ],
+  "generator": "site-packages"
+}

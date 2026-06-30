@@ -1,0 +1,5 @@
+{
+  "gemPackage": "sinatra",
+  "versionConstraint": "~> 4.0",
+  "generator": "ruby-bundle-init"
+}

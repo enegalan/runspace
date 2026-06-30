@@ -219,33 +219,32 @@ fn resolve_packaged_scripts_dir() -> Option<PathBuf> {
     None
 }
 
-fn prepare_script_path() -> Result<PathBuf, FrameworkSkeletonError> {
-    let dev =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../scripts/prepare-framework-skeletons.sh");
+fn prepare_frameworks_script() -> Result<PathBuf, FrameworkSkeletonError> {
+    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../scripts/prepare_frameworks.py");
     if dev.is_file() {
         return dev.canonicalize().map_err(FrameworkSkeletonError::Io);
     }
 
     if let Some(dir) = resolve_packaged_scripts_dir() {
-        let script = dir.join("prepare-framework-skeletons.sh");
+        let script = dir.join("prepare_frameworks.py");
         if script.is_file() {
             return Ok(script);
         }
     }
 
     Err(FrameworkSkeletonError::Copy(
-        "prepare-framework-skeletons.sh not found".to_string(),
+        "prepare_frameworks.py not found".to_string(),
     ))
 }
 
 fn generate_skeleton_template(bundled_dir: &str) -> Result<(), FrameworkSkeletonError> {
-    let script = prepare_script_path()?;
+    let script = prepare_frameworks_script()?;
     let home = std::env::var("HOME").map_err(|_| {
         FrameworkSkeletonError::Copy("Could not resolve home directory".to_string())
     })?;
     let user_frameworks = PathBuf::from(&home).join(".runspace").join("frameworks");
 
-    let output = Command::new("bash")
+    let output = Command::new("python3")
         .arg(&script)
         .env("RUNSPACE_FRAMEWORKS", bundled_dir)
         .env("RUNSPACE_FORCE_FRAMEWORK_SYNC", "1")

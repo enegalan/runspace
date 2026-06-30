@@ -1,0 +1,9 @@
+{
+  "npmPackage": "@remix-run/node",
+  "versionConstraint": "^2.17.0",
+  "extraNpmPackages": [
+    "react",
+    "react-dom"
+  ],
+  "generator": "npm"
+}

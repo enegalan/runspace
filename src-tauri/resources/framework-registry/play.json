@@ -1,0 +1,6 @@
+{
+  "playVersion": "3.0.7",
+  "scalaVersion": "3.3.6",
+  "sbtVersion": "1.10.7",
+  "generator": "play"
+}

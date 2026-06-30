@@ -1,0 +1,5 @@
+{
+  "pipPackage": "bottle",
+  "versionConstraint": "==0.13.2",
+  "generator": "requirements"
+}

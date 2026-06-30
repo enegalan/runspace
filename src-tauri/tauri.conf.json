@@ -42,8 +42,8 @@
     },
     "resources": {
       "resources/environments/": "environments/",
-      "../scripts/prepare-framework-skeletons.sh": "scripts/prepare-framework-skeletons.sh",
-      "../scripts/sync-framework-skeletons.sh": "scripts/sync-framework-skeletons.sh"
+      "../scripts/prepare_frameworks.py": "scripts/prepare_frameworks.py",
+      "../scripts/framework_generators/": "scripts/framework_generators/"
     }
   }
 }

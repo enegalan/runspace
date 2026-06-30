@@ -1,0 +1,6 @@
+{
+  "groupId": "com.runspace",
+  "artifactId": "sandbox",
+  "extensions": "io.quarkus:quarkus-rest",
+  "generator": "quarkus"
+}
