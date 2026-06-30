@@ -1,5 +1,6 @@
 {
-  "goModule": "github.com/labstack/echo/v4",
+  "goModule": "runspace/echo-sandbox",
+  "goPackage": "github.com/labstack/echo/v4",
   "versionConstraint": "v4.13.3",
   "generator": "go"
 }
