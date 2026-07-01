@@ -273,10 +273,7 @@ export function SettingsDivider() {
  * @param props - The props.
  * @returns The SettingsCardAction component.
  */
-export function SettingsCardAction({
-  children,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+export function SettingsCardAction({ children, ...props }: React.ComponentProps<typeof Button>) {
   return (
     <Button variant="ghost" size="sm" {...props}>
       {children}

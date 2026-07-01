@@ -49,8 +49,7 @@ export function useFileTreeKeyboardShortcuts(workspaceId: string, enabled: boole
       }
 
       const key = event.key.toLowerCase();
-      const activeSelection =
-        selection?.workspaceId === workspaceId ? selection : null;
+      const activeSelection = selection?.workspaceId === workspaceId ? selection : null;
       const activeClipboard = clipboardMatchesWorkspace(clipboardEntry, workspaceId)
         ? clipboardEntry
         : null;
@@ -68,7 +67,10 @@ export function useFileTreeKeyboardShortcuts(workspaceId: string, enabled: boole
       }
 
       if (key === "v" && activeClipboard) {
-        const targetDir = resolvePasteTarget(activeSelection?.path, activeSelection?.isDirectory ?? false);
+        const targetDir = resolvePasteTarget(
+          activeSelection?.path,
+          activeSelection?.isDirectory ?? false,
+        );
         if (isInvalidPaste(activeClipboard.path, targetDir, activeClipboard.mode)) {
           return;
         }

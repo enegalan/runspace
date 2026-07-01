@@ -94,7 +94,10 @@ export function FileTree() {
     isFileTreeDragActive,
   );
   const activeSelection = selection?.workspaceId === workspaceId ? selection : null;
-  const pasteTarget = resolvePasteTarget(activeSelection?.path, activeSelection?.isDirectory ?? false);
+  const pasteTarget = resolvePasteTarget(
+    activeSelection?.path,
+    activeSelection?.isDirectory ?? false,
+  );
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;

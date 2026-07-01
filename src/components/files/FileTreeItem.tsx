@@ -103,8 +103,7 @@ export function FileTreeItem({
   const expanded = expandedDirs.has(entry.path);
   const isDropTarget = entry.is_directory && dropTargetPath === entry.path;
   const isDragSource = dragSourcePath === entry.path;
-  const isSelected =
-    selection?.workspaceId === workspaceId && selection.path === entry.path;
+  const isSelected = selection?.workspaceId === workspaceId && selection.path === entry.path;
   const pasteTargetDir = resolvePasteTarget(entry.path, entry.is_directory);
 
   const loadChildren = useCallback(async () => {
