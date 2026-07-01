@@ -11,7 +11,7 @@ def generate(_: str, src: Path, cfg: dict[str, Any]) -> None:
     version = cfg["railsVersion"]
     rm_tree(src)
     run(["gem", "install", "rails", "-v", version, "--no-document"])
-    run(["rails", "new", str(src),
+    run(["ruby", "-S", "rails", "new", str(src),
         "--skip-git", "--database=sqlite3", "--skip-test", "--skip-system-test",
         "--skip-javascript", "--skip-hotwire", "--skip-asset-pipeline",
         "--skip-action-mailbox", "--skip-action-text", "--minimal", "--skip-bundle", "--force"])
