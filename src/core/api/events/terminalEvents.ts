@@ -2,8 +2,7 @@ import type { TerminalDataEvent, TerminalExitEvent } from "../../types/terminal"
 import { subscribeBackendEvents } from "./subscribeBackendEvents";
 
 type TerminalEventPayload =
-  | { event: "data"; session_id: string; data: string }
-  | ({ event: "exit" } & TerminalExitEvent);
+  { event: "data"; session_id: string; data: string } | ({ event: "exit" } & TerminalExitEvent);
 
 export interface TerminalEventHandlers {
   onData: (payload: TerminalDataEvent) => void;

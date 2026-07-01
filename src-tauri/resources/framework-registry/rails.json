@@ -1,5 +1,5 @@
 {
-  "railsVersion": "8.0.*",
+  "railsVersion": "~> 8.0.0",
   "database": "sqlite3",
   "generator": "rails"
 }

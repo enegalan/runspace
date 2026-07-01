@@ -1,5 +1,6 @@
 {
-  "goModule": "github.com/beego/beego/v2",
+  "goModule": "runspace/beego-sandbox",
+  "goPackage": "github.com/beego/beego/v2",
   "versionConstraint": "v2.3.8",
   "goVendor": true,
   "generator": "go"

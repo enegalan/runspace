@@ -1,8 +1,8 @@
 {
   "pipPackage": "pyramid",
-  "versionConstraint": "2.0.*",
+  "versionConstraint": "~=2.0",
   "pipInstall": [
-    "pyramid~={versionConstraint}",
+    "pyramid{versionConstraint}",
     "waitress"
   ],
   "appTemplate": "pip/pyramid.py",

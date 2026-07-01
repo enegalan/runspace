@@ -1,8 +1,7 @@
 import { useDialogStore } from "../../../stores/dialogStore";
 
 export type PromptProcessResult<TResult> =
-  | { status: "done"; value: TResult }
-  | { status: "retry"; label: string; initialValue: string };
+  { status: "done"; value: TResult } | { status: "retry"; label: string; initialValue: string };
 
 export abstract class WorkspacePrompt<TResult> {
   protected label: string;

@@ -1,5 +1,12 @@
 {
   "rebarPackage": "cowboy",
   "versionConstraint": "2.13.0",
+  "rebarExtraDeps": [
+    ["cowlib", "2.14.0"],
+    ["ranch", "2.1.0"]
+  ],
+  "rebarOverrideDeps": {
+    "cowboy": ["cowlib", "ranch"]
+  },
   "generator": "rebar"
 }

@@ -1,5 +1,5 @@
 {
-  "bootVersion": "3.4.5",
+  "bootVersion": "3.5.16",
   "javaVersion": "21",
   "dependencies": "web",
   "generator": "spring-boot"

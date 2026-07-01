@@ -8,6 +8,8 @@ from framework_generators._lib import *
 def generate(_: str, src: Path, cfg: dict[str, Any]) -> None:
     if (src / "mix.lock").is_file():
         return
+    if not shutil.which("mix"):
+        raise SystemExit("mix (Elixir) is required")
     rm_tree(src)
     run(["mix", "local.hex", "--force"])
     run(["mix", "archive.install", "hex", "phx_new", "--force"])
