@@ -30,45 +30,37 @@ export function EnvVarsEditor({ rows, onChange, disabled = false }: EnvVarsEdito
     <div className="env-vars-editor" data-testid="env-vars-editor">
       <div className="env-vars-editor__header">Environment variables</div>
       {rows.length > 0 && (
-        <table className="env-vars-editor__table">
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <input
-                    type="text"
-                    className="env-vars-editor__input"
-                    value={row.key}
-                    onChange={(e) => updateRow(index, "key", e.target.value)}
-                    placeholder="KEY"
-                    disabled={disabled}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    className="env-vars-editor__input"
-                    value={row.value}
-                    onChange={(e) => updateRow(index, "value", e.target.value)}
-                    placeholder="value"
-                    disabled={disabled}
-                  />
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    className="env-vars-editor__remove"
-                    onClick={() => removeRow(index)}
-                    disabled={disabled}
-                    aria-label="Remove variable"
-                  >
-                    <IconTrash size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="env-vars-editor__rows">
+          {rows.map((row, index) => (
+            <div key={index} className="env-vars-editor__row">
+              <input
+                type="text"
+                className="env-vars-editor__input"
+                value={row.key}
+                onChange={(e) => updateRow(index, "key", e.target.value)}
+                placeholder="KEY"
+                disabled={disabled}
+              />
+              <input
+                type="text"
+                className="env-vars-editor__input"
+                value={row.value}
+                onChange={(e) => updateRow(index, "value", e.target.value)}
+                placeholder="value"
+                disabled={disabled}
+              />
+              <button
+                type="button"
+                className="env-vars-editor__remove"
+                onClick={() => removeRow(index)}
+                disabled={disabled}
+                aria-label="Remove variable"
+              >
+                <IconTrash size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
       )}
       <Button
         variant="ghost"

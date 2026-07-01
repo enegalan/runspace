@@ -1,10 +1,12 @@
+import { useEffect } from "react";
 import { isTauri } from "../../core/platform/isTauri";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useSettingsUiStore, type SettingsTab } from "../../stores/settingsUiStore";
 import { IconButton } from "../ui/IconButton";
-import { IconClose, IconPlay, IconSettings } from "../ui/icons";
+import { IconClose, IconKeyboard, IconPlay, IconRefresh, IconSettings } from "../ui/icons";
 import { EnvironmentsSettings } from "./EnvironmentsSettings";
 import { GeneralSettings } from "./GeneralSettings";
+import { ShortcutsSettings } from "./ShortcutsSettings";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -22,6 +24,7 @@ const NAV_ITEMS: {
 }[] = [
   { id: "general", label: "General", icon: IconSettings },
   { id: "environments", label: "Environments", icon: IconPlay },
+  { id: "shortcuts", label: "Shortcuts", icon: IconKeyboard },
 ];
 
 /**
@@ -34,6 +37,24 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const tab = useSettingsUiStore((state) => state.tab);
   const setTab = useSettingsUiStore((state) => state.setTab);
   const reset = useSettingsStore((state) => state.reset);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
 
   if (!open) {
     return null;
@@ -66,6 +87,17 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
               </button>
             ))}
           </nav>
+          <div className="settings-panel__sidebar-footer">
+            <button
+              type="button"
+              className="settings-panel__reset"
+              onClick={() => void reset()}
+              data-testid="settings-reset-all"
+            >
+              <IconRefresh size={14} className="settings-panel__reset-icon" />
+              Reset all defaults
+            </button>
+          </div>
         </aside>
 
         <div className="settings-panel__main">
@@ -73,22 +105,16 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             className={`settings-panel__toolbar${isTauri() ? " settings-panel__toolbar--titlebar" : ""}`}
             {...(isTauri() ? { "data-tauri-drag-region": true } : {})}
           >
-            <button
-              type="button"
-              className="settings-card__action"
-              onClick={() => void reset()}
-              data-testid="settings-reset-all"
-            >
-              Reset all defaults
-            </button>
-            <span className="settings-panel__toolbar-spacer" aria-hidden="true" />
             <IconButton label="Close settings" onClick={onClose}>
               <IconClose size={18} />
             </IconButton>
           </header>
           <div className="settings-panel__body">
-            {tab === "general" && <GeneralSettings />}
-            {tab === "environments" && <EnvironmentsSettings />}
+            <div key={tab} className="settings-panel__tab-content">
+              {tab === "general" && <GeneralSettings />}
+              {tab === "environments" && <EnvironmentsSettings />}
+              {tab === "shortcuts" && <ShortcutsSettings />}
+            </div>
           </div>
         </div>
       </div>

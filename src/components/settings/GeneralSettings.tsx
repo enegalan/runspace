@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { SHORTCUT_ACTIONS } from "../../core/constants/keyboardShortcuts";
 import { EDITOR_FONT_OPTIONS } from "../../core/constants/settingsDefaults";
 import type { TabSize, ThemeMode, UiDensity } from "../../core/types/settings";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { ShortcutsSettingsCard } from "./ShortcutsSettings";
 import {
   SettingsCard,
   SettingsDivider,
+  SettingsEmptyState,
   SettingsNumberInput,
   SettingsPageHeader,
   SettingsRow,
@@ -54,10 +53,6 @@ const EXECUTION_SEARCH =
   "Execution run timeout compile timeout auto-clear output auto-scroll output run on save run on tab change";
 const LAYOUT_SEARCH =
   "Layout show sidebar output panel restore last workspace confirm before closing unsaved tabs";
-const SHORTCUTS_SEARCH = [
-  "Keyboard shortcuts",
-  ...SHORTCUT_ACTIONS.map((action) => action.label),
-].join(" ");
 
 /**
  * The GeneralSettings component.
@@ -72,10 +67,8 @@ export function GeneralSettings() {
   const showEditor = matchesQuery(search, EDITOR_SEARCH);
   const showExecution = matchesQuery(search, EXECUTION_SEARCH);
   const showLayout = matchesQuery(search, LAYOUT_SEARCH);
-  const showShortcuts = matchesQuery(search, SHORTCUTS_SEARCH);
   const hasSearch = search.trim().length > 0;
-  const hasVisibleResults =
-    showAppearance || showEditor || showExecution || showLayout || showShortcuts;
+  const hasVisibleResults = showAppearance || showEditor || showExecution || showLayout;
 
   return (
     <div className="settings-page general-settings" data-testid="general-settings">
@@ -92,9 +85,10 @@ export function GeneralSettings() {
       />
 
       {hasSearch && !hasVisibleResults ? (
-        <p className="general-settings__empty" data-testid="general-settings-no-results">
-          No settings match your search.
-        </p>
+        <SettingsEmptyState
+          message="No settings match your search."
+          testId="general-settings-no-results"
+        />
       ) : (
         <>
           {showAppearance && (
@@ -330,8 +324,6 @@ export function GeneralSettings() {
               />
             </SettingsCard>
           )}
-
-          {showShortcuts && <ShortcutsSettingsCard />}
         </>
       )}
     </div>
