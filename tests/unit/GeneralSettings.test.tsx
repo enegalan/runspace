@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettings } from "../../src/components/settings/GeneralSettings";
+import { ShortcutsSettings } from "../../src/components/settings/ShortcutsSettings";
 import { DEFAULT_APP_SETTINGS } from "../../src/core/constants/settingsDefaults";
 import { useSettingsStore } from "../../src/stores/settingsStore";
 
@@ -28,9 +29,6 @@ describe("GeneralSettings", () => {
     expect(screen.getByText("Editor")).toBeInTheDocument();
     expect(screen.getByText("Execution")).toBeInTheDocument();
     expect(screen.getByText("Layout")).toBeInTheDocument();
-    expect(screen.getByText("Keyboard shortcuts")).toBeInTheDocument();
-    expect(screen.getByTestId("shortcuts-reset-defaults")).toBeInTheDocument();
-    expect(screen.getByTestId("shortcut-recorder-run")).toBeInTheDocument();
     expect(screen.getByTestId("setting-theme")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
     expect(screen.getByText("Show sidebar")).toBeInTheDocument();
@@ -79,5 +77,26 @@ describe("GeneralSettings", () => {
 
     expect(page.getByTestId("general-settings-no-results")).toBeInTheDocument();
     expect(page.queryByText("Appearance")).not.toBeInTheDocument();
+  });
+});
+
+describe("ShortcutsSettings", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  beforeEach(() => {
+    useSettingsStore.setState({
+      settings: DEFAULT_APP_SETTINGS,
+      loaded: true,
+    });
+  });
+
+  it("renders shortcut bindings", () => {
+    render(<ShortcutsSettings />);
+
+    expect(screen.getByTestId("shortcuts-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("shortcuts-reset-defaults")).toBeInTheDocument();
+    expect(screen.getByTestId("shortcut-recorder-run")).toBeInTheDocument();
   });
 });

@@ -521,18 +521,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   },
 
   copyEntry: async (sourcePath, targetDir) => {
-    const newPath = movedPath(sourcePath, targetDir);
-    if (sourcePath === newPath) {
-      return;
-    }
     const workspace = get().workspace;
     if (!workspace) {
       return;
     }
     await runspaceInvoke<WorkspaceInfo>("open_workspace", { id: workspace.id });
-    if (!(await replaceEntryIfConfirmed(workspace.id, newPath, get().deleteFile))) {
-      return;
-    }
     await runspaceInvoke("copy_entry", { sourcePath, targetDir });
     if (targetDir) {
       get().expandDir(targetDir);

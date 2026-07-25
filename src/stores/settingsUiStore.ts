@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type SettingsTab = "general" | "environments";
+export type SettingsTab = "general" | "environments" | "shortcuts";
 
 interface SettingsUiStore {
   open: boolean;

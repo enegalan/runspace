@@ -22,6 +22,7 @@ interface UseFileTreePointerMoveOptions {
   openFile: (path: string) => Promise<void>;
   expandDir: (path: string) => void;
   expandedDirs: Set<string>;
+  onSelect?: (entry: FileEntry) => void;
 }
 
 /**
@@ -37,6 +38,7 @@ export function useFileTreePointerMove({
   openFile,
   expandDir,
   expandedDirs,
+  onSelect,
 }: UseFileTreePointerMoveOptions) {
   const sessionRef = useRef<{
     entry: FileEntry;
@@ -121,6 +123,7 @@ export function useFileTreePointerMove({
       const startY = event.clientY;
       const pointerId = event.pointerId;
       sessionRef.current = { entry, startX, startY, pointerId };
+      onSelect?.(entry);
 
       const onPointerMove = (moveEvent: PointerEvent) => {
         if (moveEvent.pointerId !== pointerId) {
@@ -208,7 +211,7 @@ export function useFileTreePointerMove({
       ownerDocument.addEventListener("pointerup", onPointerUp);
       ownerDocument.addEventListener("pointercancel", onPointerCancel);
     },
-    [clearAutoExpand, moveFile, openFile, updateDropTarget],
+    [clearAutoExpand, moveFile, onSelect, openFile, updateDropTarget],
   );
 
   return { onRowPointerDown };

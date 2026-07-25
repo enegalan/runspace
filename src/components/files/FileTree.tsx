@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   DROP_TARGET_ATTR,
   hasExternalFileDrag,
@@ -13,13 +13,16 @@ import {
 import {
   isFileTreeDragActive,
   isInvalidPaste,
+  resolvePasteTarget,
   subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
+import { useFileTreeKeyboardShortcuts } from "../../hooks/useFileTreeKeyboardShortcuts";
 import { useFileTreePointerMove } from "../../hooks/useFileTreePointerMove";
 import { useNewFile } from "../../hooks/useNewFile";
 import { useNewFolder } from "../../hooks/useNewFolder";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../stores/fileClipboardStore";
+import { useFileTreeSelectionStore } from "../../stores/fileTreeSelectionStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 import { ContextMenu } from "../ui/ContextMenu";
 import { IconFilePlus, IconFolderPlus, IconRefresh } from "../ui/icons";
@@ -50,12 +53,32 @@ export function FileTree() {
   const { createNewFolder } = useNewFolder();
   const clipboardEntry = useFileClipboardStore((state) => state.entry);
   const pasteIntoFolder = useFileClipboardStore((state) => state.pasteInto);
+  const setSelection = useFileTreeSelectionStore((state) => state.setSelection);
+  const clearSelection = useFileTreeSelectionStore((state) => state.clearSelection);
+  const selection = useFileTreeSelectionStore((state) => state.selection);
+  const { treeRef, focusTree } = useFileTreeKeyboardShortcuts(workspaceId, Boolean(workspace));
+  const handleSelectEntry = useCallback(
+    (entry: { path: string; is_directory: boolean }) => {
+      setSelection({
+        path: entry.path,
+        workspaceId,
+        isDirectory: entry.is_directory,
+      });
+      focusTree();
+    },
+    [focusTree, setSelection, workspaceId],
+  );
   const { onRowPointerDown } = useFileTreePointerMove({
     moveFile,
     openFile,
     expandDir,
     expandedDirs,
+    onSelect: handleSelectEntry,
   });
+
+  useEffect(() => {
+    clearSelection();
+  }, [clearSelection, workspaceId]);
 
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuState | null>(null);
   const [environmentPickerOpen, setEnvironmentPickerOpen] = useState(false);
@@ -69,6 +92,11 @@ export function FileTree() {
     subscribeFileTreeDragActive,
     isFileTreeDragActive,
     isFileTreeDragActive,
+  );
+  const activeSelection = selection?.workspaceId === workspaceId ? selection : null;
+  const pasteTarget = resolvePasteTarget(
+    activeSelection?.path,
+    activeSelection?.isDirectory ?? false,
   );
 
   const isDirectBodyTarget = (event: React.DragEvent<HTMLDivElement>) => {
@@ -160,12 +188,22 @@ export function FileTree() {
       </div>
 
       <div
+        ref={treeRef}
+        tabIndex={workspace ? -1 : undefined}
         className={`file-tree__body${rootDropTarget ? " file-tree__body--drop-target" : ""}`}
+        data-testid="file-tree-body"
         {...{ [DROP_TARGET_ATTR]: "" }}
         onContextMenu={openSidebarMenu}
         onDragOver={handleBodyDragOver}
         onDrop={handleBodyDrop}
-        role="presentation"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            clearSelection();
+          }
+          focusTree();
+        }}
+        role="tree"
+        aria-label="Files"
       >
         {!workspace ? (
           <p className="file-tree__empty">
@@ -183,6 +221,7 @@ export function FileTree() {
               depth={0}
               workspaceId={workspaceId}
               onRowPointerDown={onRowPointerDown}
+              onSelect={handleSelectEntry}
             />
           ))
         )}
@@ -208,8 +247,8 @@ export function FileTree() {
                   {
                     id: "paste",
                     label: "Paste",
-                    disabled: isInvalidPaste(clipboardEntry.path, "", clipboardEntry.mode),
-                    onClick: () => void pasteIntoFolder(""),
+                    disabled: isInvalidPaste(clipboardEntry.path, pasteTarget, clipboardEntry.mode),
+                    onClick: () => void pasteIntoFolder(pasteTarget),
                   },
                 ]
               : []),

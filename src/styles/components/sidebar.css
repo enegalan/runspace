@@ -309,6 +309,23 @@
   background: var(--rs-bg-hover);
 }
 
+.file-tree__row--selected {
+  background: var(--rs-accent-muted);
+}
+
+.file-tree__row--selected:hover {
+  background: var(--rs-accent-muted);
+}
+
+.file-tree__body:focus {
+  outline: none;
+}
+
+.file-tree__body:focus-visible {
+  outline: 2px solid var(--rs-accent);
+  outline-offset: -2px;
+}
+
 .file-tree--dragging .file-tree__row {
   transition: none;
 }

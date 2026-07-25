@@ -7,6 +7,7 @@ import {
   isFileTreeDragActive,
   isInvalidMove,
   movedPath,
+  resolvePasteTarget,
   setActiveFileTreeMove,
   setFileTreeDragPreview,
   updateFileTreeDragPreviewPosition,
@@ -67,5 +68,12 @@ describe("fileTreeDrag", () => {
     expect(canMoveToRoot("src/app.js")).toBe(true);
     expect(canMoveToRoot("app.js")).toBe(false);
     expect(isInvalidMove("src/app.js", "src")).toBe(true);
+  });
+
+  it("resolves paste target from selection", () => {
+    expect(resolvePasteTarget(null, false)).toBe("");
+    expect(resolvePasteTarget("src/components", true)).toBe("src/components");
+    expect(resolvePasteTarget("src/app.js", false)).toBe("src");
+    expect(resolvePasteTarget("README.md", false)).toBe("");
   });
 });

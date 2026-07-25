@@ -25,6 +25,7 @@ import {
   getActiveDragPayload,
   isInvalidPaste,
   parentDir,
+  resolvePasteTarget,
   siblingPath,
   subscribeFileTreeDragActive,
 } from "../../core/workspace/fileTreeDrag";
@@ -35,6 +36,7 @@ import { workspaceEntryExists } from "../../core/workspace/workspaceEntryExists"
 import { useDialogStore } from "../../stores/dialogStore";
 import { useEditorTabsStore } from "../../stores/editorTabsStore";
 import { useFileClipboardStore, clipboardMatchesWorkspace } from "../../stores/fileClipboardStore";
+import { useFileTreeSelectionStore } from "../../stores/fileTreeSelectionStore";
 import { useWorkspaceStore } from "../../stores/workspaceStore";
 
 interface FileTreeItemProps {
@@ -42,6 +44,7 @@ interface FileTreeItemProps {
   depth: number;
   workspaceId: string;
   onRowPointerDown: (entry: FileEntry, event: PointerEvent<HTMLDivElement>) => void;
+  onSelect: (entry: FileEntry) => void;
 }
 
 interface MenuState {
@@ -57,7 +60,13 @@ interface MenuState {
  * @param onRowPointerDown - Pointer handler to start an internal move drag.
  * @returns The FileTreeItem component.
  */
-export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: FileTreeItemProps) {
+export function FileTreeItem({
+  entry,
+  depth,
+  workspaceId,
+  onRowPointerDown,
+  onSelect,
+}: FileTreeItemProps) {
   const { createAndOpenFile } = useNewFile();
   const { createNewFolder } = useNewFolder();
   const expandedDirs = useWorkspaceStore((state) => state.expandedDirs);
@@ -74,6 +83,7 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
   const cutToClipboard = useFileClipboardStore((state) => state.cut);
   const copyToClipboard = useFileClipboardStore((state) => state.copy);
   const pasteIntoFolder = useFileClipboardStore((state) => state.pasteInto);
+  const selection = useFileTreeSelectionStore((state) => state.selection);
 
   const [children, setChildren] = useState<FileEntry[]>([]);
   const [renaming, setRenaming] = useState(false);
@@ -93,6 +103,8 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
   const expanded = expandedDirs.has(entry.path);
   const isDropTarget = entry.is_directory && dropTargetPath === entry.path;
   const isDragSource = dragSourcePath === entry.path;
+  const isSelected = selection?.workspaceId === workspaceId && selection.path === entry.path;
+  const pasteTargetDir = resolvePasteTarget(entry.path, entry.is_directory);
 
   const loadChildren = useCallback(async () => {
     const files = await listDirectory(entry.path);
@@ -175,6 +187,7 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
   const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+    onSelect(entry);
     setMenu({ x: event.clientX, y: event.clientY });
   };
 
@@ -204,19 +217,19 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
         },
       );
 
-      if (activeClipboard) {
-        items.push({
-          id: "paste",
-          label: "Paste",
-          disabled: isInvalidPaste(activeClipboard.path, entry.path, activeClipboard.mode),
-          onClick: () => void pasteIntoFolder(entry.path),
-        });
-      }
-
       items.push({
         id: "expand",
         label: expanded ? "Collapse" : "Expand",
         onClick: () => toggleDir(entry.path),
+      });
+    }
+
+    if (activeClipboard) {
+      items.push({
+        id: "paste",
+        label: "Paste",
+        disabled: isInvalidPaste(activeClipboard.path, pasteTargetDir, activeClipboard.mode),
+        onClick: () => void pasteIntoFolder(pasteTargetDir),
       });
     }
 
@@ -254,10 +267,12 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
 
   const row = (
     <div
-      className={`file-tree__row${expanded ? " file-tree__row--expanded" : ""}${isDragSource ? " file-tree__row--drag-source file-tree__row--moving" : ""}`}
+      className={`file-tree__row${expanded ? " file-tree__row--expanded" : ""}${isSelected ? " file-tree__row--selected" : ""}${isDragSource ? " file-tree__row--drag-source file-tree__row--moving" : ""}`}
       style={{ paddingLeft: `${8 + depth * 14}px` }}
       onContextMenu={handleContextMenu}
       onPointerDown={renaming ? undefined : (event) => onRowPointerDown(entry, event)}
+      role="treeitem"
+      aria-selected={isSelected}
     >
       {entry.is_directory ? (
         <button
@@ -317,6 +332,7 @@ export function FileTreeItem({ entry, depth, workspaceId, onRowPointerDown }: Fi
                   depth={depth + 1}
                   workspaceId={workspaceId}
                   onRowPointerDown={onRowPointerDown}
+                  onSelect={onSelect}
                 />
               ))}
             </div>

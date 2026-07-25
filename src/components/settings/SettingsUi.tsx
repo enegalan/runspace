@@ -1,5 +1,7 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { IconSearch } from "../ui/icons";
 import { Toggle } from "../ui/Toggle";
 
 /**
@@ -38,15 +40,56 @@ export function SettingsSearchInput({
 }) {
   return (
     <div className="settings-search">
-      <input
+      <IconSearch size={14} className="settings-search__icon" />
+      <Input
         type="search"
-        className="settings-search__input"
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         data-testid={testId}
       />
     </div>
+  );
+}
+
+/**
+ * The SettingsEmptyState component.
+ * @param message - The message.
+ * @param testId - The test ID.
+ * @returns The SettingsEmptyState component.
+ */
+export function SettingsEmptyState({ message, testId }: { message: string; testId?: string }) {
+  return (
+    <div className="settings-empty-state" data-testid={testId}>
+      <p className="settings-empty-state__message">{message}</p>
+    </div>
+  );
+}
+
+/**
+ * The SettingsSection component.
+ * @param title - The title.
+ * @param description - The description.
+ * @param children - The children.
+ * @returns The SettingsSection component.
+ */
+export function SettingsSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="settings-section">
+      <div className="settings-section__header">
+        <h3 className="settings-section__title">{title}</h3>
+        {description && <p className="settings-section__description">{description}</p>}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -71,11 +114,7 @@ export function SettingsCard({
 }) {
   return (
     <section className="settings-card">
-      <div
-        className={`settings-card__header${
-          headerAction ? " settings-card__header--with-action" : ""
-        }`}
-      >
+      <div className="settings-card__header">
         <div className="settings-card__header-text">
           <h3 className="settings-card__title">{title}</h3>
           {description && <p className="settings-card__description">{description}</p>}
@@ -226,4 +265,18 @@ export function SettingsToggleRow({
  */
 export function SettingsDivider() {
   return <div className="settings-divider" role="separator" />;
+}
+
+/**
+ * The SettingsCardAction component.
+ * @param children - The children.
+ * @param props - The props.
+ * @returns The SettingsCardAction component.
+ */
+export function SettingsCardAction({ children, ...props }: React.ComponentProps<typeof Button>) {
+  return (
+    <Button variant="ghost" size="sm" {...props}>
+      {children}
+    </Button>
+  );
 }

@@ -83,6 +83,12 @@
   /* Editor Columns */
   --rs-editor-column-min-width: 320px;
 
+  /* Controls */
+  --rs-control-height: 34px;
+  --rs-control-height-lg: 36px;
+  --rs-settings-row-padding-y: 14px;
+  --rs-settings-toolbar-height: 44px;
+
   /* Editor Tabs */
   --rs-editor-tabs-height: 42px;
   --rs-editor-tabs-tab-height: 32px;
@@ -146,4 +152,9 @@
   --rs-editor-tabs-height: 32px;
   --rs-editor-tabs-tab-height: 26px;
   --rs-editor-tabs-tab-active-height: 28px;
+
+  --rs-control-height: 26px;
+  --rs-control-height-lg: 28px;
+  --rs-settings-row-padding-y: 8px;
+  --rs-settings-toolbar-height: 36px;
 }

@@ -271,6 +271,34 @@ export function IconTerminal(props: IconProps) {
 }
 
 /**
+ * The IconSearch component.
+ * @param props - The props.
+ * @returns The IconSearch component.
+ */
+export function IconSearch(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="11" cy="11" r="8" {...stroke} />
+      <path d="M21 21l-4.35-4.35" {...stroke} />
+    </Icon>
+  );
+}
+
+/**
+ * The IconKeyboard component.
+ * @param props - The props.
+ * @returns The IconKeyboard component.
+ */
+export function IconKeyboard(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="2" y="6" width="20" height="12" rx="2" {...stroke} />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" {...stroke} />
+    </Icon>
+  );
+}
+
+/**
  * The IconCheck component.
  * @param props - The props.
  * @returns The IconCheck component.

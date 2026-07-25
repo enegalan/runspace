@@ -449,16 +449,9 @@ impl WorkspaceManager {
             ));
         }
 
-        let relative = if target_dir.is_empty() {
-            file_name.to_string()
-        } else {
-            format!("{target_dir}/{file_name}")
-        };
+        let relative = Self::unique_sibling_path(workspace, target_dir, file_name)?;
 
         let dest = Self::resolve_in_workspace(workspace, &relative)?;
-        if dest.exists() {
-            return Err(WorkspaceError::AlreadyExists(relative));
-        }
 
         if source.is_dir() {
             Self::copy_dir_recursive(&source, &dest)?;
@@ -540,6 +533,42 @@ impl WorkspaceManager {
         }
 
         Ok(initial)
+    }
+
+    fn unique_sibling_path(
+        workspace: &Workspace,
+        target_dir: &str,
+        name: &str,
+    ) -> Result<String, WorkspaceError> {
+        let initial = if target_dir.is_empty() {
+            name.to_string()
+        } else {
+            format!("{target_dir}/{name}")
+        };
+
+        if !Self::import_path_exists(workspace, &initial)? {
+            return Ok(initial);
+        }
+
+        let dot_index = name.rfind('.').filter(|index| *index > 0);
+        let (stem, extension) = match dot_index {
+            Some(index) => (&name[..index], &name[index..]),
+            None => (name, ""),
+        };
+
+        for suffix in 1..100 {
+            let candidate_name = format!("{stem} ({suffix}){extension}");
+            let candidate = if target_dir.is_empty() {
+                candidate_name.clone()
+            } else {
+                format!("{target_dir}/{candidate_name}")
+            };
+            if !Self::import_path_exists(workspace, &candidate)? {
+                return Ok(candidate);
+            }
+        }
+
+        Err(WorkspaceError::AlreadyExists(initial))
     }
 
     fn import_path_exists(workspace: &Workspace, relative: &str) -> Result<bool, WorkspaceError> {

@@ -182,6 +182,22 @@ export function isInvalidPaste(
 }
 
 /**
+ * Resolves the directory where clipboard contents should be pasted.
+ * @param selectedPath - The selected entry path, if any.
+ * @param isDirectory - Whether the selected entry is a directory.
+ * @returns The target directory path.
+ */
+export function resolvePasteTarget(
+  selectedPath: string | null | undefined,
+  isDirectory: boolean,
+): string {
+  if (!selectedPath) {
+    return "";
+  }
+  return isDirectory ? selectedPath : parentDir(selectedPath);
+}
+
+/**
  * Gets the moved path of the given source path and target directory.
  * @param sourcePath - The source path to get the moved path of.
  * @param targetDir - The target directory to get the moved path of.
