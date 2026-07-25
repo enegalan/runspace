@@ -1,10 +1,10 @@
 package main
 
 import (
-    "log"
-    "{module}/actions"
+	"log"
+	"{goModule}/actions"
 )
 
 func main() {
-    log.Fatal(actions.App().Serve())
+	log.Fatal(actions.App().Serve())
 }
