@@ -97,18 +97,6 @@ Run tests:
 npm test
 ```
 
-Generate Laravel/Symfony/Express/Vert.x skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/CakePHP skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Slim skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Laminas skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/Spring Boot skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/ASP.NET Core/Padrino skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/Quarkus skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/Roda skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/Ktor skeletons manually (first clone or after bumping `manifest.json`):
-Generate Laravel/Symfony/Express/JHipster skeletons manually (first clone or after bumping `manifest.json`):
-Generate framework skeletons manually (first clone or after bumping `manifest.json`):
-
 ```bash
 npm run prepare:frameworks
 ```
